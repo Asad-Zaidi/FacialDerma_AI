@@ -1,0 +1,70 @@
+/* Styling for About Page */
+.about-container {
+    padding: 40px 20px;
+    min-height: 80vh;
+}
+
+.about-title {
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 40px;
+}
+
+.about-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #cefdc9;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.section-content {
+    font-size: 16px;
+    color: #34495e;
+    line-height: 1.6;
+}
+
+.about-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.about-list li {
+    font-size: 16px;
+    color: #34495e;
+    margin-bottom: 8px;
+    padding-left: 20px;
+}
+
+.about-list li:before {
+    content: "✅";
+    padding-right: 10px;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .about-container {
+        padding: 20px;
+    }
+
+    .about-title {
+        font-size: 28px;
+    }
+
+    .section-title {
+        font-size: 20px;
+    }
+
+    .section-content {
+        font-size: 14px;
+    }
+}
