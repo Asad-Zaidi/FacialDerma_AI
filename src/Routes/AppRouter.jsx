@@ -19,7 +19,6 @@ const AppRouter = () => {
                         <Profile />
                     </PrivateRoute>
                 } />
-
                 <Route path="/analysis" element={
                     <PrivateRoute>
                         <Analysis />

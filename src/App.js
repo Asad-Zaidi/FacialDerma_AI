@@ -5,7 +5,10 @@ import Home from './Pages/Home';
 import Analysis from './Pages/Analysis';
 import About from './Pages/About';
 import Profile from './Pages/Profile';
-import AuthForm from './Pages/Auth';
+// import AuthForm from './Pages/Auth';
+import LoginForm from './Pages/Login';
+import SignupForm from './Pages/Signup';
+
 
 function App() {
   return (
@@ -15,7 +18,9 @@ function App() {
         <Route exact path="/Analysis" element={<Analysis />} />
         <Route exact path="/about" element={<About />} />
         <Route exact path="/Profile" element={<Profile />} />
-        <Route exact path="/login" element={<AuthForm />} />
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/signup" element={<SignupForm />} />
+
       </Routes>
     </BrowserRouter>
   );
