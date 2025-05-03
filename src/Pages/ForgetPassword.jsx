@@ -48,7 +48,7 @@ const ForgetPassword = () => {
                         <input
                             className="reset-auth-input"
                             type="email"
-                            placeholder="Enter your email"
+                            placeholder="Enter your Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -62,7 +62,7 @@ const ForgetPassword = () => {
                     </form>
 
                     <div className="reset-auth-footer">
-                        Remember your password? <Link to="/Login">Login</Link>
+                        Remember your Password? <Link to="/Login">Login</Link>
                     </div>
                 </div>
             </div>
