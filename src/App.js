@@ -8,6 +8,7 @@ import Profile from './Pages/Profile';
 // import AuthForm from './Pages/Auth';
 import LoginForm from './Pages/Login';
 import SignupForm from './Pages/Signup';
+import ForgetPassword from './Pages/ForgetPassword';
 
 
 function App() {
@@ -15,11 +16,13 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route exact path="/" element={<Home />} />
+        <Route exact path="/home" element={<Home />} />
         <Route exact path="/Analysis" element={<Analysis />} />
         <Route exact path="/about" element={<About />} />
         <Route exact path="/Profile" element={<Profile />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignupForm />} />
+        <Route path="/forget-password" element={<ForgetPassword />} />
 
       </Routes>
     </BrowserRouter>

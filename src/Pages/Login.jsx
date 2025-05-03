@@ -3,12 +3,13 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
-import '../Styles/AuthForm.css';
+import '../Styles/Login.css';
 
 const LoginForm = () => {
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
+    const location = useLocation();
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -38,42 +39,54 @@ const LoginForm = () => {
         }
     };
 
-    const location = useLocation();
-
     return (
         <>
             <Header />
-            <div className="auth-page-wrapper">
-                <div className="auth-container">
-                    <h2>Login</h2>
+            <div className="login-auth-page-wrapper">
+                <div className="login-auth-container">
+                    <h2 className="login-title">Login</h2>
 
-                    <div className="auth-tabs-container">
+                    <div className="login-auth-tabs-container">
                         <Link
                             to="/Login"
-                            className={`auth-tab-button ${location.pathname === '/Login' ? 'active' : ''}`}
+                            className={`login-auth-tab-button ${location.pathname === '/Login' ? 'login-active' : ''}`}
                         >
                             Login
                         </Link>
                         <Link
                             to="/Signup"
-                            className={`auth-tab-button ${location.pathname === '/Signup' ? 'active' : ''}`}
+                            className={`login-auth-tab-button ${location.pathname === '/Signup' ? 'login-active' : ''}`}
                         >
                             Signup
                         </Link>
                     </div>
 
-
                     <form onSubmit={handleLoginSubmit}>
-                        <input className="auth-input" type="text" name="identifier" placeholder="Username or Email" required />
-                        <input className="auth-input" type="password" name="password" placeholder="Password" required />
-                        {message && <p >{message}</p>}
-                        <div className="forgot-password">
-                            <Link to="/forgot-password">Forgot Password?</Link>
+                        <input
+                            className="login-auth-input"
+                            type="text"
+                            name="identifier"
+                            placeholder="Username or Email"
+                            required
+                        />
+                        <input
+                            className="login-auth-input"
+                            type="password"
+                            name="password"
+                            placeholder="Password"
+                            required
+                        />
+                        {message && <p className="login-message">{message}</p>}
+                        <div className="login-forgot-password">
+                            <Link to="/forget-password">Forgot Password?</Link>
                         </div>
 
-                        <button className="auth-button" type="submit">Login</button>
+                        <button className="login-auth-button" type="submit">
+                            Login
+                        </button>
                     </form>
-                    <div className="auth-footer">
+
+                    <div className="login-auth-footer">
                         Don't have an account? <Link to="/Signup">Signup</Link>
                     </div>
                 </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
-import '../Styles/AuthForm.css';
+import '../Styles/Signup.css';
 
 const SignupForm = () => {
     const [message, setMessage] = useState('');
