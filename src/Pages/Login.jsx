@@ -4,6 +4,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import '../Styles/Login.css';
+// import { FaEye, FaEyeSlash } from 'react-icons/fa6';
 
 const LoginForm = () => {
     const [message, setMessage] = useState('');

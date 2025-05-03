@@ -83,3 +83,23 @@
 .auth-footer a:hover {
     text-decoration: underline;
 }
+
+.auth-password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.auth-password-wrapper input {
+    width: 100%;
+    padding-right: 40px; /* make room for the icon */
+}
+
+.auth-eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    color: #c2c2c2;
+}
