@@ -42,7 +42,7 @@
     width: 350px;
     height: 350px;
     border: 2px dashed #6b7280;
-    border-radius: 20px;
+    border-radius: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -119,4 +119,37 @@
     border-radius: 12px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+}
+
+@media (max-width: 768px) {
+    .analysis-title {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    .uploadbox {
+        width: 90%;
+        height: auto;
+        padding: 20px;
+        font-size: 14px;
+    }
+
+    .button-container {
+        margin: 20px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .add-from-file-btn,
+    .analyze-btn {
+        font-size: 15px;
+        padding: 12px 16px;
+    }
+
+    .prediction-result {
+        width: 90%;
+        font-size: 14px;
+        padding: 12px 18px;
+    }
 }
