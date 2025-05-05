@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
-import '../Styles/Signup.css';
+// import '../Styles/Signup.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
+import '../Styles/AuthForm.css'; // Assuming you have a separate CSS file for authentication styles
 
 const SignupForm = () => {
     const [message, setMessage] = useState('');

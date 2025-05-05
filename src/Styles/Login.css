@@ -1,7 +1,7 @@
 .login-auth-container {
     width: 500px;
-    min-height: 400px;
-    margin: 8vh auto;
+    height: 500px;
+    margin: 7vh auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -112,4 +112,41 @@
 
 .login-auth-page-wrapper {
     padding: 20px;
+}
+
+@media screen and (max-width: 600px) {
+    .login-auth-container {
+        width: 90%;
+        padding: 20px;
+        margin: 5vh auto;
+    }
+
+    .login-auth-tabs-container {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .login-auth-tab-button {
+        width: 50%;
+        margin: 5px 0;
+        padding: 12px;
+    }
+
+    .login-auth-input {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .login-auth-button {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .login-auth-footer,
+    .login-forgot-password {
+        font-size: 14px;
+        text-align: center;
+    }
 }

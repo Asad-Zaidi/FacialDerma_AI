@@ -1,6 +1,10 @@
+.auth-page-wrapper {
+    padding: 5px;
+}
+
 .auth-container {
     width: 500px;
-    min-height: 500px;
+    height: 530px;
     margin: 7vh auto;
     display: flex;
     flex-direction: column;
@@ -31,13 +35,16 @@
     font-weight: bold;
     border: none;
     cursor: pointer;
+    text-align: center;
 }
 
 .auth-tab-button.active {
     background-color: #4caf50;
     color: white;
-    border-radius: 30px;
-    width: 50%;
+}
+
+.auth-form {
+    width: 100%
 }
 
 .auth-input {
@@ -63,6 +70,7 @@
     font-size: 16px;
     margin-top: 10px;
     cursor: pointer;
+    width: fit-content;
 }
 
 .auth-button:hover {
@@ -92,59 +100,76 @@
 
 .auth-password-wrapper input {
     width: 100%;
-    padding-right: 40px; /* make room for the icon */
+    padding-right: 40px;
 }
 
 .auth-eye-icon {
     position: absolute;
-    right: 10px;
-    top: 50%;
+    right: 15px;
+    top: 53%;
     transform: translateY(-50%);
     cursor: pointer;
     font-size: 18px;
     color: #c2c2c2;
 }
 
+.auth-message {
+    color: red;
+    margin: 10px 0;
+}
+
+.reset-container {
+    width: 500px;
+    margin: 7vh auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
 @media screen and (max-width: 600px) {
     .auth-container {
-        width: 90%;
+        width: 85%;
+        height: auto;
         padding: 20px;
-        margin: 5vh auto;
     }
 
     .auth-tabs-container {
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        width: 100%;
     }
 
     .auth-tab-button {
-        width: 50%;
-        margin: 5px 0;
+        width: 100%;
         padding: 12px;
     }
 
-    
-
-    .auth-input,
-    .auth-password-wrapper input {
+    .auth-input {
         font-size: 14px;
         padding: 10px 12px;
     }
 
     .auth-button {
-        width: 100%;
-        padding: 12px;
         font-size: 15px;
     }
 
     .auth-footer {
         font-size: 14px;
         text-align: center;
+        margin-top: 12px !important;
     }
 
     .auth-eye-icon {
         font-size: 16px;
         right: 8px;
+    }
+
+    .reset-container {
+        width: 90%;
+        height: auto;
     }
 }
