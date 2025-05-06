@@ -57,7 +57,7 @@ const ForgetPassword = () => {
                         {error && <p className="auth-message" style={{ color: 'red' }}>{error}</p>}
 
                         <button className="auth-button" type="submit">
-                            Send OTP
+                            Send Code
                         </button>
                     </form>
 
