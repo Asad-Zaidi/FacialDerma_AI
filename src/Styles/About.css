@@ -50,7 +50,6 @@
     padding-right: 10px;
 }
 
-/* Responsive design for smaller screens */
 @media (max-width: 768px) {
     .about-container {
         padding: 20px;
