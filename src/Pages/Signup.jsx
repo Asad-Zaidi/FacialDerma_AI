@@ -36,6 +36,8 @@ const SignupForm = () => {
             const data = await response.json();
 
             if (response.ok) {
+                setMessage('Account created successfully!');
+                e.target.reset();
                 navigate('/login');
             } else {
                 setMessage(data.message || 'Signup failed');

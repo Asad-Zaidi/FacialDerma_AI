@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
-import '../Styles/AuthForm.css'; // shared styles
+import '../Styles/ForgetPassword.css';
 
 const ForgetPassword = () => {
     const [email, setEmail] = useState('');
@@ -40,28 +40,29 @@ const ForgetPassword = () => {
     return (
         <>
             <Header />
-            <div className="auth-page-wrapper">
+            <div className="reset-page-wrapper">
                 <div className="reset-container">
-                    <h2>Forgot Password</h2>
+                    <h1 className="reset-title">Reset Password</h1>
+                    <p className="reset-subtitle">Enter your email to Reset Password.</p>
 
-                    <form onSubmit={handleSubmit} className="auth-form">
+                    <form onSubmit={handleSubmit} className="reset-form">
                         <input
-                            className="auth-input"
+                            className="reset-input"
                             type="email"
                             placeholder="Enter your Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
-                        {message && <p className="auth-message" style={{ color: 'green' }}>{message}</p>}
-                        {error && <p className="auth-message" style={{ color: 'red' }}>{error}</p>}
+                        {message && <p className="reset-message" style={{ color: 'green' }}>{message}</p>}
+                        {error && <p className="reset-message" style={{ color: 'red' }}>{error}</p>}
 
-                        <button className="auth-button" type="submit">
+                        <button className="reset-button" type="submit">
                             Send Code
                         </button>
                     </form>
 
-                    <div className="auth-footer">
+                    <div className="reset-footer">
                         Remember your Password? <Link to="/Login">Login</Link>
                     </div>
                 </div>

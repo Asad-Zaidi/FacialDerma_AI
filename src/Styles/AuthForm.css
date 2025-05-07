@@ -1,11 +1,7 @@
-.auth-page-wrapper {
-    padding: 5px;
-}
-
 .auth-container {
     width: 500px;
     height: 530px;
-    margin: 7vh auto;
+    margin: 8vh auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -116,19 +112,6 @@
 .auth-message {
     color: red;
     margin: 10px 0;
-}
-
-.reset-container {
-    width: 500px;
-    margin: 7vh auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    text-align: center;
 }
 
 @media screen and (max-width: 600px) {

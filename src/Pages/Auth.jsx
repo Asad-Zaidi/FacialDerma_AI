@@ -285,7 +285,7 @@ const AuthForm = () => {
                             <h2>Login</h2>
                             <input type="text" name="identifier" placeholder="Username or Email" required />
                             <input type="password" name="password" placeholder="Password" required />
-                            <button type="submit">Login</button>
+                            <button className='login-button' type="submit">Login</button>
                             <p className="switch-text">
                                 Don't have an account?{' '}
                                 <span onClick={() => handleTabChange('signup')} className="switch-link">
