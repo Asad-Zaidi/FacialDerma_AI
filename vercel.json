@@ -1,6 +1,1 @@
-{
-    "build": {
-        "env": {},
-        "npmCommand": "npm install --legacy-peer-deps"
-    }
-}
+
