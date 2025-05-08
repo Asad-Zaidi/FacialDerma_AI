@@ -12,12 +12,14 @@ const SignupForm = () => {
 
     const handleSignupSubmit = async (e) => {
         e.preventDefault();
-
+        
         const formData = {
-            username: e.target.username.value,
+            name: e.target.username.value,
             email: e.target.email.value,
+            role: e.target.role.value,
             password: e.target.password.value,
         };
+        console.log(formData)
 
         const confirmPassword = e.target.confirmPassword.value;
 
@@ -27,7 +29,7 @@ const SignupForm = () => {
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/signup/', {
+            const response = await fetch('http://localhost:5000/api/auth/register/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -79,6 +81,11 @@ const SignupForm = () => {
                         <input className="auth-input" type="email" name="email" placeholder="Email" required />
                         {/* <input className="auth-input" type="password" name="password" placeholder="Password" required />
                         <input className="auth-input" type="password" name="confirmPassword" placeholder="Confirm Password" required /> */}
+                        <select className="auth-input" name="role" required>
+                            <option value="">Select Role</option>
+                            <option value="patient">Patient</option>
+                            <option value="dermatologist">Dermatologist</option>
+                        </select>
                         <div className="auth-password-wrapper">
                             <input
                                 className="auth-input"

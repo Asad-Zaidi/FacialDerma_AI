@@ -148,3 +148,11 @@
         right: 8px;
     }
 }
+.auth-roles {
+    display: flex;
+    flex-direction: row;
+}
+.auth-role {
+    display: flex;
+    flex-direction: row;
+}
