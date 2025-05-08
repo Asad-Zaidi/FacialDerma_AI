@@ -4,61 +4,21 @@ FacialDerma AI is an AI-powered web application designed to analyze facial skin 
 
 ## Features
 
-- **AI-Powered Skin Analysis**: Upload a photo and get instant analysis of your skin conditions.
-- **Personalized Treatment Recommendations**: Tailored skincare plans based on your skin type and concerns.
-- **Aesthetic Enhancements**: Visualize before-and-after previews for wrinkle reduction, scar smoothing, and more.
-- **Progress Tracking**: Monitor your skin's improvement over time.
-- **Secure Report Sharing**: Generate and share detailed medical reports with dermatologists.
+> **AI-powered Facial Dermatology Analysis**
+
+---
+
+## 🚀 Features
+
+- 🤖 **AI-Based Detection**: Analyze facial images for dermatological conditions.
+- 📊 **Detailed Reports**: Get comprehensive analysis and recommendations.
+- 🖼️ **User-Friendly Interface**: Simple and intuitive design.
+- 🔒 **Privacy First**: Your data stays secure.
+
 
 ## Live Preview
 
 You can access the live preview of the application here: [FacialDerma AI Live Preview](https://facial-derma-ai.vercel.app/)
-
-## Project Structure
-
-```
-.env
-.gitignore
-package.json
-README.md
-backend/
-    manage.py
-    authapp/
-        __init__.py
-        admin.py
-        apps.py
-        backends.py
-        models.py
-        ResNet_Model.keras
-        serializers.py
-        tests.py
-        urls.py
-        views.py
-public/
-    favicon.png
-    index.html
-    logo192.png
-    logo512.png
-    manifest.json
-    robots.txt
-    Assets/
-src/
-    App.css
-    App.js
-    App.test.js
-    index.css
-    index.js
-    logo.svg
-    reportWebVitals.js
-    setupTests.js
-    components/
-    contexts/
-    hooks/
-    Nav_Bar/
-    Pages/
-    Routes/
-    Styles/
-```
 
 ## Installation
 
@@ -79,29 +39,11 @@ src/
    npm start
    ```
 
-## Backend Setup
-
-The backend is built using Django. To set it up:
-
-1. Navigate to the `backend` directory:
-   ```bash
-   cd backend
-   ```
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the Django development server:
-   ```bash
-   python manage.py runserver
-   ```
-
 ## Technologies Used
 
 - **Frontend**: React.js
-- **Backend**: Django REST Framework
+- **Backend**: NodeJS and MogoDB
 - **Styling**: CSS Modules
-- **Authentication**: JWT-based authentication
 - **AI Model**: TensorFlow/Keras
 
 ## License
