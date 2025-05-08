@@ -1,25 +1,151 @@
+// import React, { useState } from 'react';
+// import { useNavigate, Link, useLocation } from 'react-router-dom';
+// import Header from '../Nav_Bar/Header';
+// import Footer from '../Nav_Bar/Footer';
+// // import '../Styles/Signup.css';
+// import { FaEye, FaEyeSlash } from 'react-icons/fa6';
+// import '../Styles/AuthForm.css'; // Assuming you have a separate CSS file for authentication styles
+
+// const SignupForm = () => {
+//     const [message, setMessage] = useState('');
+//     const navigate = useNavigate();
+
+//     const handleSignupSubmit = async (e) => {
+//         e.preventDefault();
+
+//         const formData = {
+//             username: e.target.username.value,
+//             email: e.target.email.value,
+//             password: e.target.password.value,
+//         };
+
+//         const confirmPassword = e.target.confirmPassword.value;
+
+//         if (formData.password !== confirmPassword) {
+//             setMessage('Passwords do not match!');
+//             return;
+//         }
+
+//         try {
+//             const response = await fetch('http://127.0.0.1:8000/api/auth/signup/', {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify(formData),
+//             });
+
+//             const data = await response.json();
+
+//             if (response.ok) {
+//                 setMessage('Account created successfully!');
+//                 e.target.reset();
+//                 navigate('/login');
+//             } else {
+//                 setMessage(data.message || 'Signup failed');
+//             }
+//         } catch (error) {
+//             setMessage('An error occurred.');
+//         }
+//     };
+
+//     const [showPassword, setShowPassword] = useState(false);
+//     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+
+//     const location = useLocation();
+
+//     return (
+//         <>
+//             <Header />
+//             <div className="auth-page-wrapper">
+//                 <div className="auth-container">
+//                     <h2>Signup</h2>
+//                     <div className="auth-tabs-container">
+//                         <Link
+//                             to="/Login"
+//                             className={`auth-tab-button ${location.pathname === '/Login' ? 'active' : ''}`}
+//                         >
+//                             Login
+//                         </Link>
+//                         <Link
+//                             to="/Signup"
+//                             className={`auth-tab-button ${location.pathname === '/Signup' ? 'active' : ''}`}
+//                         >
+//                             Signup
+//                         </Link>
+//                     </div>
+
+
+//                     {message && <p style={{ color: 'red' }}>{message}</p>}
+//                     <form onSubmit={handleSignupSubmit}>
+//                         <input className="auth-input" type="text" name="username" placeholder="Username" required />
+//                         <input className="auth-input" type="email" name="email" placeholder="Email" required />
+//                         {/* <input className="auth-input" type="password" name="password" placeholder="Password" required />
+//                         <input className="auth-input" type="password" name="confirmPassword" placeholder="Confirm Password" required /> */}
+//                         <div className="auth-password-wrapper">
+//                             <input
+//                                 className="auth-input"
+//                                 type={showPassword ? 'text' : 'password'}
+//                                 name="password"
+//                                 placeholder="Password"
+//                                 required
+//                             />
+//                             <span onClick={() => setShowPassword(!showPassword)} className="auth-eye-icon">
+//                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
+//                             </span>
+//                         </div>
+
+//                         <div className="auth-password-wrapper">
+//                             <input
+//                                 className="auth-input"
+//                                 type={showConfirmPassword ? 'text' : 'password'}
+//                                 name="confirmPassword"
+//                                 placeholder="Confirm Password"
+//                                 required
+//                             />
+//                             <span onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="auth-eye-icon">
+//                                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+//                             </span>
+//                         </div>
+
+//                         <button className="auth-button" type="submit">Signup</button>
+//                     </form>
+//                     <div className="auth-footer">
+//                         Already have an account? <Link to="/Login">Login</Link>
+//                     </div>
+//                 </div>
+//             </div>
+//             <Footer />
+//         </>
+//     );
+// };
+
+// export default SignupForm;
+
+
 import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
-// import '../Styles/Signup.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
-import '../Styles/AuthForm.css'; // Assuming you have a separate CSS file for authentication styles
+import '../Styles/AuthForm.css';
 
 const SignupForm = () => {
     const [message, setMessage] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleSignupSubmit = async (e) => {
         e.preventDefault();
-        
+
         const formData = {
             name: e.target.username.value,
             email: e.target.email.value,
             role: e.target.role.value,
             password: e.target.password.value,
+            password2: e.target.confirmPassword.value, // ✅ Must be named `password2` to match backend
         };
-        console.log(formData)
 
         const confirmPassword = e.target.confirmPassword.value;
 
@@ -27,31 +153,27 @@ const SignupForm = () => {
             setMessage('Passwords do not match!');
             return;
         }
-
+    
         try {
-            const response = await fetch('http://localhost:5000/api/auth/register/', {
+            const response = await fetch('http://127.0.0.1:8000/api/auth/signup/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
-
+    
             const data = await response.json();
-
+    
             if (response.ok) {
                 navigate('/login');
             } else {
-                setMessage(data.message || 'Signup failed');
+                setMessage(data.password || data.detail || 'Signup failed');
             }
         } catch (error) {
             setMessage('An error occurred.');
         }
     };
+    
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-
-    const location = useLocation();
 
     return (
         <>
@@ -60,32 +182,15 @@ const SignupForm = () => {
                 <div className="auth-container">
                     <h2>Signup</h2>
                     <div className="auth-tabs-container">
-                        <Link
-                            to="/Login"
-                            className={`auth-tab-button ${location.pathname === '/Login' ? 'active' : ''}`}
-                        >
-                            Login
-                        </Link>
-                        <Link
-                            to="/Signup"
-                            className={`auth-tab-button ${location.pathname === '/Signup' ? 'active' : ''}`}
-                        >
-                            Signup
-                        </Link>
+                        <Link to="/Login" className={`auth-tab-button ${location.pathname === '/Login' ? 'active' : ''}`}>Login</Link>
+                        <Link to="/Signup" className={`auth-tab-button ${location.pathname === '/Signup' ? 'active' : ''}`}>Signup</Link>
                     </div>
-
-
                     {message && <p style={{ color: 'red' }}>{message}</p>}
                     <form onSubmit={handleSignupSubmit}>
                         <input className="auth-input" type="text" name="username" placeholder="Username" required />
                         <input className="auth-input" type="email" name="email" placeholder="Email" required />
                         {/* <input className="auth-input" type="password" name="password" placeholder="Password" required />
                         <input className="auth-input" type="password" name="confirmPassword" placeholder="Confirm Password" required /> */}
-                        <select className="auth-input" name="role" required>
-                            <option value="">Select Role</option>
-                            <option value="patient">Patient</option>
-                            <option value="dermatologist">Dermatologist</option>
-                        </select>
                         <div className="auth-password-wrapper">
                             <input
                                 className="auth-input"
@@ -98,7 +203,6 @@ const SignupForm = () => {
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </span>
                         </div>
-
                         <div className="auth-password-wrapper">
                             <input
                                 className="auth-input"
@@ -111,7 +215,6 @@ const SignupForm = () => {
                                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                             </span>
                         </div>
-
                         <button className="auth-button" type="submit">Signup</button>
                     </form>
                     <div className="auth-footer">
