@@ -12,7 +12,7 @@ FacialDerma AI is an AI-powered web application designed to analyze facial skin 
 
 ## Live Preview
 
-You can access the live preview of the application here: [FacialDerma AI Live Preview](https://your-live-preview-link.com)
+You can access the live preview of the application here: [FacialDerma AI Live Preview](https://facial-derma-ai.vercel.app/)
 
 ## Project Structure
 
@@ -104,30 +104,11 @@ The backend is built using Django. To set it up:
 - **Authentication**: JWT-based authentication
 - **AI Model**: TensorFlow/Keras
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature-name
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add feature-name"
-   ```
-4. Push to the branch:
-   ```bash
-   git push origin feature-name
-   ```
-5. Open a pull request.
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
-For any inquiries or feedback, please contact us at [support@facialderma-ai.com](https://facial-derma-ai.vercel.app/).
+For any inquiries or feedback, please contact us at [support@facialderma-ai.com]().
 ```
