@@ -1,6 +1,6 @@
 .auth-container {
     width: 500px;
-    height: fit-content;
+    height: 600px;
     margin: 4vh auto;
     display: flex;
     flex-direction: column;
