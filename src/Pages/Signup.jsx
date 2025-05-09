@@ -121,7 +121,7 @@ import '../Styles/AuthForm.css';
 
 const CustomSelect = ({ onChange }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selected, setSelected] = useState("Signup as");
+    const [selected, setSelected] = useState("Register as");
 
     const handleSelect = (value) => {
         setSelected(value.label);
