@@ -5,10 +5,25 @@
     background-color: rgb(68, 184, 60);
     border-radius: 30px;
     margin: 20px;
-    padding: 15px 30px;
+    padding: 6px 30px;
     color: white;
     position: relative;
 }
+
+.nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    font-size: 0.7rem;
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+    margin-bottom: 1px;
+}
+
 
 .navbar-title {
     font-size: 24px;
@@ -48,17 +63,12 @@
 .nav-item a:hover,
 .logout-button:hover {
     color: #000000;
-    background-color: rgb(217, 251, 218);
 }
 
 .login-button {
     padding: 10px 15px;
     border-radius: 30px;
     transition: background-color 0.1s ease;
-}
-
-.login-button:hover {
-    background-color: rgb(217, 251, 218);
 }
 
 .logout-button {
@@ -94,6 +104,20 @@
 @media screen and (max-width: 600px) {
     .navbar {
         padding: 10px 25px;
+    }
+
+    .nav-link {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        text-decoration: none;
+        color: white;
+        font-size: 1rem;
+    }
+    
+    .nav-icon {
+        font-size: 1.5rem;
+        margin-right: 5px;
     }
 
     .menu-toggle {

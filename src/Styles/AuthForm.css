@@ -1,7 +1,7 @@
 .auth-container {
     width: 500px;
-    height: 530px;
-    margin: 8vh auto;
+    height: fit-content;
+    margin: 4vh auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -42,6 +42,56 @@
 .auth-form {
     width: 100%
 }
+
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    margin: 10px 0;
+    text-align: left;
+}
+
+.custom-select {
+    width: 100%;
+    padding: 12px 15px;
+    padding-right: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: left;
+    background-color: white;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.select-options {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    border: 1px solid #ddd;
+    background-color: #FAF9F6;
+    z-index: 100;
+    border-radius: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.select-options li {
+    padding: 12px 15px;
+    cursor: pointer;
+}
+
+.select-options li:hover {
+    color: white;
+    background-color: #4caf50;
+}
+
+.icon {
+    margin-left: 10px;
+}
+
 
 .auth-input {
     width: 100%;

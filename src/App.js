@@ -5,11 +5,9 @@ import Home from './Pages/Home';
 import Analysis from './Pages/Analysis';
 import About from './Pages/About';
 import Profile from './Pages/Profile';
-// import AuthForm from './Pages/Auth';
 import LoginForm from './Pages/Login';
 import SignupForm from './Pages/Signup';
 import ForgetPassword from './Pages/ForgetPassword';
-
 
 function App() {
   return (
@@ -23,7 +21,6 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignupForm />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
-
       </Routes>
     </BrowserRouter>
   );
