@@ -170,11 +170,13 @@ h2 {
     margin: 10px 0;
 }
 
-@media screen and (max-width: 768px){
+@media screen and (max-width: 768px) {
     .auth-container {
         width: 60%;
         margin: 18vh auto;
-    }}
+    }
+}
+
 @media screen and (max-width: 600px) {
     .auth-container {
         width: 80%;
