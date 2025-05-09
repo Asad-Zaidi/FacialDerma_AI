@@ -18,7 +18,7 @@ FacialDerma AI is an AI-powered web application designed to analyze facial skin 
 
 ## Live Preview
 
-You can access the live preview of the application here: [FacialDerma AI Live Preview](https://facial-derma-ai.vercel.app/)
+You can access the live preview of the application here: [FacialDerma AI Live Preview](https://facialdermaai.vercel.app/)
 
 ## Installation
 
