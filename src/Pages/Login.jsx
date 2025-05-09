@@ -121,7 +121,7 @@ const LoginForm = () => {
                         <button className="auth-button" type="submit">Login</button>
                     </form>
 
-                    <div className="auth-footer" style={{ marginTop: '115px' }}>
+                    <div className="auth-footer">
                         Don't have an account? <Link to="/Signup">Signup</Link>
                     </div>
                 </div>
