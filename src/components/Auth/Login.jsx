@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import '../Styles/AuthForm.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
-import AuthTabs from '../components/ui/AuthTabs';
 
 const LoginForm = () => {
     const [message, setMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [role, setRole] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -53,7 +53,12 @@ const LoginForm = () => {
             <div className="auth-page-wrapper">
                 <div className="auth-container">
                     <h2>Login</h2>
-                    <AuthTabs />
+
+                    <div className="auth-tabs-container">
+                        <Link to="/Login" className={`auth-tab-button ${location.pathname === '/Login' ? 'active' : ''}`}>Login</Link>
+                        <Link to="/Signup" className={`auth-tab-button ${location.pathname === '/Signup' ? 'active' : ''}`}>Signup</Link>
+                    </div>
+
                     <div className="auth-role-selection">
                         <p>Login As:</p>
                         <input
