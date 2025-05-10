@@ -4,41 +4,6 @@ import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import '../Styles/AuthForm.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-
-const CustomSelect = ({ onChange }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selected, setSelected] = useState("Login as");
-
-    const handleSelect = (value) => {
-        setSelected(value.label);
-        setIsOpen(false);
-        onChange(value.value);
-    };
-
-    const options = [
-        { label: "Dermatologist", value: "doctor" },
-        { label: "User", value: "patient" }
-    ];
-
-    return (
-        <div className="custom-select-wrapper" onClick={() => setIsOpen(!isOpen)}>
-            <div className="custom-select">
-                {selected}
-                {isOpen ? <FaChevronUp className="icon" /> : <FaChevronDown className="icon" />}
-            </div>
-            {isOpen && (
-                <ul className="select-options">
-                    {options.map((opt, index) => (
-                        <li key={index} onClick={() => handleSelect(opt)}>
-                            {opt.label}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
-};
 
 const LoginForm = () => {
     const [message, setMessage] = useState('');
@@ -49,6 +14,11 @@ const LoginForm = () => {
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
+
+        if (!role) {
+            setMessage('Please select a role');
+            return;
+        }
 
         const formData = {
             email: e.target.email.value,
@@ -83,12 +53,34 @@ const LoginForm = () => {
             <div className="auth-page-wrapper">
                 <div className="auth-container">
                     <h2>Login</h2>
+
                     <div className="auth-tabs-container">
                         <Link to="/Login" className={`auth-tab-button ${location.pathname === '/Login' ? 'active' : ''}`}>Login</Link>
                         <Link to="/Signup" className={`auth-tab-button ${location.pathname === '/Signup' ? 'active' : ''}`}>Signup</Link>
                     </div>
 
-                    <CustomSelect onChange={(value) => setRole(value)} />
+                    <div className="auth-role-selection">
+                        <p>Login As:</p>
+                        <input
+                            type="radio"
+                            id="User"
+                            name="User_role"
+                            value="User"
+                            checked={role === 'User'}
+                            onChange={(e) => setRole(e.target.value)}
+                        />
+                        <label htmlFor="User">User</label>
+
+                        <input
+                            type="radio"
+                            id="Dermatologist"
+                            name="User_role"
+                            value="Dermatologist"
+                            checked={role === 'Dermatologist'}
+                            onChange={(e) => setRole(e.target.value)}
+                        />
+                        <label htmlFor="Dermatologist">Dermatologist</label>
+                    </div>
 
                     <form className="auth-form" onSubmit={handleLoginSubmit}>
                         <input

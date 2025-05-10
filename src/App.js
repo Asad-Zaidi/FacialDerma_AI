@@ -8,6 +8,7 @@ import Profile from './Pages/Profile';
 import LoginForm from './Pages/Login';
 import SignupForm from './Pages/Signup';
 import ForgetPassword from './Pages/ForgetPassword';
+// import DermatologistHome from './Pages/DermatologistHome';
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignupForm />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
+        {/* <Route path="/dermatologist-home" element={<DermatologistHome />} /> */}
+        {/* Add more routes as needed */}
       </Routes>
     </BrowserRouter>
   );

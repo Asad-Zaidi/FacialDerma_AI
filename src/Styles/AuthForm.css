@@ -49,55 +49,31 @@ h2 {
     width: 100%
 }
 
-.custom-select-wrapper {
-    position: relative;
+.auth-role-selection {
     width: 100%;
-    margin: 10px 0;
     text-align: left;
-}
-
-.custom-select {
-    width: 100%;
-    padding: 12px 15px;
-    padding-right: 15px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
     font-size: 16px;
-    text-align: left;
-    background-color: white;
-    box-sizing: border-box;
+    color: #555;
+}
+
+.auth-role-selection p {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.auth-role-selection input[type="radio"] {
+    margin-right: 8px;
+    transform: scale(1.2);
     cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    vertical-align: middle;
 }
 
-.select-options {
-    position: absolute;
-    top: 100%;
-    width: 100%;
-    border: 1px solid #ddd;
-    background-color: #FAF9F6;
-    z-index: 100;
-    border-radius: 10px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.select-options li {
-    padding: 12px 15px;
+.auth-role-selection label {
+    margin-right: 20px;
     cursor: pointer;
+    vertical-align: middle;
 }
-
-.select-options li:hover {
-    color: white;
-    background-color: #4caf50;
-}
-
-.icon {
-    margin-left: 10px;
-}
-
 
 .auth-input {
     width: 100%;
