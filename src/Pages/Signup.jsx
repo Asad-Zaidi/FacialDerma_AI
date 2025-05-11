@@ -17,9 +17,9 @@ const SignupForm = () => {
         e.preventDefault();
 
         const formData = {
+            role: role,
             name: e.target.username.value,
             email: e.target.email.value,
-            role: role,
             password: e.target.password.value,
             password2: e.target.confirmPassword.value,
         };
@@ -35,7 +35,7 @@ const SignupForm = () => {
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/signup/', {
+            const response = await fetch('http://localhost:5000/api/auth/signup/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

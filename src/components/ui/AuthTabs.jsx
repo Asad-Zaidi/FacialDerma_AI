@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import './AuthTabs.css';
+import '../../Styles/AuthTabs.css';
 
 const AuthTabs = () => {
     const location = useLocation();
