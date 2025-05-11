@@ -24,7 +24,7 @@ You can access the live preview of the application here: [FacialDerma AI Live Pr
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/facialderma-ai.git
+   git clone https://github.com/Asad-Zaidi/FacialDerma_AI.git
    ```
 2. Navigate to the project directory:
    ```bash
