@@ -19,7 +19,7 @@ const AppRouter = () => {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forget-password" element={<ForgetPassword />} />
 
-                <Route path="/profile" element={
+                <Route path="/Profile" element={
                     <PrivateRoute>
                         <Profile />
                     </PrivateRoute>
