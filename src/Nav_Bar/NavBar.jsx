@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import '../Styles/Navbar.css';
-import { FaBars, FaTimes, FaUser, FaInfoCircle, FaChartLine, FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa";
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -37,43 +37,37 @@ const Navbar = () => {
             <ul className={`nav-list ${menuOpen ? 'active' : ''}`}>
                 <li className="nav-item">
                     <Link to="/" onClick={toggleMenu} className="nav-link">
-                        <FaHome className="nav-icon" />
-                        <span>Home</span>
+                        Home
                     </Link>
                 </li>
                 <li className="nav-item">
                     <Link to="/About" onClick={toggleMenu} className="nav-link">
-                        <FaInfoCircle className="nav-icon" />
-                        <span>About</span>
+                        About
                     </Link>
                 </li>
 
                 {isLoggedIn ? (
                     <>
                         <li className="nav-item">
-                            <Link to="/Profile" onClick={toggleMenu} className="nav-link">
-                                <FaUser className="nav-icon" />
-                                <span>Profile</span>
+                            <Link to="/Analysis" onClick={toggleMenu} className="nav-link">
+                                Analysis
                             </Link>
                         </li>
                         <li className="nav-item">
-                            <Link to="/Analysis" onClick={toggleMenu} className="nav-link">
-                                <FaChartLine className="nav-icon" />
-                                <span>Analysis</span>
+                            <Link to="/Profile" onClick={toggleMenu} className="nav-link">
+                                Profile
                             </Link>
                         </li>
                         <li className="nav-item">
                             <button onClick={() => { handleLogout(); toggleMenu(); }} className="nav-link logout-button">
-                                <FaSignOutAlt className="nav-icon" />
-                                <span>Logout</span>
+                                Logout
                             </button>
                         </li>
                     </>
                 ) : (
                     <li className="nav-item">
                         <Link to="/Login" className="nav-link login-button" onClick={toggleMenu}>
-                            <FaUser className="nav-icon" />
-                            <span>Login</span>
+                            Login
                         </Link>
                     </li>
                 )}
