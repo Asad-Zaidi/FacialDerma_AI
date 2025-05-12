@@ -1,17 +1,21 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./App.css";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
-import Profile from "./Pages/Profile";
+import UserProfile from "./Pages/UserProfile";
 import Analysis from "./Pages/Analysis";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import ForgetPassword from "./Pages/ForgetPassword";
+import Dermatologist from "./Pages/DermatologistHome";
+import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./Routes/PrivateRoutes";
 
 const AppRouter = () => {
     return (
         <BrowserRouter>
-            <Routes>
+            <AuthProvider>
+                <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/about" element={<About />} />
@@ -21,15 +25,21 @@ const AppRouter = () => {
 
                 <Route path="/Profile" element={
                     <PrivateRoute>
-                        <Profile />
+                        <UserProfile />
                     </PrivateRoute>
                 } />
-                <Route path="/analysis" element={
+                <Route path="/Analysis" element={
                     <PrivateRoute>
                         <Analysis />
                     </PrivateRoute>
                 } />
+                <Route path="/Dermatologist" element={
+                    <PrivateRoute>
+                        <Dermatologist />
+                    </PrivateRoute>
+                } />
             </Routes>
+            </AuthProvider>
         </BrowserRouter>
     );
 };

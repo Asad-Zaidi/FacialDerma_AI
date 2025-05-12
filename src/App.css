@@ -6,8 +6,9 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color:rgb(239, 249, 239);
+  font-family: 'Poppins', sans-serif !important;
+  background-color: #FAF9F6
+;
   margin: 0;
   padding: 0;
 }

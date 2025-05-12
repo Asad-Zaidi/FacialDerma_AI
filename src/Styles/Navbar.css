@@ -2,7 +2,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgb(68, 184, 60);
+    background-color: #2b2b2b;
     border-radius: 30px;
     margin: 20px;
     padding: 10px 30px;
@@ -18,8 +18,7 @@
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: white;
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .navbar-title {
@@ -60,7 +59,7 @@
 .nav-item a:hover,
 .logout-button:hover {
     color: #000000;
-    background-color: rgb(192, 241, 194);
+    background-color: #bebebd;
 }
 
 .login-button {
@@ -98,7 +97,41 @@
     box-shadow: none;
 }
 
-@media screen and (max-width: 600px) {
+.notification-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    width: 250px;
+    background-color: #ffffff;
+    color: #000;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    padding: 10px;
+}
+
+.notification-item {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: red;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+
+@media screen and (max-width: 768px) {
     .navbar {
         padding: 10px 25px;
     }
