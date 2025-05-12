@@ -44,7 +44,7 @@ const LoginForm = () => {
                     role: formData.role // ← This matches PrivateRoute's role check
                 });
 
-            navigate('/Profile');
+            navigate('/profile');
             console.log('Login successful');
         } else {
             setMessage('Invalid credentials');
