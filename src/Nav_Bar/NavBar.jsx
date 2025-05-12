@@ -1,22 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import '../Styles/Navbar.css';
 import { FaBars, FaTimes, FaUser, FaInfoCircle, FaChartLine, FaHome, FaSignOutAlt } from "react-icons/fa";
+import { useAuth } from '../contexts/AuthContext'
 
 const Navbar = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const {user , logout }= useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const user = localStorage.getItem('user');
-        setIsLoggedIn(!!user);
-    }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
+        logout();
         navigate('/login');
     };
 
@@ -48,7 +43,7 @@ const Navbar = () => {
                     </Link>
                 </li>
 
-                {isLoggedIn ? (
+                {user ? (
                     <>
                         <li className="nav-item">
                             <Link to="/Profile" onClick={toggleMenu} className="nav-link">
