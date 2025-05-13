@@ -18,7 +18,7 @@ const SignupForm = () => {
 
         const formData = {
             role: role,
-            name: e.target.username.value,
+            username: e.target.username.value,
             email: e.target.email.value,
             password: e.target.password.value,
             password2: e.target.confirmPassword.value,
@@ -44,10 +44,12 @@ const SignupForm = () => {
             const data = await response.json();
 
             if (response.ok) {
-                navigate('/login');
+                setMessage('Signup successful! Redirecting to login...');
+                setTimeout(() => navigate('/login'), 1500);
             } else {
-                setMessage(data.password || data.detail || 'Signup failed');
+                setMessage(data.error || data.message || 'Signup failed');
             }
+
         } catch (error) {
             setMessage('An error occurred.');
         }
@@ -113,7 +115,7 @@ const SignupForm = () => {
                             </span>
                         </div>
                         {message && <p className="auth-message">{message}</p>}
-                        
+
                         <button className="auth-button" type="submit">Signup</button>
                     </form>
 
