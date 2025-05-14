@@ -77,13 +77,13 @@ const SignupForm = () => {
 
                             <input
                                 type="radio"
-                                id="doctor"
+                                id="dermatologist"
                                 name="role"
-                                value="doctor"
-                                checked={role === 'doctor'}
+                                value="dermatologist"
+                                checked={role === 'dermatologist'}
                                 onChange={(e) => setRole(e.target.value)}
                             />
-                            <label htmlFor="doctor">Dermatologist</label>
+                            <label htmlFor="dermatologist">Dermatologist</label>
                         </div>
 
                         <input className="auth-input" type="text" name="username" placeholder="Username" required />
