@@ -57,7 +57,8 @@
 .nav-item a:hover,
 .logout-button:hover {
     color: #000000;
-    background-color: trasnparent;
+    background-color: #F5F5F4;
+;
 }
 
 .login-button {
