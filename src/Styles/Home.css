@@ -15,7 +15,7 @@
 }
 
 .tagline {
-    background-color: rgb(192, 241, 194);
+    background-color: pink;
     color: #333;
     font-size: 0.9rem;
     padding: 0.3rem 0.8rem;
@@ -30,7 +30,7 @@
 }
 
 .tagline:hover {
-    background-color: rgb(68, 184, 60);
+    background-color: rgb(250, 157, 172);
     color: #ffffff;
 }
 

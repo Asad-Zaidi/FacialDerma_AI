@@ -141,6 +141,7 @@ import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import '../Styles/AuthForm.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
+import { ScaleLoader } from 'react-spinners'
 import AuthTabs from '../components/ui/AuthTabs';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -185,7 +186,7 @@ const LoginForm = () => {
                     role: data.user.role
                 });
 
-                navigate('/profile');
+                navigate('/UserProfile');
                 console.log('Login successful');
             } else {
                 setMessage(data.error || 'Invalid credentials');
@@ -250,7 +251,6 @@ const LoginForm = () => {
                         </div>
 
                         {message && <p className="auth-message">{message}</p>}
-                        {loading && <p className="auth-message">Logging in...</p>}
 
                         <div className="auth-footer" style={{ textAlign: 'left', width: '100%', marginTop: '5px' }}>
                             <Link to="/forget-password">Forgot Password?</Link>
@@ -267,6 +267,22 @@ const LoginForm = () => {
                 </div>
             </div>
             <Footer />
+            {loading && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 9999
+                }}>
+                    <ScaleLoader color="#E11584" height={100} />
+                </div>
+            )}
         </>
     );
 };

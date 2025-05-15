@@ -58,7 +58,10 @@
 .logout-button:hover {
     color: #000000;
     background-color: #F5F5F4;
-;
+}
+
+.nav-item a.active{
+    color: skyblue;
 }
 
 .login-button {
@@ -101,7 +104,7 @@
     top: 50px;
     right: 10px;
     width: 250px;
-    background-color: #ffffff;
+    background-color: #F5F5F4;
     color: #000;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
@@ -170,7 +173,7 @@
         border-radius: 20px;
         z-index: 10;
         width: fit-content;
-        background-color: rgb(68, 184, 60);
+        background-color: pink;
         transition: all 0.3s ease-in-out;
     }
     
