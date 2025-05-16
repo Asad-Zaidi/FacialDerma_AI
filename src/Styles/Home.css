@@ -1,7 +1,7 @@
 .home-container {
     display: flex;
     min-height: 80vh;
-    padding: 12rem 3rem 0rem 3rem;
+    padding: 10rem 3rem 0rem 3rem;
     justify-content: space-between;
     align-items: center;
 }
@@ -16,12 +16,11 @@
 
 .tagline {
     background-color: pink;
-    color: #333;
+    color: #FF4081;
     font-size: 0.9rem;
     padding: 0.3rem 0.8rem;
     border-radius: 30px;
     width: fit-content;
-    margin-bottom: 1rem;
     font-weight: 500;
     text-align: center;
     transform: scale(1);
@@ -30,22 +29,21 @@
 }
 
 .tagline:hover {
-    background-color: rgb(250, 157, 172);
+    background-color: #FF4081;
     color: #ffffff;
 }
 
 .main-title {
     font-size: 2.8rem;
     font-weight: bold;
-    margin-bottom: 1rem;
-    color: #111;
+    margin: 1rem 0 1rem 0;
+    color: #2a2a2a;
 }
 
 .sub-description {
-    font-size: 1.1rem;
-    color: #555;
+    font-size: 1.5rem;
+    color: #5E5959;
     margin-bottom: 2rem;
-    max-width: 95%;
 }
 
 .button-group {
@@ -56,8 +54,8 @@
 }
 
 .btn-primary {
-    background-color: #000;
-    color: #fff;
+    background-color: #B54D73;
+    color: #ffffff;
     padding: 0.8rem 1.5rem;
     height: 50px;
     width: 160px;

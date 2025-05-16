@@ -19,6 +19,7 @@ body {
 body {
   font-family: 'Poppins', sans-serif !important;
   background-color: #F5F5F4;
+  background-image: linear-gradient(#F5F5F4, #fddada);
   margin: 0;
   padding: 0;
 }
