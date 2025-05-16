@@ -15,7 +15,7 @@
 
 h2 {
     font-size: 1.8rem;
-    color: pink;
+    color: #000000;
 }
 
 .auth-form {
@@ -59,12 +59,12 @@ h2 {
 
 .auth-input:focus {
     outline: none;
-    border-color: pink;
+    border-color: #B54D73;
 }
 
 .auth-button {
-    background-color: pink;
-    color: black;
+    background-color: #B54D73;
+    color: white;
     border: none;
     padding: 12px 30px;
     border-radius: 25px;
@@ -75,7 +75,7 @@ h2 {
 }
 
 .auth-button:hover {
-    background-color: rgb(255, 153, 175);
+    background-color: #df6b95;;
 }
 
 .auth-footer {
@@ -85,7 +85,7 @@ h2 {
 }
 
 .auth-footer a {
-    color: pink;
+    color: #FF4081;
     text-decoration: none;
     font-weight: bold;
 }
