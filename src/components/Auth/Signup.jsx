@@ -61,8 +61,8 @@ const SignupForm = () => {
                     <h2>Signup</h2>
 
                     <div className="auth-tabs-container">
-                        <Link to="/Login" className={`auth-tab-button ${location.pathname === '/Login' ? 'active' : ''}`}>Login</Link>
-                        <Link to="/Signup" className={`auth-tab-button ${location.pathname === '/Signup' ? 'active' : ''}`}>Signup</Link>
+                        <Link to="/login" className={`auth-tab-button ${location.pathname === '/login' ? 'active' : ''}`}>Login</Link>
+                        <Link to="/signup" className={`auth-tab-button ${location.pathname === '/signup' ? 'active' : ''}`}>Signup</Link>
                     </div>
 
                     {message && <p style={{ color: 'red' }}>{message}</p>}
@@ -124,7 +124,7 @@ const SignupForm = () => {
                     </form>
 
                     <div className="auth-footer">
-                        Already have an account? <Link to="/Login">Login</Link>
+                        Already have an account? <Link to="/login">Login</Link>
                     </div>
                 </div>
             </div>

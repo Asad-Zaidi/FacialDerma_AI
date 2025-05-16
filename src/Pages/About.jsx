@@ -11,7 +11,7 @@ const About = () => {
                 <h2 className="about-title">About Us</h2>
                 
                 <section className="about-section">
-                    <h3 className="section-title">Welcome to FacialDerma AI — Your Personal Skin Health Companion</h3>
+                    <h3 className="section-title">Welcome to FacialDerma AI: Your Personal Skin Health Companion</h3>
                     <p className="section-content">
                         At FacialDerma AI, we are passionate about combining artificial intelligence and dermatological science to empower individuals to take charge of their skin health.
                     </p>

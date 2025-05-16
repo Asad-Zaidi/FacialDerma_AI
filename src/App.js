@@ -3,6 +3,7 @@ import "./App.css";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
 import UserProfile from "./Pages/UserProfile";
+import DermatologistProfile from "./Pages/DermatologistProfile";
 import Analysis from "./Pages/Analysis";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
@@ -26,6 +27,11 @@ const AppRouter = () => {
                 <Route path="/Profile" element={
                     <PrivateRoute>
                         <UserProfile />
+                    </PrivateRoute>
+                } />
+                <Route path="/DProfile" element={
+                    <PrivateRoute>
+                        <DermatologistProfile />
                     </PrivateRoute>
                 } />
                 <Route path="/Analysis" element={

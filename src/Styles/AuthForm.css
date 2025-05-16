@@ -15,7 +15,7 @@
 
 h2 {
     font-size: 1.8rem;
-    color: rgb(255, 153, 175);
+    color: pink;
 }
 
 .auth-form {
@@ -85,7 +85,7 @@ h2 {
 }
 
 .auth-footer a {
-    color: #FF1694;
+    color: pink;
     text-decoration: none;
     font-weight: bold;
 }

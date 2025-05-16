@@ -1,3 +1,4 @@
+/* ========== BASE NAVBAR STYLES ========== */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -13,13 +14,7 @@
     z-index: 100;
 }
 
-.nav-link {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    font-size: 1rem;
-}
-
+/* ========== TITLE ========== */
 .navbar-title {
     font-size: 24px;
     font-weight: bold;
@@ -32,124 +27,80 @@
 }
 
 .navbar-title a:hover {
-    color: #000000; 
-}
-
-.nav-list {
-    list-style: none;
-    display: flex;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-}
-
-.nav-item a,
-.logout-button {
-    text-decoration: none;
     color: #000000;
-    font-weight: 600;
-    transition: color 0.3s ease;
-    padding: 10px 12px;
-    border-radius: 30px;
-    transition: background-color 0.1s ease;
-}
-
-.nav-item a:hover,
-.logout-button:hover {
-    color: #000000;
-    background-color: #F5F5F4;
-}
-
-.nav-item a.active{
-    color: skyblue;
-}
-
-.login-button {
-    padding: 10px 12px;
-    border-radius: 30px;
-    transition: background-color 0.1s ease;
-}
-
-.logout-button {
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    padding: 12px 12px !important;
 }
 
 .menu-toggle {
     display: none;
     background: none;
     border: none;
-    color: white;
+    color: #000;
     font-size: 24px;
     cursor: pointer;
-    outline: none;
+    z-index: 101;
+    position: absolute;
+    top: 50%;
+    /* Vertically center */
+    right: 10px;
+    transform: translateY(-50%);
+    /* Perfect centering */
+}
+
+
+/* ========== NAV LIST ========== */
+.nav-list {
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    margin: 0;
     padding: 0;
 }
 
-.menu-toggle:focus,
-.menu-toggle:active,
-.menu-toggle:visited {
-    background: none !important;
-    color: white !important;
+/* ========== UNIFIED NAV ITEMS (LINKS + BUTTONS) ========== */
+.nav-item a,
+.nav-item .nav-link,
+.logout-button,
+.login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 10px 16px;
+    border-radius: 30px;
+    color: #000000;
+    background: transparent;
     border: none;
-    outline: none;
-    box-shadow: none;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
 }
 
-.notification-dropdown {
-    position: absolute;
-    top: 50px;
-    right: 10px;
-    width: 250px;
-    background-color: #F5F5F4;
-    color: #000;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 999;
-    padding: 10px;
+.nav-item a:hover,
+.nav-item .nav-link:hover,
+.logout-button:hover,
+.login-button:hover {
+    background-color: rgb(248, 219, 224);
+    color: #000000;
 }
 
-.notification-item {
-    font-size: 0.9rem;
-    padding: 8px 10px;
-    border-bottom: 1px solid #eee;
+.nav-item a.active,
+.nav-item .nav-link.active {
+    color: rgb(0, 0, 0);
+    text-decoration: underline
 }
 
-.notification-item:last-child {
-    border-bottom: none;
+/* ========== LOGOUT BUTTON RESET ========== */
+.logout-button {
+    background: none;
 }
 
-.notification-badge {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    background: red;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-
+/* ========== MOBILE STYLES ========== */
 @media screen and (max-width: 768px) {
     .navbar {
         padding: 10px 25px;
-    }
-
-    .nav-link {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        text-decoration: none;
-        color: white;
-        font-size: 1rem;
-    }
-    
-    .nav-icon {
-        font-size: 1.5rem;
-        margin-right: 5px;
     }
 
     .menu-toggle {
@@ -159,30 +110,36 @@
         justify-content: center;
         align-items: center;
         top: 0 auto;
-        right: 30px;
+        background: none;
+        border: none;
     }
 
     .nav-list {
         position: absolute;
         top: 60px;
-        right: 5px;
+        right: 10px;
         flex-direction: column;
-        gap: 10px;
+        align-items: flex-start;
+        background-color: pink;
         padding: 20px;
+        gap: 10px;
         display: none;
         border-radius: 20px;
-        z-index: 10;
-        width: fit-content;
-        background-color: pink;
-        transition: all 0.3s ease-in-out;
+        z-index: 100;
+        width: max-content;
     }
-    
 
     .nav-list.active {
         display: flex;
     }
 
     .nav-item {
-        text-align: center;
+        width: 100%;
+        text-align: left;
+    }
+
+    .nav-item a,
+    .nav-item .logout-button {
+        width: 100%;
     }
 }

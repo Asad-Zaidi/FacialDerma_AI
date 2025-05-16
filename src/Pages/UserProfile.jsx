@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../Nav_Bar/Header';
-
 import Footer from '../Nav_Bar/Footer';
 import '../Styles/UserProfile.css';
 import { FiEdit2 } from 'react-icons/fi';
