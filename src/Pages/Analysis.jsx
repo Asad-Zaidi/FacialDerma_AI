@@ -5,6 +5,7 @@ import '../Styles/Analysis.css';
 import { AuthContext } from '../contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { MoonLoader } from 'react-spinners';
 
 const Analysis = () => {
     const [image, setImage] = useState(null);
@@ -157,9 +158,7 @@ const Analysis = () => {
                 <section className="upload-section">
                     <h2>Upload Image</h2>
                     <p>Upload a clear photo of your face for AI analysis</p>
-
                     {errorMessage && <p className="error-message">{errorMessage}</p>}
-
                     <label className="upload-box">
                         <input type="file" accept="image/*" onChange={handleImageChange} />
                         {image ? (
@@ -176,7 +175,6 @@ const Analysis = () => {
                             </div>
                         )}
                     </label>
-
                     <div className="button-group">
                         <label htmlFor="upload-input" className="upload-btn">
                             Upload
@@ -188,7 +186,6 @@ const Analysis = () => {
                                 style={{ display: 'none' }}
                             />
                         </label>
-
                         <button
                             className="analyze-btn"
                             onClick={handleAnalyzeClick}
@@ -197,28 +194,20 @@ const Analysis = () => {
                             {isLoading ? 'Analyzing...' : 'Analyze'}
                         </button>
                     </div>
-
                     {isLoading && <div className="loading-spinner"></div>}
                 </section>
 
-                {/* <section className="result-section">
-                    <h2>Analysis Results</h2>
-                    {isLoading ? (
-                        <div className="loading-spinner"></div>
-                    ) : prediction ? (
-                        <div className="result-box">
-                            <h3>Prediction: {prediction.predicted_label}</h3>
-                            <p>Confidence: {(prediction.confidence_score * 100).toFixed(2)}%</p>
-                        </div>
-                    ) : (
-                        <div className="result-placeholder">
-                            <span>&#9432;</span>
-                            <p>Upload a photo and click 'Analyze' to get started</p>
-                        </div>
-                    )}
-                </section> */}
                 <section className="result-section">
                     <h2>Analysis Results</h2>
+                    <p>Upload a clear photo of your face for AI analysis</p>
+                    {/* Moon add Loader */}
+                    
+                    <label className="result-box">
+
+                    </label>
+                    
+                </section>
+                {/* <section className="result-section">
                     {isLoading ? (
                         <div className="loading-spinner"></div>
                     ) : prediction ? (
@@ -237,7 +226,7 @@ const Analysis = () => {
                             <p>Upload a photo and click 'Analyze Skin' to get started</p>
                         </div>
                     )}
-                </section>
+                </section> */}
 
             </main>
 
