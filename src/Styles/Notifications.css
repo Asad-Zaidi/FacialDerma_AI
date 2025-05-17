@@ -1,0 +1,46 @@
+.notifications-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    width: 260px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.notifications-header h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.notification-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+    color: #444;
+    list-style: none;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notifications-link {
+    position: relative;
+}
+
+.notifications-dropdown .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
