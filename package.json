@@ -15,6 +15,7 @@
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^19.1.0",
+    "react-dropzone": "^14.3.8",
     "react-icons": "^5.5.0",
     "react-loader-spinner": "^6.1.6",
     "react-responsive": "^10.0.1",
@@ -23,6 +24,7 @@
     "react-scripts": "^5.0.1",
     "react-spinners": "^0.17.0",
     "react-store-badges": "^1.5.1",
+    "react-toastify": "^11.0.5",
     "react-webcam": "^7.2.0",
     "web-vitals": "^4.2.4"
   },
