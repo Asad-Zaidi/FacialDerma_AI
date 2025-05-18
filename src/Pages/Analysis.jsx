@@ -6,6 +6,8 @@ import { AuthContext } from '../contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MoonLoader } from 'react-spinners';
+import { IoMdCheckmarkCircleOutline } from "react-icons/io";
+import { FiUpload } from "react-icons/fi";
 
 const Analysis = () => {
     const [image, setImage] = useState(null);
@@ -154,81 +156,89 @@ const Analysis = () => {
                 <h1>Facial Skin Analysis Dashboard</h1>
             </div>
 
-            <main className="analysis-dashboard">
-                <section className="upload-section">
-                    <h2>Upload Image</h2>
-                    <p>Upload a clear photo of your face for AI analysis</p>
-                    {errorMessage && <p className="error-message">{errorMessage}</p>}
-                    <label className="upload-box">
-                        <input type="file" accept="image/*" onChange={handleImageChange} />
-                        {image ? (
-                            <img
-                                src={URL.createObjectURL(image)}
-                                alt="Preview"
-                                className="preview-image"
-                            />
+            <div className="analysis-dashboard">
+                <section className='upload-section'>
+                    <div className='description-section'>
+                        {errorMessage && <p className="error-message">{errorMessage}</p>}
+                        <h1>Upload Your Photo</h1>
+                        <p className='description'>Take a clear, well-lit photo of your face without makeup. For best results, capture your face straight-on in natural lighting.</p>
+                        <div className='instructions'>
+                            <p>Use natural lighting <IoMdCheckmarkCircleOutline color="#22C55E" size={24} /></p>
+                            <p>Remove makeup <IoMdCheckmarkCircleOutline color="#22C55E" size={24} /></p>
+                            <p>Face the camera directly <IoMdCheckmarkCircleOutline color="#22C55E" size={24} /></p>
+                        </div>
+                    </div>
+                    <div className='upload-container'>
+                        <label className="upload-box">
+                            <input type="file" accept="image/*" onChange={handleImageChange} />
+                            {image ? (
+                                <img
+                                    src={URL.createObjectURL(image)}
+                                    alt="Preview"
+                                    className="preview-image"
+                                />
+                            ) : (
+                                <div className="upload-placeholder">
+                                    <FiUpload color="#666" size={35} />
+                                    <p>Drag and drop your image here or <br /> click to browse</p>
+                                </div>
+                            )}
+                        </label>
+                        <div className='button-container'>
+                            <button
+                                className="upload-btn"
+                                onClick={() => document.querySelector('input[type="file"]').click()}
+                            >Upload </button>
+                            <button
+                                className="analyze-btn"
+                                onClick={handleAnalyzeClick}
+                                disabled={!image || isLoading}
+                            >
+                                Analyze
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                {isLoading && (
+                    <div className="loading-overlay">
+                        <MoonLoader color="#E11584" size={100} />
+                    </div>
+                )}
+
+                <section className='result-section'>
+                    <div className="result-box">
+                        {prediction ? (
+                            <>
+                                <h3>Prediction: {prediction.predicted_label}</h3>
+                                <p>Confidence: {(prediction.confidence_score * 100).toFixed(2)}%</p>
+                            </>
                         ) : (
-                            <div className="upload-placeholder">
-                                <span>&#8682;</span>
-                                <p>Drag and drop your image here or <br /> click to browse</p>
-                                <button className="select-btn">Select Image</button>
+                            <div className="result-placeholder">
+                                <span>&#9432;</span>
+                                <p>Upload a photo and click 'Analyze Skin' to get started</p>
                             </div>
                         )}
-                    </label>
-                    <div className="button-group">
-                        <label htmlFor="upload-input" className="upload-btn">
-                            Upload
-                            <input
-                                id="upload-input"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                style={{ display: 'none' }}
-                            />
-                        </label>
-                        <button
-                            className="analyze-btn"
-                            onClick={handleAnalyzeClick}
-                            disabled={!image || isLoading}
-                        >
-                            {isLoading ? 'Analyzing...' : 'Analyze'}
-                        </button>
                     </div>
-                    {isLoading && <div className="loading-spinner"></div>}
-                </section>
 
-                <section className="result-section">
-                    <h2>Analysis Results</h2>
-                    <p>Upload a clear photo of your face for AI analysis</p>
-                    {/* Moon add Loader */}
-                    
-                    <label className="result-box">
-
-                    </label>
-                    
-                </section>
-                {/* <section className="result-section">
-                    {isLoading ? (
-                        <div className="loading-spinner"></div>
-                    ) : prediction ? (
-                        <div className="result-box">
-                            <h3>Prediction: {prediction.predicted_label}</h3>
-                            <p>Confidence: {(prediction.confidence_score * 100).toFixed(2)}%</p>
+                    <div className="analyzed-img">
+                        {prediction ? (
                             <img
                                 src={`http://localhost:8000${prediction.image_url}`}
                                 alt="Analyzed"
-                                className="analyzed-image"
+                                className="preview-image"
+                                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '20px' }}
                             />
-                        </div>
-                    ) : (
-                        <div className="result-placeholder">
-                            <span>&#9432;</span>
-                            <p>Upload a photo and click 'Analyze Skin' to get started</p>
-                        </div>
-                    )}
-                </section> */}
+                        ) : (
+                            <div className="result-placeholder">
+                                <span>&#9432;</span>
+                                <p>Your result image will appear here after analysis.</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
 
-            </main>
+            </div>
 
             <Footer />
             <ToastContainer position="top-right" autoClose={3000} />

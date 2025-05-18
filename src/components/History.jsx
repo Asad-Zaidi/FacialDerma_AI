@@ -1,63 +1,48 @@
-import React, { useEffect, useState, useContext } from 'react';
-import Header from '../Nav_Bar/Header';
-import Footer from '../Nav_Bar/Footer';
-import { AuthContext } from '../contexts/AuthContext';
-import '../Styles/History.css';
+// components/History.jsx
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-const History = () => {
+export default function History() {
     const [history, setHistory] = useState([]);
-    const { accessToken } = useContext(AuthContext);
 
     useEffect(() => {
-        const fetchHistory = async () => {
+        const fetchPredictions = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/predictions/history', {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
+                const res = await axios.get("http://localhost:5000/api/predictions", {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
                 });
-
-                const data = await res.json();
-                setHistory(data);
-            } catch (error) {
-                console.error('Error fetching history:', error);
+                setHistory(res.data);
+            } catch (err) {
+                console.error("Error fetching prediction history:", err);
             }
         };
-
-        if (accessToken) fetchHistory();
-    }, [accessToken]);
+        fetchPredictions();
+    }, []);
 
     return (
-        <div className="history-wrapper">
-            <Header />
-            <main className="history-container">
-                <h1>Prediction History</h1>
-                {history.length === 0 ? (
-                    <p>No analysis history found.</p>
-                ) : (
-                    <table className="history-table">
-                        <thead>
-                            <tr>
-                                <th>Label</th>
-                                <th>Confidence</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {history.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.predicted_label}</td>
-                                    <td>{(item.confidence_score * 100).toFixed(2)}%</td>
-                                    <td>{new Date(item.timestamp).toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </main>
-            <Footer />
+        <div className="p-4">
+            <h2 className="text-xl font-bold mb-4">Prediction History</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {history.map((item) => (
+                    <div key={item._id} className="border rounded p-3 shadow">
+                        <img
+                            src={`http://localhost:8000${item.imageUrl}`}
+                            alt="analysis"
+                            className="w-full h-48 object-cover rounded mb-2"
+                        />
+                        <p><strong>Prediction:</strong> {item.result.predicted_label}</p>
+                        <p><strong>Confidence:</strong> {item.result.confidence_score}</p>
+                        <p><strong>Date:</strong> {new Date(item.createdAt).toLocaleString()}</p>
+                        <a
+                            href={`http://localhost:8000${item.imageUrl}`}
+                            download
+                            className="text-blue-600 underline mt-2 inline-block"
+                        >
+                            Download Image
+                        </a>
+                    </div>
+                ))}
+            </div>
         </div>
     );
-};
-
-export default History;
+}

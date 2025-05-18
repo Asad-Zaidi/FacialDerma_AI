@@ -6,9 +6,9 @@
 
 .analysis-dashboard {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    flex-direction: row;
+    flex-direction: column;
     padding: 1.5rem 6rem;
     width: 100%;
     gap: 3rem;
@@ -24,38 +24,60 @@
     border: 1px solid #000;
 }
 
-.upload-section,
-.result-section {
-    width: 35%;
-    min-width: 350px;
-    height: 500px !important;
+.upload-section {
+    width: 75%;
+    height: 450px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center; 
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    /* text-align: left; */
     border: 1px solid #000;
     border-radius: 30px;
-    background-color: #FAF9F6
-;
+    background-color: #fdf5f7;
 }
 
-.upload-section h2,
-.result-section h2 {
-
+.description-section {
+    border: 1px solid #000;
+    width: 45%;
+    height: 90%;
+    /* padding: 30px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-end;
+    text-align: right;
 }
 
-.upload-section p,
-.result-section p {
+.description-section h1 {
+    color: #FF4081;
+}
 
+.description {
+    color: #777;
+    margin: 5px 0;
+}
+
+.instructions {
+    margin: 5px 0;
+    font-size: 1.1rem;
+}
+
+.upload-container {
+    border: 1px solid #000;
+    width: 45%;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
 }
 
 .upload-box {
     border: 2px dashed #ccc;
     border-radius: 30px;
-    height: 65%;
-    margin-top: 0.7rem;
-    margin-bottom: 0.7rem;
-    width: 70%;
+    height: 80%;
+    width: 75%;
     position: relative;
     background: #fdfdfd;
     display: flex;
@@ -91,16 +113,6 @@
     margin-bottom: 0.5rem;
 }
 
-.select-btn {
-    margin-top: 10px;
-    padding: 6px 16px;
-    font-size: 0.9rem;
-    background-color: #fddde6;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-}
-
 .preview-image {
     max-width: 100%;
     max-height: 100%;
@@ -108,8 +120,27 @@
     border-radius: 12px;
 }
 
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1.1rem;
+}
+
+.upload-btn {
+    width: 90px;
+    padding: 12px;
+    font-size: 1.1rem;
+    background-color: #ffa7c0;
+    color: #333;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+}
+
 .analyze-btn {
-    width: fit-content;
+    width: 90px;
     padding: 12px;
     background-color: #B54D73;
     color: #333;
@@ -126,64 +157,72 @@
     cursor: not-allowed;
 }
 
-.analyze-btn:hover:enabled {
-    background-color: #FF4090;
-}
-
-.upload-btn {
-    background-color: #FFB6C1;
-    color: #333;
-    font-weight: bold;
-    padding: 12px 16px;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    display: inline-block;
-    text-align: center;
+.analyze-btn:enabled {
+    background-color: #B54D73;
 }
 
 .upload-btn:hover {
     background-color: #FF4090;
 }
 
-.result-box {
-    border: 2px solid #ccc;
-    border-radius: 30px;
-    height: 350px;
-    margin-top: 0.6rem;
-    margin-bottom: 1rem;
-    width: 95%;
-    position: relative;
-    background: #fdfdfd;
+.result-section {
+    width: 75%;
+    height: 450px;
     display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
     align-items: center;
+    /* text-align: left; */
+    border: 1px solid #000;
+    border-radius: 30px;
+    background-color: #fdf5f7;
+}
+
+.result-box {
+    border: 1px solid #000;
+    width: 45%;
+    min-width: 350px;
+    height: 90%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    text-align: center;
-    overflow: hidden;
+    align-items: center ;
+    text-align: left !important;
+}
+
+.analyzed-img {
+    border: 1px solid #000;
+    width: 45%;
+    height: 90%;
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+    align-items: center;
+    text-align: right;
 }
 
 .result-placeholder {
-    text-align: center;
-    color: #777;
-    margin-top: 2rem;
+    border: 1px solid #000;
+    color: #666;
+    width: 45%;
+    min-width: 350px;
+    height: 90%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center ;
+    text-align: center !important;
 }
 
 .result-placeholder span {
     font-size: 2.2rem;
     display: block;
-    margin-bottom: 1rem;
 }
 
 .error-message {
     color: red;
     font-weight: bold;
     margin-top: 10px;
-}
-
-.button-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 0.7rem;
 }
