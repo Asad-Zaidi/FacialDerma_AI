@@ -1,45 +1,39 @@
 import React from 'react';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
-import '../Styles/DermatologistProfile.css'
+import '../Styles/UserProfile.css';
 
 const UserProfile = () => {
-    const User = {
-        fullName: 'Dr. Ayesha Khan',
-        username: 'ayeshaskinexpert',
-        age: 38,
-        gender: 'Female',
+    const user = {
+        fullName: 'Asad Jamil',
+        username: 'asad-zaidi',
+        age: 28,
+        gender: 'Male',
         height: "5'6\"",
-        qualification: 'MBBS, MD Dermatology',
-        expertise: 'Acne, Eczema, Skin Allergies, Cosmetic Dermatology',
-        experience: '12+ years',
-        clinic: 'SkinGlow Clinic, Mumbai',
-        image: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-        email: 'dr.ayesha@example.com',
-        phone: '+91 9876543210',
+        email: 'syedasad2080@gmail.com',
+        phone: '+92 03084401410',
+        location: 'Lahore, Pakistan',
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlqmDtz_F0mxL0m6iOnBbC32Ve38vRYNvBFt98b5seDB6c2T5QfSglB68MZE1DHk4WEGs&usqp=CAU',
     };
 
     return (
         <>
             <Header />
-            <div className="profile-wrapper">
-                <div className="profile-card">
-                    <div className="profile-img">
-                        <img src={User.image} alt="Dermatologist" />
-                        <h2>{User.fullName}</h2>
-                        <p className="username">@{User.username}</p>
+            <div className="user-profile-wrapper">
+                <div className="user-profile-card">
+                    <div className="user-profile-img">
+                        <img src={user.image} alt="User" />
+                        <h2>{user.fullName}</h2>
+                        <p className="user-username">@{user.username}</p>
                     </div>
 
-                    <div className="profile-info-grid">
-                        <div><strong>Age:</strong> {User.age}</div>
-                        <div><strong>Gender:</strong> {User.gender}</div>
-                        <div><strong>Height:</strong> {User.height}</div>
-                        <div><strong>Email:</strong> {User.email}</div>
-                        <div><strong>Phone:</strong> {User.phone}</div>
-                        <div><strong>Qualification:</strong> {User.qualification}</div>
-                        <div><strong>Expertise:</strong> {User.expertise}</div>
-                        <div><strong>Experience:</strong> {User.experience}</div>
-                        <div><strong>Clinic:</strong> {User.clinic}</div>
+                    <div className="user-profile-info">
+                        <div><strong>Age:</strong> {user.age}</div>
+                        <div><strong>Gender:</strong> {user.gender}</div>
+                        <div><strong>Height:</strong> {user.height}</div>
+                        <div><strong>Email:</strong> {user.email}</div>
+                        <div><strong>Phone:</strong> {user.phone}</div>
+                        <div><strong>Location:</strong> {user.location}</div>
                     </div>
                 </div>
             </div>

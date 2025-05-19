@@ -5,18 +5,18 @@ import '../Styles/DermatologistProfile.css'
 
 const DermatologistProfile = () => {
     const dermatologist = {
-        fullName: 'Dr. Ayesha Khan',
-        username: 'ayeshaskinexpert',
+        fullName: 'Haseeb Tufaill',
+        username: 'haseeb.tufail',
         age: 38,
-        gender: 'Female',
-        height: "5'6\"",
+        gender: 'Male',
+        height: "5'8\"",
         qualification: 'MBBS, MD Dermatology',
         expertise: 'Acne, Eczema, Skin Allergies, Cosmetic Dermatology',
         experience: '12+ years',
-        clinic: 'SkinGlow Clinic, Mumbai',
-        image: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-        email: 'dr.ayesha@example.com',
-        phone: '+91 9876543210',
+        clinic: 'Karachi, Pakistan',
+        image: 'https://static.vecteezy.com/system/resources/previews/003/715/527/non_2x/picture-profile-icon-male-icon-human-or-people-sign-and-symbol-vector.jpg',
+        email: 'dr.haseebt@gmail.com',
+        phone: '+92 3456789011',
     };
 
     return (
