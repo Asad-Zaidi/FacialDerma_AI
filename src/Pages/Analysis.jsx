@@ -336,7 +336,6 @@ const Analysis = () => {
                 <div className="analysis-dashboard">
                     <section className="upload-section">
                         <div className="description-section">
-                            {errorMessage && <p className="error-message">{errorMessage}</p>}
                             <h1>Upload Your Photo</h1>
                             <p className="description">Take a clear, well-lit photo of your face without makeup. For best results, capture your face straight-on in natural lighting.</p>
                             <div className="instructions">
@@ -384,6 +383,8 @@ const Analysis = () => {
 
                     <section className="result-section">
                         <div className="result-box">
+                            {errorMessage && <p className="error-message">{errorMessage}</p>}
+
                             {prediction ? (
                                 <>
                                     <h3>Prediction: {prediction.predicted_label}</h3>
