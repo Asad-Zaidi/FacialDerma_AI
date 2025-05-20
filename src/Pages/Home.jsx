@@ -2,8 +2,15 @@ import React from 'react';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import '../Styles/Home.css';
+import { useAuth } from '../contexts/AuthContext';
+
 
 const Home = () => {
+    const { accessToken } = useAuth();
+    const isLoggedIn = !!accessToken;
+
+    console.log("accessToken in Home.jsx:", accessToken);
+
     return (
         <div>
             <Header />
@@ -17,14 +24,16 @@ const Home = () => {
                         <a href="/About" className="learn-link">Learn More...</a>
                     </p>
 
-                    <div className="button-group">
-                        <a href="/Login" className="btn-primary">Get Started →</a>
-                        <img src="/Assets/google-play-badge.png" alt="Google Play" className="google-play-badge" />
-                    </div>
+                    {!isLoggedIn && (
+                        <div className="button-group">
+                            <a href="/Login" className="btn-primary">Get Started →</a>
+                            <img src="/Assets/google-play-badge.png" alt="Google Play" className="google-play-badge" />
+                        </div>
+                    )}
                 </div>
 
                 <div className="home-right">
-                <img src="/Assets/home1.png" alt="Facial AI Diagnosis" className="static-image" />
+                    <img src="/Assets/home1.png" alt="Facial AI Diagnosis" className="static-image" />
                 </div>
             </div>
             <Footer />

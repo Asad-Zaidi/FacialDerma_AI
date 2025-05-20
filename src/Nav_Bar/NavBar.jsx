@@ -81,15 +81,6 @@ const Navbar = () => {
                                 Analysis
                             </NavLink>
                         </li>
-                        {/* <li className="nav-item">
-                            <NavLink
-                                to="/Notifications"
-                                onClick={toggleMenu}
-                                className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
-                            >
-                                Notifications
-                            </NavLink>
-                        </li> */}
                         <li className="nav-item notifications-link">
                             <button className="nav-link" onClick={toggleNotifications}>
                                 Notifications

@@ -1,0 +1,32 @@
+{
+    "Acne": [
+        "Use a gentle cleanser twice a day.",
+        "Avoid heavy makeup and oil-based skincare products.",
+        "Consider over-the-counter products with salicylic acid or benzoyl peroxide."
+    ],
+    "Rosacea": [
+        "Avoid hot drinks and spicy food.",
+        "Use fragrance-free moisturizers.",
+        "Consult a dermatologist for anti-inflammatory treatments."
+    ],
+    "Melanoma": [
+        "Consult a dermatologist immediately.",
+        "Avoid sun exposure and use SPF 50+ sunscreen.",
+        "Track any changes in moles or dark spots."
+    ],
+    "Perioral Dermatitis": [
+        "Stop using topical steroids if prescribed.",
+        "Use mild, non-irritating skin care products.",
+        "Consult a dermatologist for oral antibiotics."
+    ],
+    "Warts": [
+        "Avoid scratching to prevent spreading.",
+        "Use OTC salicylic acid treatments.",
+        "Cryotherapy or dermatological procedures may be needed."
+    ],
+    "Normal": [
+        "Maintain a simple skincare routine.",
+        "Use sunscreen daily.",
+        "Stay hydrated and eat a balanced diet."
+    ]
+}

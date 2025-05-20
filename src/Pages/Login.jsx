@@ -49,9 +49,8 @@ const LoginForm = () => {
                     role: data.user.role
                 });
 
-                // Navigate based on role
                 if (data.user.role === 'patient') {
-                    navigate('/Profile');
+                    navigate('/home');
                 } else if (data.user.role === 'dermatologist') {
                     navigate('/DProfile');
                 }
