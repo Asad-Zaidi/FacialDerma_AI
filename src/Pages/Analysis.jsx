@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { MoonLoader } from 'react-spinners';
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { FiUpload } from "react-icons/fi";
+import { IoClose } from "react-icons/io5";
 import suggestionsData from '../Assets/treatmentSuggestions.json';
 
 const Analysis = () => {
@@ -92,7 +93,6 @@ const handleAnalyzeClick = async () => {
         setPrediction(data);
         setShowResult(true);
 
-        // Smooth scroll to result
         setTimeout(() => {
             resultRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 300);
@@ -113,7 +113,6 @@ const handleRetry = () => {
     setErrorMessage(null);
     setShowResult(false);
 };
-
 
     return (
         <div className="analysis-wrapper">
@@ -136,7 +135,8 @@ const handleRetry = () => {
                         </div>
 
                         <div className="upload-container">
-                             <label className="upload-box">
+                            <IoClose color="#22C55E" size={30} alignSelf="right" className="close-btn" onClick={handleRetry} />
+                                <label className="upload-box">
                                 <input type="file" accept="image/*" onChange={handleImageChange} />
                                 {image ? (
                                     <img src={URL.createObjectURL(image)} alt="Preview" className="preview-image" />

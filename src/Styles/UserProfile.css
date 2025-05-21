@@ -53,6 +53,13 @@
     padding: 0.8rem;
     border-radius: 10px;
 }
+.prediction-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
 
 @media (max-width: 600px) {
     .user-profile-info {

@@ -7,7 +7,7 @@ import DermatologistProfile from "./Pages/DermatologistProfile";
 import Analysis from "./Pages/Analysis";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
-import ForgetPassword from "./Pages/ForgetPassword";
+// import ForgetPassword from "./Pages/ForgetPassword";
 import Dermatologist from "./Pages/DermatologistHome";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./Routes/PrivateRoutes";
@@ -24,7 +24,7 @@ const AppRouter = () => {
                     <Route path="/about" element={<About />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
-                    <Route path="/forget-password" element={<ForgetPassword />} />
+                    {/* <Route path="/forget-password" element={<ForgetPassword />} /> */}
 
                     <Route path="/Profile" element={
                         <PrivateRoute>

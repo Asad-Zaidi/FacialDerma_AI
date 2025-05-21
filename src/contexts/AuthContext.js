@@ -49,7 +49,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
-  const [loading, setLoading] = useState(true); // <-- Add this
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -60,10 +60,11 @@ export const AuthProvider = ({ children }) => {
       setAccessToken(storedToken);
     }
 
-    setLoading(false); // <-- Set to false after loading is done
+    setLoading(false);
   }, []);
 
   const login = (token, userData) => {
+    localStorage.setItem('token', token);
     localStorage.setItem('accessToken', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setAccessToken(token);

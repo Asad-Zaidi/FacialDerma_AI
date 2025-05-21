@@ -24,13 +24,20 @@ const UserProfile = () => {
     }, []);
 
     const fetchPredictions = async () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            console.warn("No token found. User might not be logged in.");
+            return;
+        }
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get('/api/predictions/', {
+            const response = await axios.get('http://localhost:5000/api/predictions/', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
+
             setPredictions(response.data);
         } catch (error) {
             console.error('Failed to fetch predictions:', error);
@@ -65,12 +72,13 @@ const UserProfile = () => {
                     ) : (
                         <ul>
                             {predictions.map((pred, idx) => (
-                                <li key={idx} className="prediction-item">
-                                    <p><strong>Disease:</strong> {pred.result}</p>
+                                <li key={idx} className="prediction-card">
+                                    <p><strong>Disease:</strong> {pred.result?.predicted_label || 'N/A'}</p>
+                                    <p><strong>Confidence:</strong> {(pred.result?.confidence_score * 100).toFixed(2)}%</p>
                                     <p><strong>Date:</strong> {new Date(pred.createdAt).toLocaleString()}</p>
-                                    {pred.image && (
+                                    {pred.imageUrl && (
                                         <img
-                                            src={`/uploads/${pred.image}`}
+                                            src={`http://localhost:5000/uploads/${pred.imageUrl}`}
                                             alt="Uploaded"
                                             style={{ width: '100px', height: '100px', objectFit: 'cover', marginTop: '5px' }}
                                         />
