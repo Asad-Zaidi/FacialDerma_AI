@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import '../Styles/UserProfile.css';
@@ -14,6 +15,26 @@ const UserProfile = () => {
         phone: '+92 03084401410',
         location: 'Lahore, Pakistan',
         image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlqmDtz_F0mxL0m6iOnBbC32Ve38vRYNvBFt98b5seDB6c2T5QfSglB68MZE1DHk4WEGs&usqp=CAU',
+    };
+
+    const [predictions, setPredictions] = useState([]);
+
+    useEffect(() => {
+        fetchPredictions();
+    }, []);
+
+    const fetchPredictions = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get('/api/predictions/', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setPredictions(response.data);
+        } catch (error) {
+            console.error('Failed to fetch predictions:', error);
+        }
     };
 
     return (
@@ -35,6 +56,29 @@ const UserProfile = () => {
                         <div><strong>Phone:</strong> {user.phone}</div>
                         <div><strong>Location:</strong> {user.location}</div>
                     </div>
+                </div>
+
+                <div className="prediction-history">
+                    <h3>Prediction History</h3>
+                    {predictions.length === 0 ? (
+                        <p>No past predictions found.</p>
+                    ) : (
+                        <ul>
+                            {predictions.map((pred, idx) => (
+                                <li key={idx} className="prediction-item">
+                                    <p><strong>Disease:</strong> {pred.result}</p>
+                                    <p><strong>Date:</strong> {new Date(pred.createdAt).toLocaleString()}</p>
+                                    {pred.image && (
+                                        <img
+                                            src={`/uploads/${pred.image}`}
+                                            alt="Uploaded"
+                                            style={{ width: '100px', height: '100px', objectFit: 'cover', marginTop: '5px' }}
+                                        />
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
             </div>
             <Footer />
