@@ -309,3 +309,33 @@
     font-weight: bold;
     margin-top: 10px;
 }
+
+
+.error-box {
+    margin-top: 1rem;
+    background-color: #ffe4e6;
+    border: 1px solid #f43f5e;
+    padding: 0.75rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.error-message {
+    color: #b91c1c;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.retry-btn {
+    background-color: #e11d48;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.retry-btn:hover {
+    background-color: #be123c;
+}

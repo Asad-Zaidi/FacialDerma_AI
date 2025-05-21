@@ -50,63 +50,70 @@ const Analysis = () => {
         setShowResult(false);
     };
 
-    const handleAnalyzeClick = async () => {
-        if (!accessToken) {
-            setErrorMessage('Access token is missing. Please log in again.');
+const handleAnalyzeClick = async () => {
+    if (!accessToken) {
+        setErrorMessage('You must be logged in to analyze.');
+        toast.error('You must be logged in to analyze.');
+        return;
+    }
+
+    if (!image) {
+        setErrorMessage('Please upload an image first.');
+        toast.error('Please upload an image first.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', image);
+
+    setIsLoading(true);
+    setPrediction(null);
+    setErrorMessage(null);
+    setShowResult(false);
+
+    try {
+        const response = await fetch('http://localhost:5000/api/predictions/predict', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            const backendError = data.error || 'Image analysis failed. Please try again.';
+            setErrorMessage(backendError);
+            toast.error(backendError);
             return;
         }
 
-        if (!image) {
-            setErrorMessage('Please upload an image first.');
-            return;
-        }
+        setPrediction(data);
+        setShowResult(true);
 
-        const formData = new FormData();
-        formData.append('image', image);
+        // Smooth scroll to result
+        setTimeout(() => {
+            resultRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
 
-        setIsLoading(true);
-        setPrediction(null);
-        setErrorMessage(null);
-        setShowResult(false);
+        toast.success('Prediction successful!');
+    } catch (error) {
+        console.error('Error during image analysis:', error);
+        const errMsg = error.message || 'Something went wrong during analysis.';
+        setErrorMessage(errMsg);
+        toast.error(errMsg);
+    } finally {
+        setIsLoading(false);
+    }
+};
+const handleRetry = () => {
+    setImage(null);
+    setPrediction(null);
+    setErrorMessage(null);
+    setShowResult(false);
+};
 
-        try {
-            const response = await fetch('http://localhost:8000/predict', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) throw new Error('Failed to analyze the image.');
-            const data = await response.json();
-            setPrediction(data);
-            setShowResult(true);
-
-            setTimeout(() => {
-                resultRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, 300);
-
-            await fetch('http://localhost:5000/api/analysis/save', {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    result: {
-                        predicted_label: data.predicted_label,
-                        confidence_score: data.confidence_score,
-                    },
-                    image_url: data.image_url,
-                }),
-            });
-
-            toast.success('Prediction saved successfully!');
-        } catch (error) {
-            console.error('Error during image analysis:', error);
-            setErrorMessage('Image analysis failed. Please try again.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     return (
         <div className="analysis-wrapper">
@@ -129,7 +136,7 @@ const Analysis = () => {
                         </div>
 
                         <div className="upload-container">
-                            <label className="upload-box">
+                             <label className="upload-box">
                                 <input type="file" accept="image/*" onChange={handleImageChange} />
                                 {image ? (
                                     <img src={URL.createObjectURL(image)} alt="Preview" className="preview-image" />
@@ -139,7 +146,14 @@ const Analysis = () => {
                                         <p>Drag and drop your image here or <br /> click to browse</p>
                                     </div>
                                 )}
-                            </label>
+                            </label> 
+                            {errorMessage && (
+                                <div className="error-box">
+                                    <p className="error-message">{errorMessage}</p>
+                                    <button className="retry-btn" onClick={handleRetry}>Retry</button>
+                                </div>
+                            )}  
+
                             <div className="button-container">
                                 <button
                                     className="upload-btn"
