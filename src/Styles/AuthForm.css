@@ -87,7 +87,7 @@ h2 {
 .auth-footer a {
     color: #FF4081;
     text-decoration: none;
-    font-weight: bold;
+    font-weight:300;
 }
 
 .auth-footer a:hover {

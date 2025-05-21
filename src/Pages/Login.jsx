@@ -125,7 +125,7 @@ const LoginForm = () => {
 
                         <div
                             className="auth-footer"
-                            style={{ textAlign: 'left', width: '100%', marginTop: '5px' }}
+                            style={{ textAlign: 'right', width: '100%', marginTop: '2px' }}
                         >
                             <Link to="/forget-password">Forgot Password?</Link>
                         </div>
