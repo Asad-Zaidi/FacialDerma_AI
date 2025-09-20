@@ -139,8 +139,8 @@
 }
 
 .feature-icon {
-    width: 80%;
-    height: 80%;
+    width: 75%;
+    height: 75%;
     object-fit: contain;
 }
 
@@ -156,6 +156,60 @@
     font-size: 1.1rem;
     color: #555;
     line-height: 1.5;
+}
+
+.how-it-works {
+    padding: 5rem 2rem;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 3rem;
+    color: #2a2a2a;
+}
+
+.steps-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.step-card {
+    background: #ffeff3;
+    padding: 2rem;
+    border-radius: 15px;
+    flex: 1 1 280px;
+    max-width: 300px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+}
+
+.step-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1rem;
+    object-fit: fill;
+    padding: 10px;
+}
+
+.step-card h3 {
+    font-size: 1.2rem;
+    color: #b54d73;
+    margin-bottom: 0.5rem;
+}
+
+.step-card p {
+    color: #555;
+    font-size: 1rem;
 }
 
 @media (max-width: 768px) {

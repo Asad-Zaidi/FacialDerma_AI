@@ -1,48 +1,3 @@
-// import React from 'react';
-// import Header from '../Nav_Bar/Header';
-// import Footer from '../Nav_Bar/Footer';
-// import '../Styles/Home.css';
-// import { useAuth } from '../contexts/AuthContext';
-
-
-// const Home = () => {
-//     const { accessToken } = useAuth();
-//     const isLoggedIn = !!accessToken;
-
-//     console.log("accessToken in Home.jsx:", accessToken);
-
-//     return (
-//         <div>
-//             <Header />
-//             <div className="home-container">
-//                 <div className="home-left">
-//                     <span className="tagline">AI-Powered Skin Analysis</span>
-//                     <h1 className="main-title">FacialDerma AI</h1>
-//                     <p className="sub-description">
-//                         Upload a photo and get instant AI-powered analysis of your skin conditions,
-//                         personalized treatment recommendations, and aesthetic enhancement suggestions.{' '}
-//                         <a href="/About" className="learn-link">Learn More...</a>
-//                     </p>
-
-//                     {!isLoggedIn && (
-//                         <div className="button-group">
-//                             <a href="/Login" className="btn-primary">Get Started →</a>
-//                             <img src="/Assets/google-play-badge.png" alt="Google Play" className="google-play-badge" />
-//                         </div>
-//                     )}
-//                 </div>
-
-//                 <div className="home-right">
-//                     <img src="/Assets/home1.png" alt="Facial AI Diagnosis" className="static-image" />
-//                 </div>
-//             </div>
-//             <Footer />
-//         </div>
-//     );
-// };
-
-// export default Home;
-
 import React from 'react';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
@@ -115,6 +70,27 @@ const Home = () => {
                         <p className="feature-description">
                             Receive expert suggestions for skincare and cosmetic enhancements.
                         </p>
+                    </div>
+                </div>
+            </section>
+
+            <section className="how-it-works">
+                <h2 className="features-title">How It Works?</h2>
+                <div className="steps-container">
+                    <div className="step-card">
+                        <img src="/Assets/upload.png" alt="Upload" className="step-icon" />
+                        <h3>Upload Your Photo</h3>
+                        <p>Simply take or upload a clear photo of your face.</p>
+                    </div>
+                    <div className="step-card">
+                        <img src="/Assets/analysis.png" alt="AI Analysis" className="step-icon" />
+                        <h3>AI Analysis</h3>
+                        <p>Our advanced AI scans your skin for potential conditions.</p>
+                    </div>
+                    <div className="step-card">
+                        <img src="/Assets/report.png" alt="Report" className="step-icon" />
+                        <h3>Get Your Report</h3>
+                        <p>Receive instant results with treatment and care suggestions.</p>
                     </div>
                 </div>
             </section>
