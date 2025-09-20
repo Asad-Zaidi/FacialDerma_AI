@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { MoonLoader } from 'react-spinners';
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { FiUpload } from "react-icons/fi";
-import { IoClose } from "react-icons/io5";
+// import { IoClose } from "react-icons/io5";
 import suggestionsData from '../Assets/treatmentSuggestions.json';
 
 const Analysis = () => {
@@ -135,7 +135,7 @@ const handleRetry = () => {
                         </div>
 
                         <div className="upload-container">
-                            <IoClose color="#22C55E" size={30} alignSelf="right" className="close-btn" onClick={handleRetry} />
+                            {/* <IoClose color="#22C55E" size={30} alignSelf="right" className="close-btn" onClick={handleRetry} /> */}
                                 <label className="upload-box">
                                 <input type="file" accept="image/*" onChange={handleImageChange} />
                                 {image ? (

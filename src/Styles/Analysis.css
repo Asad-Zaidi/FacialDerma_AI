@@ -48,7 +48,7 @@
     color: #333;
     text-decoration: underline;
     margin: 8rem 0 0 0;
-    border: 1px solid #000;
+    /* border: 1px solid #000; */
 }
 
 .analysis-dashboard {
@@ -272,7 +272,7 @@
     justify-content: space-evenly;
     align-items: center;
     /* text-align: left; */
-    border: 1px solid #000;
+    /* border: 1px solid #000; */
     border-radius: 30px;
     background-color: #FDF5F7;
     margin: 10vh 0;
@@ -280,7 +280,7 @@
 }
 
 .result-box {
-    border: 1px solid black;
+    /* border: 1px solid black; */
     width: 40%;
     height: 90%;
     padding: 30px;
@@ -293,7 +293,7 @@
 }
 
 .suggestion-box {
-    border: 1px solid black;
+    /* border: 1px solid black; */
     width: 40%;
     height: 90%;
     padding: 30px;

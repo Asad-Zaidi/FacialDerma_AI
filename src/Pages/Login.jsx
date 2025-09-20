@@ -127,7 +127,7 @@ const LoginForm = () => {
                             className="auth-footer"
                             style={{ textAlign: 'right', width: '100%', marginTop: '2px' }}
                         >
-                            <Link to="/forget-password">Forgot Password?</Link>
+                            {/* <Link to="/forget-password">Forgot Password?</Link> */}
                         </div>
 
                         <button className="auth-button" type="submit" disabled={loading}>
