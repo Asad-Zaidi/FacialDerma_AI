@@ -1,90 +1,67 @@
-// import React, {useContext, createContext, useState, useEffect } from 'react';
 
-// export const AuthContext = createContext();
-
-// export const AuthProvider = ({ children }) => {
-//     const [user, setUser] = useState(null);
-//   const [accessToken, setAccessToken] = useState(null);
-
-//   useEffect(() => {
-//     const storedUser = localStorage.getItem('user');
-//     const storedToken = localStorage.getItem('accessToken');
-
-//     if (storedUser && storedToken) {
-//       setUser(JSON.parse(storedUser));
-//       setAccessToken(storedToken);
-//     }
-
-//   }, []);
-
-// const login = (token, userData) => {
-//     localStorage.setItem('accessToken', token);
-//     localStorage.setItem('user', JSON.stringify(userData));
-//     setAccessToken(token);
-//     setUser(userData);
-//   };
-
-//   const logout = () => {
-//     localStorage.removeItem('accessToken');
-//     localStorage.removeItem('user');
-//     setAccessToken(null);
-//     setUser(null);
-//   };
-
-//   return (
-//     <AuthContext.Provider value={{ user, accessToken, login, logout }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// export const useAuth = () => {
-//   return useContext(AuthContext);
-// };
-
-import React, { useContext, createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from "react";
+import api, { setAuthToken } from "../api/api";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+
+
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('accessToken');
+    const storedToken = localStorage.getItem("accessToken");
+    const storedUser = localStorage.getItem("user");
 
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
+    if (storedToken) {
       setAccessToken(storedToken);
+      setAuthToken(storedToken);
     }
 
-    setLoading(false);
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
+
+
+
   const login = (token, userData) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('accessToken', token);
-    localStorage.setItem('user', JSON.stringify(userData));
     setAccessToken(token);
     setUser(userData);
+
+
+    localStorage.setItem("accessToken", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+
+    setAuthToken(token);
   };
 
+
+
+
   const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
     setAccessToken(null);
     setUser(null);
+
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+
+    setAuthToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        accessToken,
+        user,
+        login,
+        logout,
+        isAuthenticated: !!accessToken,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  return useContext(AuthContext);
 };
