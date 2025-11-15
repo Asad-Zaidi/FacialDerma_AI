@@ -5,9 +5,8 @@ import About from "./Pages/About";
 import UserProfile from "./Pages/UserProfile";
 import DermatologistProfile from "./Pages/DermatologistProfile";
 import Analysis from "./Pages/Analysis";
-import Login from "./Pages/Login";
-import Signup from "./Pages/Signup";
-// import ForgetPassword from "./Pages/ForgetPassword";
+import Auth from "./components/Auth";
+import ForgotPassword from "./components/ForgotPassword";
 import Dermatologist from "./Pages/DermatologistHome";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./Routes/PrivateRoutes";
@@ -22,10 +21,10 @@ const AppRouter = () => {
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/about" element={<About />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/Login" element={<Auth />} />
+                    <Route path="/Signup" element={<Auth />} />
                     <Route path="/Profile" element={<UserProfile />}/>
-                    {/* <Route path="/forget-password" element={<ForgetPassword />} /> */}
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
 
                     {/* <Route path="/Profile" element={
                         <PrivateRoute>
