@@ -24,13 +24,14 @@ const AppRouter = () => {
                     <Route path="/about" element={<About />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="/Profile" element={<UserProfile />}/>
                     {/* <Route path="/forget-password" element={<ForgetPassword />} /> */}
 
-                    <Route path="/Profile" element={
+                    {/* <Route path="/Profile" element={
                         <PrivateRoute>
                             <UserProfile />
                         </PrivateRoute>
-                    } />
+                    } /> */}
                     <Route path="/DProfile" element={
                         <PrivateRoute>
                             <DermatologistProfile />

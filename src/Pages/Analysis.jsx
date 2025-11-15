@@ -72,6 +72,8 @@ const handleAnalyzeClick = async () => {
     setErrorMessage(null);
     setShowResult(false);
 
+    console.log('Sending prediction request...');
+
     try {
         const response = await fetch('http://localhost:5000/api/predictions/predict', {
             method: 'POST',
@@ -81,7 +83,10 @@ const handleAnalyzeClick = async () => {
             body: formData,
         });
 
+        console.log('Response status:', response.status);
+
         const data = await response.json();
+        console.log('Response data:', data);
 
         if (!response.ok) {
             const backendError = data.error || 'Image analysis failed. Please try again.';
@@ -90,14 +95,17 @@ const handleAnalyzeClick = async () => {
             return;
         }
 
-        setPrediction(data);
+        setPrediction({
+            predicted_label: data.predicted_label,
+            confidence_score: data.confidence_score
+        });
         setShowResult(true);
 
         setTimeout(() => {
             resultRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 300);
 
-        toast.success('Prediction successful!');
+        toast.success('Prediction successful and saved!');
     } catch (error) {
         console.error('Error during image analysis:', error);
         const errMsg = error.message || 'Something went wrong during analysis.';
@@ -105,6 +113,7 @@ const handleAnalyzeClick = async () => {
         toast.error(errMsg);
     } finally {
         setIsLoading(false);
+        console.log('Loading finished');
     }
 };
 const handleRetry = () => {
