@@ -5,6 +5,7 @@ import { MdEmail, MdLock, MdPerson, MdCheckCircle } from 'react-icons/md';
 import { HiSparkles } from 'react-icons/hi';
 import { BsInfoCircle } from 'react-icons/bs';
 import { useAuth } from '../contexts/AuthContext';
+import { apiLogin, apiSignUp } from "../api/api";
 
 const Auth = () => {
     const location = useLocation();
@@ -16,6 +17,7 @@ const Auth = () => {
     // States
     const [formData, setFormData] = useState({
         username: '',
+        name: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -33,112 +35,100 @@ const Auth = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // Login Handler
-    const handleLoginSubmit = async (e) => {
-        e.preventDefault();
-        setMessage('');
+// Login Handler
+// ---------------------------
+const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
 
-        if (!role) {
-            setMessage('Please select a role');
-            setMessageType('error');
-            return;
-        }
+    if (!role) {
+        setMessage('Please select a role');
+        setMessageType('error');
+        return;
+    }
 
-        setLoading(true);
+    setLoading(true);
 
-        const payload = {
-            emailOrUsername: formData.email,
-            password: formData.password,
-            role: role,
-        };
-
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/login/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                login(data.token, {
-                    email: data.user.email,
-                    username: data.user.username,
-                    role: data.user.role
-                });
-
-                setTimeout(() => {
-                    if (data.user.role === 'patient') {
-                        navigate('/home');
-                    } else if (data.user.role === 'dermatologist') {
-                        navigate('/DProfile');
-                    }
-                }, 1500);
-            } else {
-                setMessage(data.error || 'Invalid credentials');
-                setMessageType('error');
-                setLoading(false);
-            }
-        } catch (error) {
-            setMessage('An error occurred. Please try again later.');
-            setMessageType('error');
-            setLoading(false);
-        }
+    const payload = {
+        emailOrUsername: formData.email,
+        password: formData.password,
+        role: role,
     };
 
-    // Signup Handler
-    const handleSignupSubmit = async (e) => {
-        e.preventDefault();
-        setMessage('');
+    try {
+        const response = await apiLogin(payload); // <-- using apiLogin
+        const data = response.data;
 
-        if (!role) {
-            setMessage('Please select a role.');
-            setMessageType('error');
-            return;
-        }
+        login(data.token, {
+            email: data.user.email,
+            username: data.user.username,
+            role: data.user.role,
+            name: data.user.name
+        });
 
-        if (formData.password !== formData.confirmPassword) {
-            setMessage('Passwords do not match!');
-            setMessageType('error');
-            return;
-        }
-
-        setLoading(true);
-
-        const payload = {
-            role: role,
-            username: formData.username,
-            email: formData.email,
-            password: formData.password,
-            password2: formData.confirmPassword,
-        };
-
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/signup/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setTimeout(() => {
-                    setLoading(false); // Stop loader before redirect
-                    navigate('/Login');
-                }, 1500);
-            } else {
-                setMessage(data.error || data.message || 'Signup failed');
-                setMessageType('error');
-                setLoading(false);
+        setTimeout(() => {
+            if (data.user.role === 'patient') {
+                navigate('/home');
+            } else if (data.user.role === 'dermatologist') {
+                navigate('/DProfile');
             }
-        } catch (error) {
-            setMessage('An error occurred.');
-            setMessageType('error');
-            setLoading(false);
-        }
+        }, 1500);
+
+    } catch (error) {
+        const errMsg = error.response?.data?.error || 'Invalid credentials';
+        setMessage(errMsg);
+        setMessageType('error');
+        setLoading(false);
+    }
+};
+
+// ---------------------------
+// Signup Handler
+// ---------------------------
+const handleSignupSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+
+    if (!role) {
+        setMessage('Please select a role.');
+        setMessageType('error');
+        return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+        setMessage('Passwords do not match!');
+        setMessageType('error');
+        return;
+    }
+
+    setLoading(true);
+
+    const payload = {
+        role: role,
+        name: formData.name || undefined,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
     };
+
+    try {
+        const response = await apiSignUp(payload); // <-- using apiSignUp
+
+        console.log('Signup successful:', response);
+
+        setTimeout(() => {
+            setLoading(false); // Stop loader before redirect
+            navigate('/Login');
+        }, 1500);
+
+    } catch (error) {
+        const errMsg = error.response?.data?.error || error.response?.data?.message || 'Signup failed';
+        setMessage(errMsg);
+        setMessageType('error');
+        setLoading(false);
+    }
+};
+
 
     const handleSubmit = isLogin ? handleLoginSubmit : handleSignupSubmit;
 
@@ -291,7 +281,7 @@ const Auth = () => {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
 
-                        {!isLogin && (
+                        {/* {!isLogin && (
                             <div className="animate-slide-down">
                                 <label className="block text-xs font-medium text-gray-700 mb-1">Username</label>
                                 <div className="relative">
@@ -307,7 +297,44 @@ const Auth = () => {
                                     />
                                 </div>
                             </div>
-                        )}
+                        )} */}
+                        {!isLogin && (
+    <>
+        <div className="animate-slide-down">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Username</label>
+            <div className="relative">
+                <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="johndoe"
+                    required
+                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
+                />
+            </div>
+        </div>
+        
+        {/* ADD THIS NEW FIELD */}
+        <div className="animate-slide-down">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+                Full Name <span className="text-gray-400 text-xs">(Optional)</span>
+            </label>
+            <div className="relative">
+                <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
+                />
+            </div>
+        </div>
+    </>
+)}
 
                         <div>
                             <label className="block text-xs font-medium text-gray-700 mb-1">
