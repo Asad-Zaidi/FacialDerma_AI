@@ -1,3 +1,4 @@
+
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
@@ -13,9 +14,9 @@ import { IoClose } from "react-icons/io5";
 import { MdOutlineInfo, MdHistory } from "react-icons/md";
 import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import suggestionsData from '../Assets/treatmentSuggestions.json';
+// UPDATED: Import the new utility function from the renamed file
+import { generatePdfReport } from '../components/PdfReportGenerator'; 
 
 const Analysis = () => {
     const [image, setImage] = useState(null);
@@ -214,261 +215,10 @@ const Analysis = () => {
         toast.info('Image cleared');
     };
 
+    // UPDATED: Renamed function call to use the new utility name
     const handleDownloadReport = () => {
         if (!prediction) return;
-
-        const doc = new jsPDF();
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        let yPosition = 20;
-
-        // ========== HEADER SECTION ==========
-        // Logo/Title Area with Background (Deep Charcoal Gray: 52, 58, 64)
-        doc.setFillColor(52, 58, 64);
-        doc.rect(0, 0, pageWidth, 35, 'F');
-
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(24);
-        doc.setFont('helvetica', 'bold');
-        doc.text('DERMATOLOGICAL ANALYSIS REPORT', pageWidth / 2, 15, { align: 'center' });
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text('AI-Powered Facial Skin Assessment', pageWidth / 2, 25, { align: 'center' });
-
-        yPosition = 45;
-
-        // ========== PATIENT/REPORT INFORMATION ==========
-        doc.setTextColor(0, 0, 0);
-        doc.setFillColor(245, 245, 245); // Light Gray
-        doc.rect(15, yPosition, pageWidth - 30, 35, 'F');
-
-        yPosition += 8;
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.text('REPORT INFORMATION', 20, yPosition);
-
-        yPosition += 8;
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-
-        // Two column layout for report info
-        const col1X = 20;
-        const col2X = pageWidth / 2 + 10;
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('Report ID:', col1X, yPosition);
-        doc.setFont('helvetica', 'normal');
-        doc.text(prediction.reportId, col1X + 25, yPosition);
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('Analysis Date:', col2X, yPosition);
-        doc.setFont('helvetica', 'normal');
-        doc.text(prediction.timestamp, col2X + 30, yPosition);
-
-        yPosition += 6;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Analysis Method:', col1X, yPosition);
-        doc.setFont('helvetica', 'normal');
-        doc.text('AI Deep Learning Model', col1X + 35, yPosition);
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('Report Status:', col2X, yPosition);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(34, 197, 94); // Green (Kept for status/safety, can be changed to black if desired)
-        doc.text('COMPLETED', col2X + 30, yPosition);
-        doc.setTextColor(0, 0, 0);
-
-        yPosition += 15;
-
-        // ========== DIAGNOSIS SECTION ==========
-        doc.setFillColor(230, 230, 230); // Very Light Gray
-        doc.rect(15, yPosition, pageWidth - 30, 12, 'F');
-
-        yPosition += 8;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(108, 117, 125); // Slate Gray
-        doc.text('DIAGNOSIS RESULTS', 20, yPosition);
-        doc.setTextColor(0, 0, 0);
-
-        yPosition += 10;
-
-        // Diagnosis Box
-        doc.setDrawColor(108, 117, 125); // Slate Gray
-        doc.setLineWidth(0.5);
-        doc.rect(15, yPosition, pageWidth - 30, 25);
-
-        yPosition += 8;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Detected Condition:', 20, yPosition);
-
-        yPosition += 8;
-        doc.setFontSize(14);
-        doc.setTextColor(52, 58, 64); // Deep Charcoal
-        doc.text(prediction.predicted_label.toUpperCase(), 20, yPosition);
-        doc.setTextColor(0, 0, 0);
-
-        yPosition += 25;
-
-        // ========== CONFIDENCE ANALYSIS ==========
-        doc.setFillColor(230, 230, 230); // Very Light Gray
-        doc.rect(15, yPosition, pageWidth - 30, 12, 'F');
-
-        yPosition += 8;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(108, 117, 125); // Slate Gray
-        doc.text('CONFIDENCE ANALYSIS', 20, yPosition);
-        doc.setTextColor(0, 0, 0);
-
-        yPosition += 10;
-
-        const confidencePercent = (prediction.confidence_score * 100).toFixed(2);
-
-        // Confidence meter background
-        doc.setFillColor(230, 230, 230);
-        doc.rect(20, yPosition, 150, 8, 'F');
-
-        // Confidence meter fill (Kept Green/Amber/Red for clinical clarity/safety warnings)
-        const confidenceWidth = (confidencePercent / 100) * 150;
-        if (prediction.confidence_score >= 0.8) {
-            doc.setFillColor(34, 197, 94); // Green
-        } else if (prediction.confidence_score >= 0.6) {
-            doc.setFillColor(251, 191, 36); // Amber
-        } else {
-            doc.setFillColor(239, 68, 68); // Red
-        }
-        doc.rect(20, yPosition, confidenceWidth, 8, 'F');
-
-        // Confidence percentage text
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${confidencePercent}%`, 175, yPosition + 6);
-
-        yPosition += 15;
-
-        // Confidence interpretation
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'italic');
-        let confidenceText = '';
-        if (prediction.confidence_score >= 0.8) {
-            confidenceText = '✓ High Confidence: Model prediction is highly reliable';
-            doc.setTextColor(34, 197, 94); // Green
-        } else if (prediction.confidence_score >= 0.6) {
-            confidenceText = '⚠ Moderate Confidence: Additional clinical review recommended';
-            doc.setTextColor(251, 191, 36); // Amber
-        } else {
-            confidenceText = '⚠ Low Confidence: Professional dermatological consultation strongly advised';
-            doc.setTextColor(239, 68, 68); // Red
-        }
-        doc.text(confidenceText, 20, yPosition);
-        doc.setTextColor(0, 0, 0);
-
-        yPosition += 15;
-
-        // ========== TREATMENT RECOMMENDATIONS ==========
-        doc.setFillColor(230, 230, 230); // Very Light Gray
-        doc.rect(15, yPosition, pageWidth - 30, 12, 'F');
-
-        yPosition += 8;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(108, 117, 125); // Slate Gray
-        doc.text('RECOMMENDED TREATMENT OPTIONS', 20, yPosition);
-        doc.setTextColor(0, 0, 0);
-
-        yPosition += 10;
-
-        // Treatment suggestions table
-        const treatments = treatmentSuggestions[prediction.predicted_label] || [];
-        const treatmentTableData = treatments.map((treatment, index) => [
-            `${index + 1}`,
-            treatment
-        ]);
-
-        autoTable(doc, {
-            startY: yPosition,
-            head: [['#', 'Treatment Recommendation']],
-            body: treatmentTableData,
-            theme: 'striped',
-            headStyles: {
-                fillColor: [52, 58, 64], // Deep Charcoal Gray
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-                fontSize: 10
-            },
-            bodyStyles: {
-                fontSize: 9,
-                textColor: [50, 50, 50]
-            },
-            columnStyles: {
-                0: { cellWidth: 15, halign: 'center', fontStyle: 'bold' },
-                1: { cellWidth: 'auto' }
-            },
-            margin: { left: 15, right: 15 },
-            alternateRowStyles: {
-                fillColor: [249, 249, 249]
-            }
-        });
-
-        yPosition = doc.lastAutoTable.finalY + 15;
-
-        // ========== MEDICAL DISCLAIMER ==========
-        if (yPosition > pageHeight - 60) {
-            doc.addPage();
-            yPosition = 20;
-        }
-
-        doc.setFillColor(255, 237, 213); // Light amber (Kept for visual warning)
-        doc.rect(15, yPosition, pageWidth - 30, 40, 'F');
-
-        doc.setDrawColor(251, 191, 36); // Amber (Kept for visual warning)
-        doc.setLineWidth(0.5);
-        doc.rect(15, yPosition, pageWidth - 30, 40);
-
-        yPosition += 8;
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(180, 83, 9);
-        doc.text('⚠ IMPORTANT MEDICAL DISCLAIMER', 20, yPosition);
-
-        yPosition += 8;
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(120, 53, 15);
-
-        const disclaimerText = [
-            'This AI-generated report is intended for informational and preliminary screening purposes only.',
-            'It should NOT be considered as a substitute for professional medical diagnosis or treatment.',
-            'Please consult a certified dermatologist or healthcare provider for accurate diagnosis,',
-            'personalized treatment plans, and medical advice. The AI model\'s predictions may not account',
-            'for all clinical factors and patient-specific conditions.'
-        ];
-
-        disclaimerText.forEach((line, index) => {
-            doc.text(line, 20, yPosition + (index * 5), { maxWidth: pageWidth - 40 });
-        });
-
-        doc.setTextColor(0, 0, 0);
-
-        // ========== FOOTER ==========
-        const footerY = pageHeight - 20;
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.3);
-        doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
-
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(100, 100, 100);
-        doc.text('Facial Skin Analysis Dashboard - AI-Powered Dermatological Screening', pageWidth / 2, footerY, { align: 'center' });
-        doc.text(`Report Generated: ${new Date().toLocaleString()}`, pageWidth / 2, footerY + 5, { align: 'center' });
-        doc.text(`Page 1 of 1 | Confidential Medical Document`, pageWidth / 2, footerY + 10, { align: 'center' });
-
-        // Save the PDF
-        doc.save(`Dermatology_Report_${prediction.reportId}.pdf`);
-        toast.success('Professional PDF report downloaded successfully!');
+        generatePdfReport(prediction, treatmentSuggestions);
     };
 
     const handleShareResults = async () => {
@@ -890,7 +640,7 @@ const Analysis = () => {
 
                 <Footer />
                 <ToastContainer
-                    position="top-right"
+                    position="bottom-right"
                     autoClose={3000}
                     hideProgressBar={false}
                     newestOnTop={true}
@@ -900,6 +650,7 @@ const Analysis = () => {
                     draggable
                     pauseOnHover
                     theme="light"
+                    zIndex={10000}
                 />
             </div>
 
