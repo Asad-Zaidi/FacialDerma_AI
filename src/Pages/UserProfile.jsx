@@ -16,12 +16,10 @@ import {
     FaExclamationTriangle,
 } from "react-icons/fa";
 import { MdSave, MdCancel } from "react-icons/md";
-import { apiGetFullProfile, apiUpdateProfile, apiDeleteMedicalHistory } from "../api/api";
+import { apiGetFullProfile, apiUpdateProfile } from "../api/api";
 import Header from '../Nav_Bar/Header';
-import { ReactComponent as MedicalHistoryIcon } from "../Assets/medical_history.svg";
 import MaleAvatar from "../Assets/male-avatar.png";
 import FemaleAvatar from "../Assets/female-avatar.png";
-import MedicalHistoryForm from "../components/MedicalHistoryForm";
 
 const CardSection = ({ title, icon, children, editHandler, gradient = false }) => (
     <div className={`${gradient ? 'bg-gradient-to-br from-white via-gray-50 to-white' : 'bg-white'} border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 transform hover:-translate-y-1`}>
@@ -62,8 +60,6 @@ const UserProfile = () => {
     const [editData, setEditData] = useState({});
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
-    const [showMedicalHistoryForm, setShowMedicalHistoryForm] = useState(false);
-
 
     useEffect(() => {
         fetchProfile();
@@ -234,33 +230,6 @@ const UserProfile = () => {
         }));
     };
 
-    const handleCancelMedicalHistory = () => {
-        setShowMedicalHistoryForm(false);
-    };
-
-    const handleMedicalHistorySuccess = async () => {
-        setShowMedicalHistoryForm(false);
-        await fetchProfile(); 
-    };
-
-    const handleDeleteMedicalHistory = async (index) => {
-        if (!window.confirm('Are you sure you want to delete this medical history entry?')) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            await apiDeleteMedicalHistory(index);
-            await fetchProfile(); 
-            alert('Medical history entry deleted successfully');
-        } catch (error) {
-            console.error('Failed to delete medical history:', error);
-            alert(error.response?.data?.detail || 'Failed to delete medical history');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleViewReport = (id) => {
         alert(`Navigate to report ${id}`);
     };
@@ -304,8 +273,8 @@ const UserProfile = () => {
 
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="mb-6 text-center">
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 mb-1">
-                        Patient Profile
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 mb-1">
+                        Profile
                     </h1>
                     <p className="text-gray-600 text-xs">Manage your health information and medical records</p>
                 </div>
@@ -564,40 +533,6 @@ const UserProfile = () => {
                     </div>
 
                     <div className="lg:col-span-2 space-y-5">
-                        {/* MEDICAL HISTORY */}
-                        <CardSection
-                            title="Medical History"
-                            icon={<MedicalHistoryIcon className="text-red-500 w-5 h-5" />}
-                            editHandler={() => setShowMedicalHistoryForm(!showMedicalHistoryForm)}
-                        >
-                            {/* Medical History Form Component */}
-                            {showMedicalHistoryForm && (
-                                <MedicalHistoryForm
-                                    onSuccess={handleMedicalHistorySuccess}
-                                    onCancel={handleCancelMedicalHistory}
-                                />
-                            )}
-
-                            {/* Display Medical History */}
-                            {patient.medicalHistory && patient.medicalHistory.length > 0 ? (
-                                <ul className="space-y-2">
-                                    {patient.medicalHistory.map((item, index) => (
-                                        <li key={index} className="flex items-start justify-between gap-2 p-2 hover:bg-gray-50 rounded-lg group">
-                                            <span className="text-sm text-gray-600 flex-1">{item}</span>
-                                            <button
-                                                onClick={() => handleDeleteMedicalHistory(index)}
-                                                className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                title="Delete entry"
-                                            >
-                                                <FaTrash className="w-4 h-4" />
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-gray-500 text-sm">No medical history available</p>
-                            )}
-                        </CardSection>
 
 
                         <CardSection

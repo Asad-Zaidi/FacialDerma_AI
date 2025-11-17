@@ -26,4 +26,4 @@ yarn-error.log*
 
 /backend/.venv
 /backend/model/Resnet_Model.keras
-/FacialDermaAI-backend
+/FacialDermaAI_backend

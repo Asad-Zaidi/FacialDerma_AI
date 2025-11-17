@@ -44,19 +44,19 @@ export const getProfile = async () => {
 };
 
 export const apiGetFullProfile = async () => {
-    return api.get("/users/profile");
+    return api.get("/users/me");
 };
 
 export const apiUpdateProfile = async (data) => {
-    return api.put("/users/profile", data);
+    return api.put("/users/me", data);
 };
 
 export const apiAddMedicalHistory = async (entry) => {
-    return api.post("/users/profile/medical-history", { entry });
+    return api.post("/users/me/medical-history", { entry });  // Changed from /users/profile/medical-history
 };
 
 export const apiDeleteMedicalHistory = async (index) => {
-    return api.delete(`/users/profile/medical-history/${index}`);
+    return api.delete(`/users/me/medical-history/${index}`);  // Changed from /users/profile/medical-history
 };
 
 // ===========================================================
