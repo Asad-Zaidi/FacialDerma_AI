@@ -70,7 +70,7 @@ const Auth = () => {
                 if (data.user.role === 'patient') {
                     navigate('/home');
                 } else if (data.user.role === 'dermatologist') {
-                    navigate('/DProfile');
+                    navigate('/Dermatologist');
                 }
             }, 1500);
 

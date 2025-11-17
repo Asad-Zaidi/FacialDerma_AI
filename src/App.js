@@ -26,7 +26,7 @@ const AppRouter = () => {
                     {/* <Route path="/Profile" element={<UserProfile />}/> */}
                     <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                    <Route path="/Profile" element={
+                    {/* <Route path="/Profile" element={
                         <PrivateRoute>
                             <UserProfile />
                         </PrivateRoute>
@@ -45,7 +45,35 @@ const AppRouter = () => {
                         <PrivateRoute>
                             <Dermatologist />
                         </PrivateRoute>
+                    } /> */}
+                    {/* Patient profile */}
+                    <Route path="/Profile" element={
+                        <PrivateRoute roles={['patient']}>
+                            <UserProfile />
+                        </PrivateRoute>
                     } />
+
+                    {/* Dermatologist profile */}
+                    <Route path="/DProfile" element={
+                        <PrivateRoute roles={['dermatologist']}>
+                            <DermatologistProfile />
+                        </PrivateRoute>
+                    } />
+
+                    {/* Dermatologist Home */}
+                    <Route path="/Dermatologist" element={
+                        <PrivateRoute roles={['dermatologist']}>
+                            <Dermatologist />
+                        </PrivateRoute>
+                    } />
+
+                    {/* Skin Analysis (patients only) */}
+                    <Route path="/Analysis" element={
+                        <PrivateRoute roles={['patient']}>
+                            <Analysis />
+                        </PrivateRoute>
+                    } />
+
                 </Routes>
                 <ToastContainer position="top-center" autoClose={2000} />
 
