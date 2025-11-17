@@ -51,14 +51,6 @@ export const apiUpdateProfile = async (data) => {
     return api.put("/users/me", data);
 };
 
-export const apiAddMedicalHistory = async (entry) => {
-    return api.post("/users/me/medical-history", { entry });  // Changed from /users/profile/medical-history
-};
-
-export const apiDeleteMedicalHistory = async (index) => {
-    return api.delete(`/users/me/medical-history/${index}`);  // Changed from /users/profile/medical-history
-};
-
 // ===========================================================
 // 5. PREDICTION UPLOAD API (FastAPI-compatible)
 // ===========================================================
