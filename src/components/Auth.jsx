@@ -35,99 +35,99 @@ const Auth = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-// Login Handler
-// ---------------------------
-const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
+    // Login Handler
+    // ---------------------------
+    const handleLoginSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('');
 
-    if (!role) {
-        setMessage('Please select a role');
-        setMessageType('error');
-        return;
-    }
+        if (!role) {
+            setMessage('Please select a role');
+            setMessageType('error');
+            return;
+        }
 
-    setLoading(true);
+        setLoading(true);
 
-    const payload = {
-        emailOrUsername: formData.email,
-        password: formData.password,
-        role: role,
+        const payload = {
+            emailOrUsername: formData.email,
+            password: formData.password,
+            role: role,
+        };
+
+        try {
+            const response = await apiLogin(payload); // <-- using apiLogin
+            const data = response.data;
+
+            login(data.token, {
+                email: data.user.email,
+                username: data.user.username,
+                role: data.user.role,
+                name: data.user.name
+            });
+
+            setTimeout(() => {
+                if (data.user.role === 'patient') {
+                    navigate('/home');
+                } else if (data.user.role === 'dermatologist') {
+                    navigate('/DProfile');
+                }
+            }, 1500);
+
+        } catch (error) {
+            const errMsg = error.response?.data?.error || 'Invalid credentials';
+            setMessage(errMsg);
+            setMessageType('error');
+            setLoading(false);
+        }
     };
 
-    try {
-        const response = await apiLogin(payload); // <-- using apiLogin
-        const data = response.data;
+    // ---------------------------
+    // Signup Handler
+    // ---------------------------
+    const handleSignupSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('');
 
-        login(data.token, {
-            email: data.user.email,
-            username: data.user.username,
-            role: data.user.role,
-            name: data.user.name
-        });
+        if (!role) {
+            setMessage('Please select a role.');
+            setMessageType('error');
+            return;
+        }
 
-        setTimeout(() => {
-            if (data.user.role === 'patient') {
-                navigate('/home');
-            } else if (data.user.role === 'dermatologist') {
-                navigate('/DProfile');
-            }
-        }, 1500);
+        if (formData.password !== formData.confirmPassword) {
+            setMessage('Passwords do not match!');
+            setMessageType('error');
+            return;
+        }
 
-    } catch (error) {
-        const errMsg = error.response?.data?.error || 'Invalid credentials';
-        setMessage(errMsg);
-        setMessageType('error');
-        setLoading(false);
-    }
-};
+        setLoading(true);
 
-// ---------------------------
-// Signup Handler
-// ---------------------------
-const handleSignupSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
+        const payload = {
+            role: role,
+            name: formData.name || undefined,
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+        };
 
-    if (!role) {
-        setMessage('Please select a role.');
-        setMessageType('error');
-        return;
-    }
+        try {
+            const response = await apiSignUp(payload); // <-- using apiSignUp
 
-    if (formData.password !== formData.confirmPassword) {
-        setMessage('Passwords do not match!');
-        setMessageType('error');
-        return;
-    }
+            console.log('Signup successful:', response);
 
-    setLoading(true);
+            setTimeout(() => {
+                setLoading(false); // Stop loader before redirect
+                navigate('/Login');
+            }, 1500);
 
-    const payload = {
-        role: role,
-        name: formData.name || undefined,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
+        } catch (error) {
+            const errMsg = error.response?.data?.error || error.response?.data?.message || 'Signup failed';
+            setMessage(errMsg);
+            setMessageType('error');
+            setLoading(false);
+        }
     };
-
-    try {
-        const response = await apiSignUp(payload); // <-- using apiSignUp
-
-        console.log('Signup successful:', response);
-
-        setTimeout(() => {
-            setLoading(false); // Stop loader before redirect
-            navigate('/Login');
-        }, 1500);
-
-    } catch (error) {
-        const errMsg = error.response?.data?.error || error.response?.data?.message || 'Signup failed';
-        setMessage(errMsg);
-        setMessageType('error');
-        setLoading(false);
-    }
-};
 
 
     const handleSubmit = isLogin ? handleLoginSubmit : handleSignupSubmit;
@@ -233,7 +233,7 @@ const handleSignupSubmit = async (e) => {
                         <button
                             onClick={() => navigate('/Login')}
                             className={`flex-1 py-2 px-4 rounded-md text-xs font-medium transition-colors duration-200 ${isLogin
-                                ? 'bg-white text-gray-900 shadow-sm'
+                                ? 'bg-gray-900 text-gray-300 shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
                                 }`}
                         >
@@ -242,7 +242,7 @@ const handleSignupSubmit = async (e) => {
                         <button
                             onClick={() => navigate('/Signup')}
                             className={`flex-1 py-2 px-4 rounded-md text-xs font-medium transition-colors duration-200 ${!isLogin
-                                ? 'bg-white text-gray-900 shadow-sm'
+                                ? 'bg-gray-900 text-gray-300 shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
                                 }`}
                         >
@@ -281,60 +281,43 @@ const handleSignupSubmit = async (e) => {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
 
-                        {/* {!isLogin && (
-                            <div className="animate-slide-down">
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Username</label>
-                                <div className="relative">
-                                    <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-                                    <input
-                                        type="text"
-                                        name="username"
-                                        value={formData.username}
-                                        onChange={handleChange}
-                                        placeholder="johndoe"
-                                        required
-                                        className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
-                                    />
-                                </div>
-                            </div>
-                        )} */}
                         {!isLogin && (
-    <>
-        <div className="animate-slide-down">
-            <label className="block text-xs font-medium text-gray-700 mb-1">Username</label>
-            <div className="relative">
-                <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-                <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    placeholder="johndoe"
-                    required
-                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
-                />
-            </div>
-        </div>
-        
-        {/* ADD THIS NEW FIELD */}
-        <div className="animate-slide-down">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-                Full Name <span className="text-gray-400 text-xs">(Optional)</span>
-            </label>
-            <div className="relative">
-                <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-                <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="John Doe"
-                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
-                />
-            </div>
-        </div>
-    </>
-)}
+                            <>
+                                <div className="animate-slide-down">
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Username</label>
+                                    <div className="relative">
+                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            value={formData.username}
+                                            onChange={handleChange}
+                                            placeholder="johndoe"
+                                            required
+                                            className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* ADD THIS NEW FIELD */}
+                                <div className="animate-slide-down">
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        Full Name <span className="text-gray-400 text-xs">(Optional)</span>
+                                    </label>
+                                    <div className="relative">
+                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            placeholder="John Doe"
+                                            className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
                         <div>
                             <label className="block text-xs font-medium text-gray-700 mb-1">

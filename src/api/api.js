@@ -43,6 +43,22 @@ export const getProfile = async () => {
     return api.get("/users/me");
 };
 
+export const apiGetFullProfile = async () => {
+    return api.get("/users/profile");
+};
+
+export const apiUpdateProfile = async (data) => {
+    return api.put("/users/profile", data);
+};
+
+export const apiAddMedicalHistory = async (entry) => {
+    return api.post("/users/profile/medical-history", { entry });
+};
+
+export const apiDeleteMedicalHistory = async (index) => {
+    return api.delete(`/users/profile/medical-history/${index}`);
+};
+
 // ===========================================================
 // 5. PREDICTION UPLOAD API (FastAPI-compatible)
 // ===========================================================
