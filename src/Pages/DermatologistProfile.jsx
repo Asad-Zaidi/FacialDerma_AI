@@ -5,6 +5,7 @@ import Footer from '../Nav_Bar/Footer';
 import { apiGetFullProfile, apiUpdateProfile } from '../api/api';
 import MaleAvatar from '../Assets/male-avatar.png';
 import FemaleAvatar from '../Assets/female-avatar.png';
+import UpdateProfilePopup from '../components/UpdateProfilePopup';
 
 const DermatologistProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -14,10 +15,26 @@ const DermatologistProfile = () => {
     const [isEditingProfessional, setIsEditingProfessional] = useState(false);
     const [isEditingContact, setIsEditingContact] = useState(false);
     const [editData, setEditData] = useState({});
+    const [showUpdatePopup, setShowUpdatePopup] = useState(false);
 
     useEffect(() => {
         fetchProfile();
     }, []);
+
+    useEffect(() => {
+        if (profile) {
+            const popupShownThisSession = sessionStorage.getItem('profilePopupShown');
+
+            const isIncomplete = !profile.name || !profile.phone ||
+                !profile.specialty || !profile.licenseNumber ||
+                !profile.clinicAddress;
+
+            if (isIncomplete && !popupShownThisSession) {
+                setShowUpdatePopup(true);
+                sessionStorage.setItem('profilePopupShown', 'true');
+            }
+        }
+    }, [profile]);
 
     const fetchProfile = async () => {
         try {
@@ -184,14 +201,14 @@ const DermatologistProfile = () => {
                             <div className="flex flex-col md:flex-row items-center md:items-end -mt-12 sm:-mt-16 gap-4 sm:gap-6">
                                 <div className="relative group">
                                     {profile?.profileImage ? (
-                                        <img 
-                                            src={profile.profileImage} 
-                                            alt="Profile" 
+                                        <img
+                                            src={profile.profileImage}
+                                            alt="Profile"
                                             className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-lg object-cover"
                                         />
                                     ) : (
-                                        <DefaultAvatar 
-                                            gender={profile?.gender} 
+                                        <DefaultAvatar
+                                            gender={profile?.gender}
                                             className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-lg"
                                         />
                                     )}
@@ -405,8 +422,13 @@ const DermatologistProfile = () => {
                         </div>
                     </div>
                 </div>
+                {showUpdatePopup && (
+                    <UpdateProfilePopup
+                        onClose={() => setShowUpdatePopup(false)}
+                        userRole="dermatologist"
+                    />
+                )}
             </div>
-            <Footer />
         </>
     );
 };

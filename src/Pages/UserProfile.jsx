@@ -20,6 +20,9 @@ import { apiGetFullProfile, apiUpdateProfile } from "../api/api";
 import Header from '../Nav_Bar/Header';
 import MaleAvatar from "../Assets/male-avatar.png";
 import FemaleAvatar from "../Assets/female-avatar.png";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import UpdateProfilePopup from '../components/UpdateProfilePopup';
 
 const CardSection = ({ title, icon, children, editHandler, gradient = false }) => (
     <div className={`${gradient ? 'bg-gradient-to-br from-white via-gray-50 to-white' : 'bg-white'} border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 transform hover:-translate-y-1`}>
@@ -60,10 +63,29 @@ const UserProfile = () => {
     const [editData, setEditData] = useState({});
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [showUpdatePopup, setShowUpdatePopup] = useState(false);
 
     useEffect(() => {
         fetchProfile();
     }, []);
+
+
+    useEffect(() => {
+        if (patient) {
+            // Check if we've already shown the popup this session
+            const popupShownThisSession = sessionStorage.getItem('profilePopupShown');
+
+            // Check if essential fields are missing
+            const isIncomplete = !patient.name || !patient.age || !patient.phone ||
+                !patient.gender || !patient.bloodGroup || !patient.address;
+
+            // Only show if incomplete AND not already shown this session
+            if (isIncomplete && !popupShownThisSession) {
+                setShowUpdatePopup(true);
+                sessionStorage.setItem('profilePopupShown', 'true');
+            }
+        }
+    }, [patient]);
 
     const fetchProfile = async () => {
         try {
@@ -73,7 +95,8 @@ const UserProfile = () => {
             setError(null);
         } catch (error) {
             console.error("Failed to fetch profile:", error);
-            setError(error.response?.data?.detail || "Failed to load profile");
+            const errorMsg = error.response?.data?.detail?.error || error.response?.data?.detail || error.message || "Failed to load profile";
+            setError(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -119,7 +142,8 @@ const UserProfile = () => {
                 setPatient(response.data.user);
                 setSelectedImage(null);
                 setImagePreview(null);
-                alert('Profile picture updated successfully');
+                // alert('Profile picture updated successfully');
+                toast.success('Profile picture updated successfully');
             };
             reader.readAsDataURL(selectedImage);
 
@@ -151,7 +175,8 @@ const UserProfile = () => {
             setPatient(response.data.user);
             setSelectedImage(null);
             setImagePreview(null);
-            alert('Profile picture removed successfully');
+            // alert('Profile picture removed successfully');
+            toast.success('Profile picture removed successfully');
         } catch (error) {
             console.error('Failed to remove image:', error);
             alert(error.response?.data?.detail || 'Failed to remove image');
@@ -180,35 +205,56 @@ const UserProfile = () => {
         );
     };
 
+    // const handleEdit = (section) => {
+    //     setEditMode(section);
+
+    //     if (section === "Basic Information") {
+    //         setEditData({
+    //             name: patient.name || "",
+    //             gender: patient.gender || "",
+    //             age: patient.age || "",
+    //             height: patient.height || "",
+    //             weight: patient.weight || "",
+    //             bloodGroup: patient.bloodGroup || ""
+    //         });
+    //     } else if (section === "Contact Information") {
+    //         setEditData({
+    //             phone: patient.phone || "",
+    //             emergencyContact: patient.emergencyContact || "",
+    //             address: patient.address || ""
+    //         });
+    //     }
+    // };
+
     const handleEdit = (section) => {
         setEditMode(section);
+        setEditData({ ...patient });
+        console.log("Edit Data:", { ...patient });
+    };
 
-        if (section === "Basic Information") {
-            setEditData({
-                name: patient.name || "",
-                gender: patient.gender || "",
-                age: patient.age || "",
-                height: patient.height || "",
-                weight: patient.weight || "",
-                bloodGroup: patient.bloodGroup || ""
-            });
-        } else if (section === "Contact Information") {
-            setEditData({
-                phone: patient.phone || "",
-                emergencyContact: patient.emergencyContact || "",
-                address: patient.address || ""
-            });
+    const validateBasicInfo = () => {
+        if (editData.age && (editData.age < 0 || editData.age > 150)) {
+            alert("Please enter a valid age");
+            return false;
         }
+        if (editData.phone && !/^\+?[\d\s-]{10,}$/.test(editData.phone)) {
+            alert("Please enter a valid phone number");
+            return false;
+        }
+        return true;
     };
 
     const handleSave = async (section) => {
+        if (section === "Basic Information" && !validateBasicInfo()) {
+            return;
+        }
         try {
             setLoading(true);
             const response = await apiUpdateProfile(editData);
             setPatient(response.data.user);
             setEditMode(null);
             setEditData({});
-            alert(response.data.message);
+            toast.success(response.data.message);
         } catch (error) {
             console.error("Failed to update profile:", error);
             alert(error.response?.data?.detail || "Failed to update profile");
@@ -270,7 +316,7 @@ const UserProfile = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100">
             <Header />
-
+            <ToastContainer position="top-right" autoClose={3000} />
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="mb-6 text-center">
                     <h1 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 mb-1">
@@ -382,7 +428,6 @@ const UserProfile = () => {
                                             <option value="">Select Gender</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
                                         </select>
                                     </div>
                                     <div>
@@ -390,6 +435,8 @@ const UserProfile = () => {
                                         <input
                                             type="number"
                                             name="age"
+                                            min="0"
+                                            max="150"
                                             value={editData.age}
                                             onChange={handleInputChange}
                                             placeholder="Enter age"
@@ -399,7 +446,7 @@ const UserProfile = () => {
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">Height</label>
                                         <input
-                                            type="text"
+                                            type="number"
                                             name="height"
                                             value={editData.height}
                                             onChange={handleInputChange}
@@ -410,7 +457,7 @@ const UserProfile = () => {
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">Weight</label>
                                         <input
-                                            type="text"
+                                            type="number"
                                             name="weight"
                                             value={editData.weight}
                                             onChange={handleInputChange}
@@ -616,6 +663,12 @@ const UserProfile = () => {
                     </div>
                 </div>
             </div>
+            {showUpdatePopup && (
+                <UpdateProfilePopup
+                    onClose={() => setShowUpdatePopup(false)}
+                    userRole="patient"
+                />
+            )}
         </div>
     );
 };

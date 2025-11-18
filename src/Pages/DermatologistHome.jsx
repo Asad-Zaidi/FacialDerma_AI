@@ -197,27 +197,7 @@ const DermatologistHome = () => {
                                 </div>
                             </div>
 
-                            {/* Professional Resources */}
-                            <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-6 border-2 border-purple-100">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">Professional Resources</h3>
-                                <ul className="space-y-3">
-                                    <li>
-                                        <a href="#" className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium">
-                                            <span>📚</span> AI Analysis Guide
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium">
-                                            <span>📊</span> Dermatology Database
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium">
-                                            <span>💡</span> Treatment Guidelines
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>

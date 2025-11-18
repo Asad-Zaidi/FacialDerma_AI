@@ -122,7 +122,7 @@ const Auth = () => {
             }, 1500);
 
         } catch (error) {
-            const errMsg = error.response?.data?.error || error.response?.data?.message || 'Signup failed';
+            const errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'Signup failed';
             setMessage(errMsg);
             setMessageType('error');
             setLoading(false);

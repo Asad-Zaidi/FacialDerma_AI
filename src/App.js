@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
-import Home from "./Pages/Home";
+// import Home from "./Pages/Home";
 import About from "./Pages/About";
 import UserProfile from "./Pages/UserProfile";
 import DermatologistProfile from "./Pages/DermatologistProfile";
@@ -12,14 +12,15 @@ import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./Routes/PrivateRoutes";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import SmartHome from "./components/SmartHome";
 
 const AppRouter = () => {
     return (
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/home" element={<Home />} />
+                    <Route path="/" element={<SmartHome />} />
+                    <Route path="/home" element={<SmartHome />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/Login" element={<Auth />} />
                     <Route path="/Signup" element={<Auth />} />
