@@ -66,6 +66,31 @@ export const getAllPredictions = async () => {
     return api.get("/predictions");
 };
 
+// List dermatologists with optional search
+export const apiListDermatologists = async (q = "", limit = 10) => {
+    const params = {};
+    if (q) params.q = q;
+    if (limit) params.limit = limit;
+    return api.get("/users/dermatologists", { params });
+};
+
+// Create a review request
+export const apiCreateReviewRequest = async ({ predictionId, dermatologistId }) => {
+    return api.post("/review-requests", { predictionId, dermatologistId });
+};
+
+// List notifications (optionally unread only)
+export const apiGetNotifications = async (unreadOnly = true) => {
+    const params = {};
+    if (unreadOnly) params.unreadOnly = true;
+    return api.get("/notifications", { params });
+};
+
+// Mark notification as read
+export const apiMarkNotificationRead = async (id) => {
+    return api.patch(`/notifications/${id}/read`);
+};
+
 // ===========================================================
 // 6. EXPORT DEFAULT API INSTANCE
 // ===========================================================

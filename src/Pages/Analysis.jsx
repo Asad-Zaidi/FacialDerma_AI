@@ -26,10 +26,8 @@ const Analysis = () => {
     const [treatmentSuggestions, setTreatmentSuggestions] = useState({});
     const [uploadProgress, setUploadProgress] = useState(0);
     const [analysisStep, setAnalysisStep] = useState('');
-    // Added new state for map visibility
     const [showMap, setShowMap] = useState(false);
-    // Removed accessToken as it is handled within the api.js interceptor
-    const { accessToken } = useContext(AuthContext); // Keep to ensure user is logged in
+    const { accessToken } = useContext(AuthContext);
     const resultRef = useRef(null);
     const fileInputRef = useRef(null);
 

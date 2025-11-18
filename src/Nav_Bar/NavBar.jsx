@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt } from "react-icons/fa";
 import { IoMdHome, IoMdInformationCircle, IoMdAnalytics } from "react-icons/io";
 import { MdLogin } from "react-icons/md";
-import { BsShieldCheck } from "react-icons/bs";
 import Notifications from "../components/Notifications";
 import ConfirmSignOut from "../components/ConfirmSignout";
+import Logo from "../Assets/logo.png";
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -18,12 +18,12 @@ const Navbar = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("user"));
-    if (data) {
-        setIsLoggedIn(true);
-        setUserRole(data.role); // ← ADD THIS
-    }
-}, []);
+        const data = JSON.parse(localStorage.getItem("user"));
+        if (data) {
+            setIsLoggedIn(true);
+            setUserRole(data.role);
+        }
+    }, []);
 
     const dummyNotifications = [
         "Skin analysis completed successfully.",
@@ -31,7 +31,7 @@ const Navbar = () => {
         "Reminder: Analyze your skin weekly.",
     ];
 
-    // Handle scroll effect
+
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 20);
@@ -45,15 +45,11 @@ const Navbar = () => {
         setMenuOpen(false);
     };
 
-    // useEffect(() => {
-    //     const user = localStorage.getItem('user');
-    //     setIsLoggedIn(!!user);
-    // }, []);
     useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user'));
-    setIsLoggedIn(!!userData);
-    setUserRole(userData?.role || null);
-}, []);
+        const userData = JSON.parse(localStorage.getItem('user'));
+        setIsLoggedIn(!!userData);
+        setUserRole(userData?.role || null);
+    }, []);
 
 
     const handleLogout = () => {
@@ -92,9 +88,13 @@ const Navbar = () => {
                                 onClick={closeMenu}
                             >
                                 {/* Logo Icon Background: Charcoal Gradient */}
-                                <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-black rounded-xl flex items-center justify-center shadow-lg">
-                                    <BsShieldCheck className="text-white text-xl" />
-                                </div>
+                                <div className="w-12 h-12 flex items-center justify-center">
+    <img 
+        src={Logo} 
+        alt="FacialDerma Logo" 
+        className="w-full h-full object-contain"
+    />
+</div>
                                 <div className="hidden sm:block">
                                     {/* Logo Text: Charcoal Gradient */}
                                     <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-black bg-clip-text text-transparent">
@@ -112,8 +112,8 @@ const Navbar = () => {
                                     to="/"
                                     className={({ isActive }) =>
                                         `flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
+                                            ? 'bg-gray-900 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                         }`
                                     }
                                 >
@@ -126,8 +126,8 @@ const Navbar = () => {
                                     to="/About"
                                     className={({ isActive }) =>
                                         `flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
+                                            ? 'bg-gray-900 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                         }`
                                     }
                                 >
@@ -138,44 +138,30 @@ const Navbar = () => {
 
                             {isLoggedIn ? (
                                 <>
-                                    {/* <li>
-                                        <NavLink
-                                            to="/Analysis"
-                                            className={({ isActive }) =>
-                                                `flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                                    ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
-                                                }`
-                                            }
-                                        >
-                                            <IoMdAnalytics className="text-lg" />
-                                            <span>Analysis</span>
-                                        </NavLink>
-                                    </li> */}
+
                                     {userRole === "patient" && (
-    <li>
-        <NavLink
-            to="/Analysis"
-            className={({ isActive }) =>
-                `flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-                    isActive
-                        ? 'bg-gray-900 text-white shadow-sm'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                }`
-            }
-        >
-            <IoMdAnalytics className="text-base" />
-            <span>Analysis</span>
-        </NavLink>
-    </li>
-)}
+                                        <li>
+                                            <NavLink
+                                                to="/Analysis"
+                                                className={({ isActive }) =>
+                                                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 ${isActive
+                                                        ? 'bg-gray-900 text-white shadow-sm'
+                                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                                    }`
+                                                }
+                                            >
+                                                <IoMdAnalytics className="text-base" />
+                                                <span>Analysis</span>
+                                            </NavLink>
+                                        </li>
+                                    )}
 
 
                                     {/* Notifications Button */}
                                     <li className="relative">
                                         <button
                                             onClick={toggleNotifications}
-                                            className="relative flex items-center justify-center w-10 h-10 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300" // Hover: Subtle Gray
+                                            className="relative flex items-center justify-center w-10 h-10 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
                                         >
                                             <FaBell className="text-lg" />
                                             {notificationCount > 0 && (
@@ -197,8 +183,8 @@ const Navbar = () => {
                                             to={userRole === 'dermatologist' ? "/DProfile" : "/Profile"}
                                             className={({ isActive }) =>
                                                 `flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                                    ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
+                                                    ? 'bg-gray-900 text-white shadow-md'
+                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                                 }`
                                             }
                                         >
@@ -221,7 +207,7 @@ const Navbar = () => {
                                 <li>
                                     <NavLink
                                         to="/Login"
-                                        // Login Button: Solid Charcoal
+
                                         className="flex items-center gap-1 px-2 py-2 rounded-lg font-semibold text-sm lg:text-base bg-blue-900 text-white hover:shadow-lg hover:scale-105 transition-all duration-300"
                                     >
                                         <MdLogin className="text-lg" />
@@ -234,7 +220,7 @@ const Navbar = () => {
                         {/* Mobile Menu Button */}
                         <button
                             onClick={toggleMenu}
-                            className="md:hidden relative w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-300" // Hover: Subtle Gray
+                            className="md:hidden relative w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-300"
                             aria-label="Toggle menu"
                         >
                             {menuOpen ? (
@@ -261,9 +247,13 @@ const Navbar = () => {
                         <div className="flex items-center justify-between p-6 border-b border-gray-200">
                             <div className="flex items-center gap-2">
                                 {/* Logo Icon Background: Charcoal Gradient */}
-                                <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-black rounded-xl flex items-center justify-center shadow-lg">
-                                    <BsShieldCheck className="text-white text-xl" />
-                                </div>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+    <img 
+        src={Logo}  // or {Logo} if imported from src
+        alt="FacialDerma Logo" 
+        className="w-full h-full object-contain"
+    />
+</div>
                                 <div>
                                     {/* Logo Text: Charcoal Gradient */}
                                     <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-black bg-clip-text text-transparent">
@@ -288,8 +278,8 @@ const Navbar = () => {
                                     onClick={closeMenu}
                                     className={({ isActive }) =>
                                         `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
+                                            ? 'bg-gray-900 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                         }`
                                     }
                                 >
@@ -303,8 +293,8 @@ const Navbar = () => {
                                     onClick={closeMenu}
                                     className={({ isActive }) =>
                                         `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
+                                            ? 'bg-gray-900 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                         }`
                                     }
                                 >
@@ -315,45 +305,30 @@ const Navbar = () => {
 
                             {isLoggedIn ? (
                                 <>
-                                    {/* <li>
-                                        <NavLink
-                                            to="/Analysis"
-                                            onClick={closeMenu}
-                                            className={({ isActive }) =>
-                                                `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ${isActive
-                                                    ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
-                                                }`
-                                            }
-                                        >
-                                            <IoMdAnalytics className="text-xl" />
-                                            <span>Analysis</span>
-                                        </NavLink>
-                                    </li> */}
+
                                     {userRole === "patient" && (
-    <li>
-        <NavLink
-            to="/Analysis"
-            onClick={closeMenu}
-            className={({ isActive }) =>
-                `flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-                    isActive
-                        ? 'bg-gray-900 text-white shadow-sm'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                }`
-            }
-        >
-            <IoMdAnalytics className="text-lg" />
-            <span>Analysis</span>
-        </NavLink>
-    </li>
-)}
+                                        <li>
+                                            <NavLink
+                                                to="/Analysis"
+                                                onClick={closeMenu}
+                                                className={({ isActive }) =>
+                                                    `flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${isActive
+                                                        ? 'bg-gray-900 text-white shadow-sm'
+                                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                                    }`
+                                                }
+                                            >
+                                                <IoMdAnalytics className="text-lg" />
+                                                <span>Analysis</span>
+                                            </NavLink>
+                                        </li>
+                                    )}
 
 
                                     <li>
                                         <button
                                             onClick={toggleNotifications}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300" // Hover: Subtle Gray
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
                                         >
                                             <div className="relative">
                                                 <FaBell className="text-xl" />
@@ -381,8 +356,8 @@ const Navbar = () => {
                                             onClick={closeMenu}
                                             className={({ isActive }) =>
                                                 `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ${isActive
-                                                    ? 'bg-gray-900 text-white shadow-md' // Active: Solid Charcoal
-                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' // Hover: Subtle Gray
+                                                    ? 'bg-gray-900 text-white shadow-md'
+                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                                 }`
                                             }
                                         >
@@ -409,7 +384,7 @@ const Navbar = () => {
                                     <NavLink
                                         to="/Login"
                                         onClick={closeMenu}
-                                        // Login Button: Solid Charcoal
+
                                         className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-base bg-gray-900 text-white hover:shadow-lg transition-all duration-300"
                                     >
                                         <MdLogin className="text-xl" />
