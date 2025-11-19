@@ -79,6 +79,11 @@ export const apiCreateReviewRequest = async ({ predictionId, dermatologistId }) 
     return api.post("/review-requests", { predictionId, dermatologistId });
 };
 
+// Get review request with prediction details
+export const apiGetReviewRequest = async (requestId) => {
+    return api.get(`/review-requests/${requestId}`);
+};
+
 // List notifications (optionally unread only)
 export const apiGetNotifications = async (unreadOnly = true) => {
     const params = {};
@@ -88,7 +93,12 @@ export const apiGetNotifications = async (unreadOnly = true) => {
 
 // Mark notification as read
 export const apiMarkNotificationRead = async (id) => {
-    return api.patch(`/notifications/${id}/read`);
+        return api.patch(`/notifications/${id}/read`);
+};
+
+// Submit review comment for a review request
+export const apiSubmitReview = async (requestId, comment) => {
+    return api.post(`/review-requests/${requestId}/review`, { comment });
 };
 
 // ===========================================================

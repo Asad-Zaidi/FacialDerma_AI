@@ -15,7 +15,14 @@ import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
 import suggestionsData from '../Assets/treatmentSuggestions.json';
 import { generatePdfReport } from '../components/PdfReportGenerator';
-import { apiUpload } from '../api/api'; 
+// import { apiUpload } from '../api/api';
+import {
+    apiUpload,
+    getAllPredictions,
+    apiListDermatologists,
+    apiCreateReviewRequest
+} from '../api/api';
+import DermatologistPicker from '../components/DermatologistPicker';
 
 const Analysis = () => {
     const [image, setImage] = useState(null);
@@ -30,6 +37,13 @@ const Analysis = () => {
     const { accessToken } = useContext(AuthContext);
     const resultRef = useRef(null);
     const fileInputRef = useRef(null);
+    // New state for review workflow
+    const [showDermPicker, setShowDermPicker] = useState(false);
+    const [derms, setDerms] = useState([]);
+    const [dermSearch, setDermSearch] = useState("");
+    const [dermLoading, setDermLoading] = useState(false);
+    const [latestPredictionId, setLatestPredictionId] = useState(null);
+
 
     useEffect(() => {
         // Since api.js is not provided in full, we assume a mechanism to set the token is needed
@@ -140,7 +154,7 @@ const Analysis = () => {
             // The apiUpload function is expected to handle the Axios call, headers, and base URL.
             const response = await apiUpload(formData);
             const data = response.data; // Axios response data is in the 'data' property
-            
+
             console.log('Response data:', data);
 
             clearInterval(stepInterval);
@@ -168,11 +182,20 @@ const Analysis = () => {
                 resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 300);
 
-            toast.success('Prediction successful and saved!');
+            toast.success('Prediction successful and saved!');            // Fetch latest prediction to get predictionId (backend returns newest first)
+            try {
+                const predsResp = await getAllPredictions();
+                const latest = predsResp?.data?.[0];
+                setLatestPredictionId(latest?.id || null);
+            } catch (e) {
+                console.warn("Could not fetch latest prediction id:", e);
+                setLatestPredictionId(null);
+            }
+
         } catch (error) {
             console.error('Error during image analysis:', error);
             clearInterval(stepInterval);
-            
+
             let errMsg = 'Something went wrong during analysis.';
             if (error.response) {
                 const errorData = error.response.data;
@@ -494,8 +517,7 @@ const Analysis = () => {
                     {showResult && (
                         <section
                             ref={resultRef}
-                            className="w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-gray-200 mb-3 rounded-2xl shadow-xl p-6 md:p-8 lg:p-10 animate-fade-in"
-                        >
+                            className="w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-gray-200 mb-3 rounded-2xl shadow-xl p-6 md:p-8 lg:p-10 animate-fade-in">
                             {/* Results Header with Actions */}
                             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                                 <div className="flex items-center gap-2">
@@ -575,6 +597,25 @@ const Analysis = () => {
                                                         </p>
                                                     )}
                                                 </div>
+                                                <button
+                                                    disabled={!latestPredictionId}
+                                                    onClick={async () => {
+                                                        setShowDermPicker(true);
+                                                        // Load initial dermatologists list
+                                                        setDermLoading(true);
+                                                        try {
+                                                            const res = await apiListDermatologists("", 10);
+                                                            setDerms(res.data || []);
+                                                        } catch (e) {
+                                                            toast.error("Failed to load dermatologists");
+                                                        } finally {
+                                                            setDermLoading(false);
+                                                        }
+                                                    }}
+                                                    className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                                >
+                                                    Review from Expert
+                                                </button>
                                             </div>
 
                                             {/* Disclaimer */}
@@ -700,6 +741,48 @@ const Analysis = () => {
                     animation: shake 0.4s ease-out;
                 }
             `}</style>
+
+            <DermatologistPicker
+                isOpen={showDermPicker}
+                onClose={() => setShowDermPicker(false)}
+                derms={derms}
+                loading={dermLoading}
+                searchValue={dermSearch}
+                onSearchChange={setDermSearch}
+                onSearchClick={async () => {
+                    setDermLoading(true);
+                    try {
+                        const res = await apiListDermatologists(dermSearch, 10);
+                        setDerms(res.data || []);
+                    } catch {
+                        toast.error("Search failed");
+                    } finally {
+                        setDermLoading(false);
+                    }
+                }}
+                onSelectDermatologist={async (d) => {
+                    if (!latestPredictionId) {
+                        toast.error("Missing prediction ID. Try analyzing again.");
+                        return;
+                    }
+                    try {
+                        await apiCreateReviewRequest({
+                            predictionId: latestPredictionId,
+                            dermatologistId: d.id || d._id,
+                        });
+                        toast.success("Review request sent!");
+                        setShowDermPicker(false);
+                    } catch (err) {
+                        const code = err?.response?.status;
+                        const msg = err?.response?.data?.error || err?.message || "Failed to create request";
+                        if (code === 409) {
+                            toast.error("Review already requested for this prediction and dermatologist.");
+                        } else {
+                            toast.error(msg);
+                        }
+                    }
+                }}
+            />
         </div>
     );
 };

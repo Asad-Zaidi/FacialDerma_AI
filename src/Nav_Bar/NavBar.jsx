@@ -4,17 +4,25 @@ import { FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt } from "react-icons/fa";
 import { IoMdHome, IoMdInformationCircle, IoMdAnalytics } from "react-icons/io";
 import { MdLogin } from "react-icons/md";
 import Notifications from "../components/Notifications";
+import ReviewPreviewModal from "../components/ReviewPreviewModal";
 import ConfirmSignOut from "../components/ConfirmSignout";
 import Logo from "../Assets/logo.png";
+import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview } from "../api/api";
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showConfirmSignOut, setShowConfirmSignOut] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const [notificationCount] = useState(3);
+    const [notificationCount, setNotificationCount] = useState(0);
     const [userRole, setUserRole] = useState(null);
+    const [showReviewPreview, setShowReviewPreview] = useState(false);
+    const [previewLoading, setPreviewLoading] = useState(false);
+    const [previewError, setPreviewError] = useState("");
+    const [previewPrediction, setPreviewPrediction] = useState(null);
+    const [currentRequestId, setCurrentRequestId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,12 +33,6 @@ const Navbar = () => {
         }
     }, []);
 
-    const dummyNotifications = [
-        "Skin analysis completed successfully.",
-        "New skin health tip available.",
-        "Reminder: Analyze your skin weekly.",
-    ];
-
 
     useEffect(() => {
         const handleScroll = () => {
@@ -40,15 +42,52 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const toggleNotifications = () => {
-        setShowNotifications(prev => !prev);
+    const toggleNotifications = async () => {
+        const next = !showNotifications;
+        setShowNotifications(next);
         setMenuOpen(false);
+
+        if (next) {
+            try {
+                const res = await apiGetNotifications(false); // Get all notifications
+                console.log('Fetched notifications:', res.data);
+                const notifs = res.data?.notifications || [];
+                const unreadCount = typeof res.data?.unreadCount === 'number'
+                    ? res.data.unreadCount
+                    : notifs.filter(n => !n.isRead && !n.read).length;
+                setNotifications(notifs);
+                setNotificationCount(unreadCount);
+                console.log('Unread count:', unreadCount);
+            } catch (err) {
+                console.error('Error fetching notifications:', err);
+                setNotifications([]);
+                setNotificationCount(0);
+            }
+        }
     };
 
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('user'));
         setIsLoggedIn(!!userData);
         setUserRole(userData?.role || null);
+        
+        // Fetch initial notification count if logged in
+        if (userData) {
+            apiGetNotifications(false)
+                .then(res => {
+                    console.log('Initial notifications fetch:', res.data);
+                    const notifs = res.data?.notifications || [];
+                    const unreadCount = typeof res.data?.unreadCount === 'number'
+                        ? res.data.unreadCount
+                        : notifs.filter(n => !n.isRead && !n.read).length;
+                    setNotificationCount(unreadCount);
+                    console.log('Initial unread count:', unreadCount);
+                })
+                .catch(err => {
+                    console.error('Error fetching initial notifications:', err);
+                    setNotificationCount(0);
+                });
+        }
     }, []);
 
 
@@ -89,12 +128,12 @@ const Navbar = () => {
                             >
                                 {/* Logo Icon Background: Charcoal Gradient */}
                                 <div className="w-12 h-12 flex items-center justify-center">
-    <img 
-        src={Logo} 
-        alt="FacialDerma Logo" 
-        className="w-full h-full object-contain"
-    />
-</div>
+                                    <img
+                                        src={Logo}
+                                        alt="FacialDerma Logo"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
                                 <div className="hidden sm:block">
                                     {/* Logo Text: Charcoal Gradient */}
                                     <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-black bg-clip-text text-transparent">
@@ -172,8 +211,29 @@ const Navbar = () => {
                                         </button>
                                         {showNotifications && (
                                             <Notifications
-                                                notifications={dummyNotifications}
+                                                notifications={notifications}
                                                 onClose={() => setShowNotifications(false)}
+                                                onItemClick={async (n) => {
+                                                    // Only dermatologists should open preview from review_requested
+                                                    if (userRole !== 'dermatologist') return;
+                                                    if (n?.type !== 'review_requested') return;
+                                                    const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
+                                                    if (!requestId) return;
+                                                    setCurrentRequestId(requestId);
+                                                    setPreviewError("");
+                                                    setPreviewPrediction(null);
+                                                    setPreviewLoading(true);
+                                                    setShowReviewPreview(true);
+                                                    try {
+                                                        const res = await apiGetReviewRequest(requestId);
+                                                        setPreviewPrediction(res.data);
+                                                    } catch (err) {
+                                                        const msg = err?.response?.data?.error || 'Failed to load prediction details';
+                                                        setPreviewError(msg);
+                                                    } finally {
+                                                        setPreviewLoading(false);
+                                                    }
+                                                }}
                                             />
                                         )}
                                     </li>
@@ -248,12 +308,12 @@ const Navbar = () => {
                             <div className="flex items-center gap-2">
                                 {/* Logo Icon Background: Charcoal Gradient */}
                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center">
-    <img 
-        src={Logo}  // or {Logo} if imported from src
-        alt="FacialDerma Logo" 
-        className="w-full h-full object-contain"
-    />
-</div>
+                                    <img
+                                        src={Logo}  // or {Logo} if imported from src
+                                        alt="FacialDerma Logo"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
                                 <div>
                                     {/* Logo Text: Charcoal Gradient */}
                                     <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-black bg-clip-text text-transparent">
@@ -343,8 +403,28 @@ const Navbar = () => {
                                         {showNotifications && (
                                             <div className="mt-2">
                                                 <Notifications
-                                                    notifications={dummyNotifications}
+                                                    notifications={notifications}
                                                     onClose={() => setShowNotifications(false)}
+                                                    onItemClick={async (n) => {
+                                                        if (userRole !== 'dermatologist') return;
+                                                        if (n?.type !== 'review_requested') return;
+                                                        const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
+                                                        if (!requestId) return;
+                                                        setCurrentRequestId(requestId);
+                                                        setPreviewError("");
+                                                        setPreviewPrediction(null);
+                                                        setPreviewLoading(true);
+                                                        setShowReviewPreview(true);
+                                                        try {
+                                                            const res = await apiGetReviewRequest(requestId);
+                                                            setPreviewPrediction(res.data);
+                                                        } catch (err) {
+                                                            const msg = err?.response?.data?.error || 'Failed to load prediction details';
+                                                            setPreviewError(msg);
+                                                        } finally {
+                                                            setPreviewLoading(false);
+                                                        }
+                                                    }}
                                                 />
                                             </div>
                                         )}
@@ -407,6 +487,32 @@ const Navbar = () => {
                     onCancel={() => setShowConfirmSignOut(false)}
                 />
             )}
+
+            {/* Review Preview Modal for Dermatologists */}
+            <ReviewPreviewModal
+                open={showReviewPreview}
+                onClose={() => {
+                    setShowReviewPreview(false);
+                    setPreviewError("");
+                    setPreviewPrediction(null);
+                    setCurrentRequestId(null);
+                }}
+                loading={previewLoading}
+                error={previewError}
+                prediction={previewPrediction}
+                onSubmitComment={async (comment) => {
+                    if (!currentRequestId) throw new Error('No request ID');
+                    await apiSubmitReview(currentRequestId, comment);
+                    // Refresh notifications after submission
+                    const res = await apiGetNotifications(false);
+                    const notifs = res.data?.notifications || [];
+                    const unreadCount = typeof res.data?.unreadCount === 'number'
+                        ? res.data.unreadCount
+                        : notifs.filter(n => !n.isRead && !n.read).length;
+                    setNotifications(notifs);
+                    setNotificationCount(unreadCount);
+                }}
+            />
         </>
     );
 };
