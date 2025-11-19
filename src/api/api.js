@@ -66,6 +66,11 @@ export const getAllPredictions = async () => {
     return api.get("/predictions");
 };
 
+// Delete a prediction
+export const apiDeletePrediction = async (predictionId) => {
+    return api.delete(`/predictions/${predictionId}`);
+};
+
 // List dermatologists with optional search
 export const apiListDermatologists = async (q = "", limit = 10) => {
     const params = {};
@@ -99,6 +104,16 @@ export const apiMarkNotificationRead = async (id) => {
 // Submit review comment for a review request
 export const apiSubmitReview = async (requestId, comment) => {
     return api.post(`/review-requests/${requestId}/review`, { comment });
+};
+
+// Reject a review request
+export const apiRejectReview = async (requestId, comment) => {
+    return api.post(`/review-requests/${requestId}/reject`, { comment });
+};
+
+// Get all review requests for current user
+export const apiGetReviewRequests = async () => {
+    return api.get("/review-requests");
 };
 
 // ===========================================================

@@ -16,9 +16,10 @@ const formatDateTime = (dateString) => {
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
 };
 
-const ReviewPreviewModal = ({ open, onClose, loading, error, prediction, onSubmitComment }) => {
+const ReviewPreviewModal = ({ open, onClose, loading, error, prediction, onSubmitComment, onRejectRequest }) => {
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   useEffect(() => {
     if (prediction?.comment) {
@@ -48,7 +49,28 @@ const ReviewPreviewModal = ({ open, onClose, loading, error, prediction, onSubmi
     }
   };
 
+  const handleReject = async () => {
+    if (!comment.trim()) {
+      alert('Please provide a reason for rejection');
+      return;
+    }
+    if (!window.confirm('Are you sure you want to reject this review request? The patient will be notified.')) {
+      return;
+    }
+    setRejecting(true);
+    try {
+      await onRejectRequest(comment);
+      onClose();
+    } catch (err) {
+      console.error('Failed to reject request:', err);
+      alert('Failed to reject request. Please try again.');
+    } finally {
+      setRejecting(false);
+    }
+  };
+
   const isReviewed = prediction?.status === 'reviewed';
+  const isRejected = prediction?.status === 'rejected';
   
   // Get recommended treatment from frontend JSON
   const predictedLabel = prediction?.prediction?.result?.predicted_label;
@@ -121,27 +143,39 @@ const ReviewPreviewModal = ({ open, onClose, loading, error, prediction, onSubmi
               {/* Comment Section */}
               <div className="border-t pt-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {isReviewed ? 'Your Review Comment' : 'Add Your Professional Comment'}
+                  {isReviewed ? 'Your Review Comment' : isRejected ? 'Rejection Reason' : 'Add Your Professional Comment'}
                 </label>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  disabled={isReviewed || submitting}
-                  placeholder="Enter your professional review and recommendations for the patient..."
+                  disabled={isReviewed || isRejected || submitting || rejecting}
+                  placeholder={isRejected ? "Reason for rejection..." : "Enter your professional review and recommendations for the patient..."}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   rows="5"
                 />
-                {!isReviewed && (
-                  <button
-                    onClick={handleSubmit}
-                    disabled={!comment.trim() || submitting}
-                    className="mt-3 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {submitting ? 'Submitting...' : 'Submit Review'}
-                  </button>
+                {!isReviewed && !isRejected && (
+                  <div className="flex gap-3 mt-3">
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!comment.trim() || submitting || rejecting}
+                      className="flex-1 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {submitting ? 'Approving...' : 'Approve & Submit Review'}
+                    </button>
+                    <button
+                      onClick={handleReject}
+                      disabled={!comment.trim() || submitting || rejecting}
+                      className="flex-1 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {rejecting ? 'Rejecting...' : 'Reject Request'}
+                    </button>
+                  </div>
                 )}
                 {isReviewed && (
-                  <p className="mt-2 text-sm text-green-600 font-medium">✓ Review already submitted</p>
+                  <p className="mt-2 text-sm text-green-600 font-medium">✓ Review already submitted and approved</p>
+                )}
+                {isRejected && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">✗ This review request was rejected</p>
                 )}
               </div>
             </div>

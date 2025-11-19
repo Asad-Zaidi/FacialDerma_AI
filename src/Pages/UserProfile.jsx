@@ -16,16 +16,17 @@ import {
     FaExclamationTriangle,
 } from "react-icons/fa";
 import { MdSave, MdCancel } from "react-icons/md";
-import { apiGetFullProfile, apiUpdateProfile } from "../api/api";
+import { apiGetFullProfile, apiUpdateProfile, getAllPredictions, apiGetReviewRequests, apiGetReviewRequest, apiDeletePrediction } from "../api/api";
 import Header from '../Nav_Bar/Header';
 import MaleAvatar from "../Assets/male-avatar.png";
 import FemaleAvatar from "../Assets/female-avatar.png";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import UpdateProfilePopup from '../components/UpdateProfilePopup';
+import PatientReviewModal from '../components/PatientReviewModal';
 
 const CardSection = ({ title, icon, children, editHandler, gradient = false }) => (
-    <div className={`${gradient ? 'bg-gradient-to-br from-white via-gray-50 to-white' : 'bg-white'} border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 transform hover:-translate-y-1`}>
+    <div className={`${gradient ? 'bg-gradient-to-br from-white via-gray-50 to-white' : 'bg-white'} border border-gray-200 rounded-xl shadow-lg p-4`}>
         <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
             <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
                 <span className="p-1.5 bg-blue-50 rounded-lg">{icon && icon}</span>
@@ -64,9 +65,18 @@ const UserProfile = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+    const [predictions, setPredictions] = useState([]);
+    const [reviewRequests, setReviewRequests] = useState([]);
+    const [showPatientReview, setShowPatientReview] = useState(false);
+    const [patientReviewData, setPatientReviewData] = useState(null);
+    const [reviewLoading, setReviewLoading] = useState(false);
+    const [reviewError, setReviewError] = useState(null);
+
 
     useEffect(() => {
         fetchProfile();
+        fetchPredictions();
+        fetchReviewRequests();
     }, []);
 
 
@@ -86,6 +96,74 @@ const UserProfile = () => {
             }
         }
     }, [patient]);
+
+    const fetchPredictions = async () => {
+        try {
+            const response = await getAllPredictions();
+            setPredictions(response.data || []);
+        } catch (error) {
+            console.error("Failed to fetch predictions:", error);
+        }
+    };
+
+    const fetchReviewRequests = async () => {
+        try {
+            const response = await apiGetReviewRequests();
+            setReviewRequests(response.data?.requests || []);
+        } catch (error) {
+            console.error("Failed to fetch review requests:", error);
+        }
+    };
+
+    // Helper function to get review request status for a prediction
+    const getReviewStatus = (predictionId) => {
+        const request = reviewRequests.find(
+            (req) => req.predictionId === predictionId
+        );
+        if (!request) return null;
+        return request.status; // 'pending', 'reviewed', or 'rejected'
+    };
+
+    // Helper function to render status badge
+    const renderStatusBadge = (status) => {
+        if (!status) {
+            return (
+                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                    No Request
+                </span>
+            );
+        }
+
+        const statusConfig = {
+            pending: {
+                bg: 'bg-yellow-100',
+                text: 'text-yellow-700',
+                icon: '⏳',
+                label: 'Pending'
+            },
+            reviewed: {
+                bg: 'bg-green-100',
+                text: 'text-green-700',
+                icon: '✓',
+                label: 'Approved'
+            },
+            rejected: {
+                bg: 'bg-red-100',
+                text: 'text-red-700',
+                icon: '✗',
+                label: 'Rejected'
+            }
+        };
+
+        const config = statusConfig[status] || statusConfig.pending;
+
+        return (
+            <span className={`px-2.5 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 ${config.bg} ${config.text}`}>
+                <span>{config.icon}</span>
+                {config.label}
+            </span>
+        );
+    };
 
     const fetchProfile = async () => {
         try {
@@ -276,8 +354,98 @@ const UserProfile = () => {
         }));
     };
 
-    const handleViewReport = (id) => {
-        alert(`Navigate to report ${id}`);
+    const formatDateTime = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        hours = String(hours).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
+    };
+
+    const handleDeleteAnalysis = async (predictionId) => {
+        if (!window.confirm('Are you sure you want to delete this analysis? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await apiDeletePrediction(predictionId);
+            toast.success('Analysis deleted successfully');
+            
+            // Refresh the predictions list
+            await fetchPredictions();
+            await fetchReviewRequests();
+        } catch (error) {
+            console.error("Failed to delete analysis:", error);
+            const errorMsg = error.response?.data?.detail?.error || error.response?.data?.detail || 'Failed to delete analysis';
+            toast.error(errorMsg);
+        }
+    };
+
+    const handleViewAnalysis = async (predictionId) => {
+        try {
+            setReviewLoading(true);
+            setReviewError(null);
+            setShowPatientReview(true);
+
+            // Find the prediction
+            const prediction = predictions.find(p => p.id === predictionId);
+
+            if (!prediction) {
+                setReviewError("Prediction not found");
+                setReviewLoading(false);
+                return;
+            }
+
+            // Find review request for this prediction (reviewed or rejected)
+            const reviewRequest = reviewRequests.find(r => r.predictionId === predictionId && (r.status === 'reviewed' || r.status === 'rejected'));
+
+            if (reviewRequest) {
+                // Fetch full review details including dermatologist info
+                try {
+                    const reviewResponse = await apiGetReviewRequest(reviewRequest.id);
+                    const reviewData = reviewResponse.data;
+                    
+                    // Ensure prediction imageUrl is present
+                    // If the review response doesn't have imageUrl, use it from the original prediction
+                    if (reviewData.prediction && !reviewData.prediction.imageUrl && prediction.imageUrl) {
+                        reviewData.prediction.imageUrl = prediction.imageUrl;
+                    }
+                    
+                    setPatientReviewData(reviewData);
+                } catch (err) {
+                    console.error("Failed to fetch review details:", err);
+                    // Fallback to just showing prediction
+                    setPatientReviewData({
+                        prediction: prediction,
+                        status: 'pending',
+                        comment: null,
+                        dermatologistInfo: null,
+                        reviewedAt: null
+                    });
+                }
+            } else {
+                // No review request or not reviewed/rejected yet
+                setPatientReviewData({
+                    prediction: prediction,
+                    status: 'pending',
+                    comment: null,
+                    dermatologistInfo: null,
+                    reviewedAt: null
+                });
+            }
+        } catch (error) {
+            console.error("Failed to load analysis:", error);
+            setReviewError("Failed to load analysis details");
+        } finally {
+            setReviewLoading(false);
+        }
     };
 
     if (loading && !patient) {
@@ -327,7 +495,7 @@ const UserProfile = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     <div className="space-y-5">
-                        <div className="bg-gradient-to-br from-white via-blue-50 to-white border border-gray-200 rounded-xl shadow-xl p-5 text-center transform hover:scale-105 transition-all duration-300">
+                        <div className="bg-gradient-to-br from-white via-blue-50 to-white border border-gray-200 rounded-xl shadow-xl p-5 text-center ">
                             <div className="relative inline-block mb-3">
                                 <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
                                 {imagePreview || patient.profileImage ? (
@@ -583,73 +751,59 @@ const UserProfile = () => {
 
 
                         <CardSection
-                            title="Recent Reports"
-                            icon={<FaHistory className="text-blue-600 text-sm" />}
-                            gradient={true}
-                        >
-                            {patient.recentReports && patient.recentReports.length > 0 ? (
-                                <div className="grid sm:grid-cols-2 gap-3">
-                                    {patient.recentReports.map((report) => (
-                                        <div
-                                            key={report.id}
-                                            className="group bg-gradient-to-br from-white to-blue-50 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-400 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-                                            onClick={() => handleViewReport(report.id)}
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition-colors mb-0.5">
-                                                        {report.title}
-                                                    </h4>
-                                                    <p className="text-xs text-gray-500 font-medium">{report.date}</p>
-                                                </div>
-                                                <div className="text-blue-600 group-hover:translate-x-1 transition-transform text-lg">
-                                                    →
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <FaHistory className="text-gray-400 text-xl" />
-                                    </div>
-                                    <p className="text-gray-500 font-medium text-sm">No recent reports available</p>
-                                </div>
-                            )}
-                        </CardSection>
-
-                        <CardSection
-                            title="History of Analysis"
+                            title="Analysis History"
                             icon={<FaHistory className="text-green-600 text-sm" />}
                             gradient={true}
                         >
-                            {patient.history && patient.history.length > 0 ? (
-                                <div className="relative space-y-4">
-                                    <div className="absolute left-4 top-0 h-full border-l-2 border-dashed border-gray-300"></div>
-                                    {patient.history.map((entry, index) => (
-                                        <div key={entry.id} className="relative pl-10 group">
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full ring-4 ring-white shadow-lg flex items-center justify-center text-white font-bold text-xs group-hover:scale-110 transition-transform">
-                                                {index + 1}
-                                            </div>
-                                            <div
-                                                className="bg-gradient-to-br from-white to-green-50 p-4 rounded-xl border-2 border-gray-200 hover:border-green-400 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-                                                onClick={() => handleViewReport(entry.id)}
-                                            >
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex-1">
-                                                        <h4 className="font-bold text-gray-800 text-sm group-hover:text-green-600 transition-colors mb-0.5">
-                                                            {entry.title}
-                                                        </h4>
-                                                        <p className="text-xs text-gray-500 font-medium">{entry.date}</p>
-                                                    </div>
-                                                    <div className="text-green-600 group-hover:translate-x-1 transition-transform text-lg">
-                                                        →
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                            {predictions && predictions.length > 0 ? (
+                                <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
+                                    <table className="w-full border-collapse">
+                                        <thead className="sticky top-0 z-10">
+                                            <tr className="bg-gradient-to-r from-green-50 to-teal-50 border-b-2 border-green-200">
+                                                <th className="text-left py-3 px-4 text-sm font-bold text-gray-700">Disease Name</th>
+                                                <th className="text-left py-3 px-4 text-sm font-bold text-gray-700">Date</th>
+                                                <th className="text-center py-3 px-4 text-sm font-bold text-gray-700">Review Status</th>
+                                                <th className="text-center py-3 px-4 text-sm font-bold text-gray-700">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {predictions.map((prediction, index) => (
+                                                <tr 
+                                                    key={prediction.id} 
+                                                    className={`border-b border-gray-200 hover:bg-green-50 transition-colors ${
+                                                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <td className="py-3 px-4 text-sm text-gray-800 font-medium">
+                                                        {prediction.result?.predicted_label || 'Skin Analysis'}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">
+                                                        {formatDateTime(prediction.createdAt)}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-center">
+                                                        {renderStatusBadge(getReviewStatus(prediction.id))}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-center">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <button
+                                                                onClick={() => handleViewAnalysis(prediction.id)}
+                                                                className="px-4 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition-all duration-200 transform hover:scale-105 shadow-md"
+                                                            >
+                                                                View
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteAnalysis(prediction.id)}
+                                                                className="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-all duration-200 transform hover:scale-105 shadow-md flex items-center gap-1"
+                                                                title="Delete this analysis"
+                                                            >
+                                                                <FaTrash className="text-xs" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             ) : (
                                 <div className="text-center py-8">
@@ -669,6 +823,17 @@ const UserProfile = () => {
                     userRole="patient"
                 />
             )}
+            <PatientReviewModal
+                open={showPatientReview}
+                onClose={() => {
+                    setShowPatientReview(false);
+                    setPatientReviewData(null);
+                    setReviewError(null);
+                }}
+                loading={reviewLoading}
+                error={reviewError}
+                reviewData={patientReviewData}
+            />
         </div>
     );
 };

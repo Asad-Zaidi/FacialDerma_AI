@@ -5,9 +5,10 @@ import { IoMdHome, IoMdInformationCircle, IoMdAnalytics } from "react-icons/io";
 import { MdLogin } from "react-icons/md";
 import Notifications from "../components/Notifications";
 import ReviewPreviewModal from "../components/ReviewPreviewModal";
+import PatientReviewModal from "../components/PatientReviewModal";
 import ConfirmSignOut from "../components/ConfirmSignout";
 import Logo from "../Assets/logo.png";
-import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview } from "../api/api";
+import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview } from "../api/api";
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -23,6 +24,8 @@ const Navbar = () => {
     const [previewError, setPreviewError] = useState("");
     const [previewPrediction, setPreviewPrediction] = useState(null);
     const [currentRequestId, setCurrentRequestId] = useState(null);
+    const [showPatientReview, setShowPatientReview] = useState(false);
+    const [patientReviewData, setPatientReviewData] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -52,10 +55,13 @@ const Navbar = () => {
                 const res = await apiGetNotifications(false); // Get all notifications
                 console.log('Fetched notifications:', res.data);
                 const notifs = res.data?.notifications || [];
-                const unreadCount = typeof res.data?.unreadCount === 'number'
-                    ? res.data.unreadCount
-                    : notifs.filter(n => !n.isRead && !n.read).length;
-                setNotifications(notifs);
+                
+                // Filter out deleted notifications from localStorage
+                const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
+                
+                const unreadCount = filteredNotifs.filter(n => !n.isRead && !n.read).length;
+                setNotifications(filteredNotifs);
                 setNotificationCount(unreadCount);
                 console.log('Unread count:', unreadCount);
             } catch (err) {
@@ -77,9 +83,12 @@ const Navbar = () => {
                 .then(res => {
                     console.log('Initial notifications fetch:', res.data);
                     const notifs = res.data?.notifications || [];
-                    const unreadCount = typeof res.data?.unreadCount === 'number'
-                        ? res.data.unreadCount
-                        : notifs.filter(n => !n.isRead && !n.read).length;
+                    
+                    // Filter out deleted notifications from localStorage
+                    const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                    const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
+                    
+                    const unreadCount = filteredNotifs.filter(n => !n.isRead && !n.read).length;
                     setNotificationCount(unreadCount);
                     console.log('Initial unread count:', unreadCount);
                 })
@@ -213,25 +222,78 @@ const Navbar = () => {
                                             <Notifications
                                                 notifications={notifications}
                                                 onClose={() => setShowNotifications(false)}
+                                                onClearAll={() => {
+                                                    const allIds = notifications.map(n => n.id || n._id);
+                                                    const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                                                    const updatedDeletedIds = [...new Set([...deletedIds, ...allIds])];
+                                                    localStorage.setItem('deletedNotifications', JSON.stringify(updatedDeletedIds));
+                                                    setNotifications([]);
+                                                    setNotificationCount(0);
+                                                }}
+                                                onDeleteNotification={(notificationId) => {
+                                                    const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                                                    deletedIds.push(notificationId);
+                                                    localStorage.setItem('deletedNotifications', JSON.stringify(deletedIds));
+                                                    
+                                                    setNotifications(prev => {
+                                                        const updated = prev.filter(n => (n.id || n._id) !== notificationId);
+                                                        const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
+                                                        setNotificationCount(unreadCount);
+                                                        return updated;
+                                                    });
+                                                }}
                                                 onItemClick={async (n) => {
-                                                    // Only dermatologists should open preview from review_requested
-                                                    if (userRole !== 'dermatologist') return;
-                                                    if (n?.type !== 'review_requested') return;
                                                     const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                     if (!requestId) return;
-                                                    setCurrentRequestId(requestId);
-                                                    setPreviewError("");
-                                                    setPreviewPrediction(null);
-                                                    setPreviewLoading(true);
-                                                    setShowReviewPreview(true);
-                                                    try {
-                                                        const res = await apiGetReviewRequest(requestId);
-                                                        setPreviewPrediction(res.data);
-                                                    } catch (err) {
-                                                        const msg = err?.response?.data?.error || 'Failed to load prediction details';
-                                                        setPreviewError(msg);
-                                                    } finally {
-                                                        setPreviewLoading(false);
+
+                                                    // Dermatologists see preview for review_requested
+                                                    if (userRole === 'dermatologist' && n?.type === 'review_requested') {
+                                                        setCurrentRequestId(requestId);
+                                                        setPreviewError("");
+                                                        setPreviewPrediction(null);
+                                                        setPreviewLoading(true);
+                                                        setShowReviewPreview(true);
+                                                        try {
+                                                            const res = await apiGetReviewRequest(requestId);
+                                                            setPreviewPrediction(res.data);
+                                                        } catch (err) {
+                                                            const msg = err?.response?.data?.error || 'Failed to load prediction details';
+                                                            setPreviewError(msg);
+                                                        } finally {
+                                                            setPreviewLoading(false);
+                                                        }
+                                                    }
+                                                    // Patients see review for review_submitted
+                                                    else if (userRole === 'patient' && n?.type === 'review_submitted') {
+                                                        setPreviewError("");
+                                                        setPatientReviewData(null);
+                                                        setPreviewLoading(true);
+                                                        setShowPatientReview(true);
+                                                        try {
+                                                            const res = await apiGetReviewRequest(requestId);
+                                                            setPatientReviewData(res.data);
+                                                        } catch (err) {
+                                                            const msg = err?.response?.data?.error || 'Failed to load review details';
+                                                            setPreviewError(msg);
+                                                        } finally {
+                                                            setPreviewLoading(false);
+                                                        }
+                                                    }
+                                                    // Patients see rejection reason for review_rejected
+                                                    else if (userRole === 'patient' && n?.type === 'review_rejected') {
+                                                        setPreviewError("");
+                                                        setPatientReviewData(null);
+                                                        setPreviewLoading(true);
+                                                        setShowPatientReview(true);
+                                                        try {
+                                                            const res = await apiGetReviewRequest(requestId);
+                                                            setPatientReviewData(res.data);
+                                                        } catch (err) {
+                                                            const msg = err?.response?.data?.error || 'Failed to load rejection details';
+                                                            setPreviewError(msg);
+                                                        } finally {
+                                                            setPreviewLoading(false);
+                                                        }
                                                     }
                                                 }}
                                             />
@@ -405,24 +467,78 @@ const Navbar = () => {
                                                 <Notifications
                                                     notifications={notifications}
                                                     onClose={() => setShowNotifications(false)}
+                                                    onClearAll={() => {
+                                                        const allIds = notifications.map(n => n.id || n._id);
+                                                        const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                                                        const updatedDeletedIds = [...new Set([...deletedIds, ...allIds])];
+                                                        localStorage.setItem('deletedNotifications', JSON.stringify(updatedDeletedIds));
+                                                        setNotifications([]);
+                                                        setNotificationCount(0);
+                                                    }}
+                                                    onDeleteNotification={(notificationId) => {
+                                                        const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                                                        deletedIds.push(notificationId);
+                                                        localStorage.setItem('deletedNotifications', JSON.stringify(deletedIds));
+                                                        
+                                                        setNotifications(prev => {
+                                                            const updated = prev.filter(n => (n.id || n._id) !== notificationId);
+                                                            const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
+                                                            setNotificationCount(unreadCount);
+                                                            return updated;
+                                                        });
+                                                    }}
                                                     onItemClick={async (n) => {
-                                                        if (userRole !== 'dermatologist') return;
-                                                        if (n?.type !== 'review_requested') return;
                                                         const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                         if (!requestId) return;
-                                                        setCurrentRequestId(requestId);
-                                                        setPreviewError("");
-                                                        setPreviewPrediction(null);
-                                                        setPreviewLoading(true);
-                                                        setShowReviewPreview(true);
-                                                        try {
-                                                            const res = await apiGetReviewRequest(requestId);
-                                                            setPreviewPrediction(res.data);
-                                                        } catch (err) {
-                                                            const msg = err?.response?.data?.error || 'Failed to load prediction details';
-                                                            setPreviewError(msg);
-                                                        } finally {
-                                                            setPreviewLoading(false);
+
+                                                        // Dermatologists see preview for review_requested
+                                                        if (userRole === 'dermatologist' && n?.type === 'review_requested') {
+                                                            setCurrentRequestId(requestId);
+                                                            setPreviewError("");
+                                                            setPreviewPrediction(null);
+                                                            setPreviewLoading(true);
+                                                            setShowReviewPreview(true);
+                                                            try {
+                                                                const res = await apiGetReviewRequest(requestId);
+                                                                setPreviewPrediction(res.data);
+                                                            } catch (err) {
+                                                                const msg = err?.response?.data?.error || 'Failed to load prediction details';
+                                                                setPreviewError(msg);
+                                                            } finally {
+                                                                setPreviewLoading(false);
+                                                            }
+                                                        }
+                                                        // Patients see review for review_submitted
+                                                        else if (userRole === 'patient' && n?.type === 'review_submitted') {
+                                                            setPreviewError("");
+                                                            setPatientReviewData(null);
+                                                            setPreviewLoading(true);
+                                                            setShowPatientReview(true);
+                                                            try {
+                                                                const res = await apiGetReviewRequest(requestId);
+                                                                setPatientReviewData(res.data);
+                                                            } catch (err) {
+                                                                const msg = err?.response?.data?.error || 'Failed to load review details';
+                                                                setPreviewError(msg);
+                                                            } finally {
+                                                                setPreviewLoading(false);
+                                                            }
+                                                        }
+                                                        // Patients see rejection reason for review_rejected
+                                                        else if (userRole === 'patient' && n?.type === 'review_rejected') {
+                                                            setPreviewError("");
+                                                            setPatientReviewData(null);
+                                                            setPreviewLoading(true);
+                                                            setShowPatientReview(true);
+                                                            try {
+                                                                const res = await apiGetReviewRequest(requestId);
+                                                                setPatientReviewData(res.data);
+                                                            } catch (err) {
+                                                                const msg = err?.response?.data?.error || 'Failed to load rejection details';
+                                                                setPreviewError(msg);
+                                                            } finally {
+                                                                setPreviewLoading(false);
+                                                            }
                                                         }
                                                     }}
                                                 />
@@ -512,6 +628,31 @@ const Navbar = () => {
                     setNotifications(notifs);
                     setNotificationCount(unreadCount);
                 }}
+                onRejectRequest={async (comment) => {
+                    if (!currentRequestId) throw new Error('No request ID');
+                    await apiRejectReview(currentRequestId, comment);
+                    // Refresh notifications after rejection
+                    const res = await apiGetNotifications(false);
+                    const notifs = res.data?.notifications || [];
+                    const unreadCount = typeof res.data?.unreadCount === 'number'
+                        ? res.data.unreadCount
+                        : notifs.filter(n => !n.isRead && !n.read).length;
+                    setNotifications(notifs);
+                    setNotificationCount(unreadCount);
+                }}
+            />
+
+            {/* Patient Review Modal */}
+            <PatientReviewModal
+                open={showPatientReview}
+                onClose={() => {
+                    setShowPatientReview(false);
+                    setPreviewError("");
+                    setPatientReviewData(null);
+                }}
+                loading={previewLoading}
+                error={previewError}
+                reviewData={patientReviewData}
             />
         </>
     );
