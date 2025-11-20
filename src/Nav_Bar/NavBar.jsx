@@ -8,7 +8,7 @@ import ReviewPreviewModal from "../components/ReviewPreviewModal";
 import PatientReviewModal from "../components/PatientReviewModal";
 import ConfirmSignOut from "../components/ConfirmSignout";
 import Logo from "../Assets/logo.png";
-import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview } from "../api/api";
+import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview, apiMarkNotificationRead } from "../api/api";
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -243,6 +243,27 @@ const Navbar = () => {
                                                     });
                                                 }}
                                                 onItemClick={async (n) => {
+                                                    // Mark notification as read
+                                                    if (n?.id || n?._id) {
+                                                        const notifId = n.id || n._id;
+                                                        try {
+                                                            await apiMarkNotificationRead(notifId);
+                                                            // Update local state to reflect read status
+                                                            setNotifications(prev => {
+                                                                const updated = prev.map(notif => 
+                                                                    (notif.id || notif._id) === notifId 
+                                                                        ? { ...notif, isRead: true, read: true }
+                                                                        : notif
+                                                                );
+                                                                const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
+                                                                setNotificationCount(unreadCount);
+                                                                return updated;
+                                                            });
+                                                        } catch (err) {
+                                                            console.error('Failed to mark notification as read:', err);
+                                                        }
+                                                    }
+
                                                     const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                     if (!requestId) return;
 
@@ -488,6 +509,27 @@ const Navbar = () => {
                                                         });
                                                     }}
                                                     onItemClick={async (n) => {
+                                                        // Mark notification as read
+                                                        if (n?.id || n?._id) {
+                                                            const notifId = n.id || n._id;
+                                                            try {
+                                                                await apiMarkNotificationRead(notifId);
+                                                                // Update local state to reflect read status
+                                                                setNotifications(prev => {
+                                                                    const updated = prev.map(notif => 
+                                                                        (notif.id || notif._id) === notifId 
+                                                                            ? { ...notif, isRead: true, read: true }
+                                                                            : notif
+                                                                    );
+                                                                    const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
+                                                                    setNotificationCount(unreadCount);
+                                                                    return updated;
+                                                                });
+                                                            } catch (err) {
+                                                                console.error('Failed to mark notification as read:', err);
+                                                            }
+                                                        }
+
                                                         const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                         if (!requestId) return;
 

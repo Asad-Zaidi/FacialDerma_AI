@@ -16,6 +16,8 @@ import {
     FaExclamationTriangle,
 } from "react-icons/fa";
 import { MdSave, MdCancel } from "react-icons/md";
+import { IoIosHourglass } from "react-icons/io";
+import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { apiGetFullProfile, apiUpdateProfile, getAllPredictions, apiGetReviewRequests, apiGetReviewRequest, apiDeletePrediction } from "../api/api";
 import Header from '../Nav_Bar/Header';
 import MaleAvatar from "../Assets/male-avatar.png";
@@ -71,6 +73,8 @@ const UserProfile = () => {
     const [patientReviewData, setPatientReviewData] = useState(null);
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState(null);
+    const [sortBy, setSortBy] = useState('date'); // 'date', 'disease', 'status'
+    const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
 
 
     useEffect(() => {
@@ -128,7 +132,7 @@ const UserProfile = () => {
     const renderStatusBadge = (status) => {
         if (!status) {
             return (
-                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-600">
                     No Request
                 </span>
             );
@@ -138,7 +142,7 @@ const UserProfile = () => {
             pending: {
                 bg: 'bg-yellow-100',
                 text: 'text-yellow-700',
-                icon: '⏳',
+                icon: <IoIosHourglass className="text-yellow-700 h-3.5 w-3.5" />,
                 label: 'Pending'
             },
             reviewed: {
@@ -163,6 +167,37 @@ const UserProfile = () => {
                 {config.label}
             </span>
         );
+    };
+
+    // Function to get sorted predictions
+    const getSortedPredictions = () => {
+        if (!predictions || predictions.length === 0) return [];
+
+        let sorted = [...predictions];
+
+        // Sort based on selected criteria
+        sorted.sort((a, b) => {
+            let comparison = 0;
+
+            if (sortBy === 'disease') {
+                const nameA = (a.result?.predicted_label || '').toLowerCase();
+                const nameB = (b.result?.predicted_label || '').toLowerCase();
+                comparison = nameA.localeCompare(nameB);
+            } else if (sortBy === 'date') {
+                const dateA = new Date(a.createdAt);
+                const dateB = new Date(b.createdAt);
+                comparison = dateA - dateB;
+            } else if (sortBy === 'status') {
+                const statusA = getReviewStatus(a.id) || 'none';
+                const statusB = getReviewStatus(b.id) || 'none';
+                const statusOrder = { 'reviewd': 1, 'pending': 2, 'rejected': 3, 'none': 4 };
+                comparison = (statusOrder[statusA] || 5) - (statusOrder[statusB] || 5);
+            }
+
+            return sortOrder === 'asc' ? comparison : -comparison;
+        });
+
+        return sorted;
     };
 
     const fetchProfile = async () => {
@@ -282,27 +317,6 @@ const UserProfile = () => {
             />
         );
     };
-
-    // const handleEdit = (section) => {
-    //     setEditMode(section);
-
-    //     if (section === "Basic Information") {
-    //         setEditData({
-    //             name: patient.name || "",
-    //             gender: patient.gender || "",
-    //             age: patient.age || "",
-    //             height: patient.height || "",
-    //             weight: patient.weight || "",
-    //             bloodGroup: patient.bloodGroup || ""
-    //         });
-    //     } else if (section === "Contact Information") {
-    //         setEditData({
-    //             phone: patient.phone || "",
-    //             emergencyContact: patient.emergencyContact || "",
-    //             address: patient.address || ""
-    //         });
-    //     }
-    // };
 
     const handleEdit = (section) => {
         setEditMode(section);
@@ -749,15 +763,59 @@ const UserProfile = () => {
 
                     <div className="lg:col-span-2 space-y-5">
 
-
-                        <CardSection
-                            title="Analysis History"
-                            icon={<FaHistory className="text-green-600 text-sm" />}
-                            gradient={true}
-                        >
+                        {/* Custom Card Section with Dropdown Filter */}
+                        <div className="bg-gradient-to-br from-white via-green-50 to-white border border-gray-200 rounded-xl shadow-lg p-5 backdrop-blur-sm">
+                            {/* Custom Header with Title and Filter Dropdown */}
+                            <div className="flex items-center justify-between mb-6 pb-3 border-b-2 border-green-200">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="bg-gradient-to-br from-green-500 to-teal-600 p-2 rounded-lg shadow-md">
+                                        <FaHistory className="text-white text-lg" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-800">Analysis History</h3>
+                                </div>
+                                
+                                {/* Filter Controls */}
+                                <div className="flex items-center gap-3">
+                                    {/* Sort By Dropdown */}
+                                    <div className="flex items-center gap-2">
+                                        <label className="text-sm font-semibold text-gray-700">Sort by:</label>
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value)}
+                                            className="py-0.5 text-xs font-medium border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white cursor-pointer hover:border-green-400 transition-all"
+                                        >
+                                            <option value="date">Date</option>
+                                            <option value="disease">Disease</option>
+                                            <option value="status">Status</option>
+                                        </select>
+                                    </div>
+                                    
+                                    {/* Sort Order Toggle */}
+                                    <button
+                                        onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                        className="px-2.5 py-1 text-xs font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-1.5 shadow-md"
+                                        title={sortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
+                                    >
+                                        {sortOrder === 'asc' ? (
+                                            <>
+                                                <FaSortUp className="text-sm top-1" />
+                                                <span>Asce</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaSortDown className="text-sm" />
+                                                <span>Desc</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                            
                             {predictions && predictions.length > 0 ? (
-                                <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
-                                    <table className="w-full border-collapse">
+                                <>
+
+                                    <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
+                                        <table className="w-full border-collapse">
                                         <thead className="sticky top-0 z-10">
                                             <tr className="bg-gradient-to-r from-green-50 to-teal-50 border-b-2 border-green-200">
                                                 <th className="text-left py-3 px-4 text-sm font-bold text-gray-700">Disease Name</th>
@@ -767,7 +825,7 @@ const UserProfile = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {predictions.map((prediction, index) => (
+                                            {getSortedPredictions().map((prediction, index) => (
                                                 <tr 
                                                     key={prediction.id} 
                                                     className={`border-b border-gray-200 hover:bg-green-50 transition-colors ${
@@ -805,6 +863,7 @@ const UserProfile = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                </>
                             ) : (
                                 <div className="text-center py-8">
                                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -813,7 +872,7 @@ const UserProfile = () => {
                                     <p className="text-gray-500 font-medium text-sm">No analysis history available</p>
                                 </div>
                             )}
-                        </CardSection>
+                        </div>
                     </div>
                 </div>
             </div>
