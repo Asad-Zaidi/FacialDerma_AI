@@ -29,6 +29,34 @@ export const setAuthToken = (token) => {
 };
 
 // ===========================================================
+// 3.5. AXIOS RESPONSE INTERCEPTOR - Handle 401/403 errors
+// ===========================================================
+api.interceptors.response.use(
+    (response) => {
+        // If the response is successful, just return it
+        return response;
+    },
+    (error) => {
+        // Check if error is 401 (Unauthorized) or 403 (Forbidden)
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            // Clear the stored token and user data
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            
+            // Clear axios auth header
+            delete api.defaults.headers.common["Authorization"];
+            
+            // Redirect to auth/login page
+            window.location.href = '/';
+        }
+        
+        // Return the error so it can still be caught by try-catch blocks
+        return Promise.reject(error);
+    }
+);
+
+// ===========================================================
 // 4. AUTH APIs (FastAPI-compatible)
 // ===========================================================
 export const apiSignUp = async (data) => {
@@ -114,6 +142,11 @@ export const apiRejectReview = async (requestId, comment) => {
 // Get all review requests for current user
 export const apiGetReviewRequests = async () => {
     return api.get("/review-requests");
+};
+
+// Delete a review request
+export const apiDeleteReviewRequest = async (requestId) => {
+    return api.delete(`/review-requests/${requestId}`);
 };
 
 // ===========================================================

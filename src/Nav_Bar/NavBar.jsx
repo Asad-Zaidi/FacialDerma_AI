@@ -126,7 +126,7 @@ const Navbar = () => {
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white/80 backdrop-blur-sm'
                 }`}>
                 <div className="max-w-7xl mx-auto px-1 sm:px-1 lg:px-1">
-                    <div className="flex justify-between items-center h-16 md:h-20">
+                    <div className="flex justify-between items-center h-14 px-3 md:h-16">
 
                         {/* Logo/Brand */}
                         <div className="flex items-center gap-2 group">
@@ -154,18 +154,18 @@ const Navbar = () => {
                         </div>
 
                         {/* Desktop Navigation */}
-                        <ul className="hidden md:flex items-center gap-2 lg:gap-1">
+                        <ul className="hidden md:flex items-center gap-2 lg:gap-2">
                             <li>
                                 <NavLink
                                     to="/"
                                     className={({ isActive }) =>
-                                        `flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                        `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
                                             ? 'bg-gray-900 text-white shadow-md'
                                             : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                         }`
                                     }
                                 >
-                                    <IoMdHome className="text-lg" />
+                                    {/* <IoMdHome className="text-lg" /> */}
                                     <span>Home</span>
                                 </NavLink>
                             </li>
@@ -173,13 +173,13 @@ const Navbar = () => {
                                 <NavLink
                                     to="/About"
                                     className={({ isActive }) =>
-                                        `flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                        `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
                                             ? 'bg-gray-900 text-white shadow-md'
                                             : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                         }`
                                     }
                                 >
-                                    <IoMdInformationCircle className="text-lg" />
+                                    {/* <IoMdInformationCircle className="text-lg" /> */}
                                     <span>About</span>
                                 </NavLink>
                             </li>
@@ -192,13 +192,13 @@ const Navbar = () => {
                                             <NavLink
                                                 to="/Analysis"
                                                 className={({ isActive }) =>
-                                                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 ${isActive
-                                                        ? 'bg-gray-900 text-white shadow-sm'
+                                                    `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-200 ${isActive
+                                                        ? 'bg-gray-900 text-white shadow-md'
                                                         : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                                     }`
                                                 }
                                             >
-                                                <IoMdAnalytics className="text-base" />
+                                                {/* <IoMdAnalytics className="text-lg" /> */}
                                                 <span>Analysis</span>
                                             </NavLink>
                                         </li>
@@ -325,13 +325,13 @@ const Navbar = () => {
                                         <NavLink
                                             to={userRole === 'dermatologist' ? "/DProfile" : "/Profile"}
                                             className={({ isActive }) =>
-                                                `flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                                `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
                                                     ? 'bg-gray-900 text-white shadow-md'
                                                     : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                                 }`
                                             }
                                         >
-                                            <FaUser className="text-sm" />
+                                            {/* <FaUser className="text-sm" /> */}
                                             <span>Profile</span>
                                         </NavLink>
                                     </li>
@@ -339,7 +339,7 @@ const Navbar = () => {
                                     <li>
                                         <button
                                             onClick={() => setShowConfirmSignOut(true)}
-                                            className="flex items-center gap-1 px-2 py-2 rounded-lg font-medium text-sm lg:text-base text-red-600 hover:bg-red-50 transition-all duration-300"
+                                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg font-medium text-sm lg:text-base text-red-600 hover:bg-red-50 transition-all duration-300"
                                         >
                                             <FaSignOutAlt className="text-sm" />
                                             <span>Logout</span>
@@ -351,7 +351,7 @@ const Navbar = () => {
                                     <NavLink
                                         to="/Login"
 
-                                        className="flex items-center gap-1 px-2 py-2 rounded-lg font-semibold text-sm lg:text-base bg-blue-900 text-white hover:shadow-lg hover:scale-105 transition-all duration-300"
+                                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg font-semibold text-sm lg:text-base bg-blue-900 text-white hover:shadow-lg hover:scale-105 transition-all duration-300"
                                     >
                                         <MdLogin className="text-lg" />
                                         <span>Login</span>
@@ -382,7 +382,7 @@ const Navbar = () => {
                     onClick={closeMenu}
                 >
                     <div
-                        className={`fixed top-0 right-0 h-full w-80 max-w-full bg-white shadow-2xl transform transition-transform duration-300 ${menuOpen ? 'translate-x-0' : 'translate-x-full'
+                        className={`fixed top-0 right-0 h-full w-80 max-w-full bg-white ${menuOpen ? 'translate-x-0' : 'translate-x-full'
                             }`}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -414,7 +414,7 @@ const Navbar = () => {
                         </div>
 
                         {/* Mobile Menu Items */}
-                        <ul className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-120px)]">
+                        <ul className="p-4 bg-white space-y-2 overflow-y-auto max-h-[calc(100vh-120px)]">
                             <li>
                                 <NavLink
                                     to="/"
@@ -448,14 +448,13 @@ const Navbar = () => {
 
                             {isLoggedIn ? (
                                 <>
-
                                     {userRole === "patient" && (
                                         <li>
                                             <NavLink
                                                 to="/Analysis"
                                                 onClick={closeMenu}
                                                 className={({ isActive }) =>
-                                                    `flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${isActive
+                                                    `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-200 ${isActive
                                                         ? 'bg-gray-900 text-white shadow-sm'
                                                         : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                                     }`
@@ -474,7 +473,7 @@ const Navbar = () => {
                                             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
                                         >
                                             <div className="relative">
-                                                <FaBell className="text-xl" />
+                                                <FaBell className="text-lg" />
                                                 {notificationCount > 0 && (
                                                     <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                                                         {notificationCount}

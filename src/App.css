@@ -15,8 +15,6 @@ body {
   overflow-x: hidden;
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif !important;
-  background-color: #F5F5F4;
-  background-image: linear-gradient(#F5F5F4, #fddada);
 }
 
 /* Custom Dark Scrollbar */

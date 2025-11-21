@@ -41,10 +41,11 @@ const ReviewPreviewModal = ({ open, onClose, loading, error, prediction, onSubmi
     setSubmitting(true);
     try {
       await onSubmitComment(comment);
+      alert('Review submitted successfully!');
       onClose();
     } catch (err) {
       console.error('Failed to submit comment:', err);
-    } finally {
+      alert('Failed to submit review. Please try again.');
       setSubmitting(false);
     }
   };
@@ -60,11 +61,11 @@ const ReviewPreviewModal = ({ open, onClose, loading, error, prediction, onSubmi
     setRejecting(true);
     try {
       await onRejectRequest(comment);
+      alert('Review request rejected successfully!');
       onClose();
     } catch (err) {
       console.error('Failed to reject request:', err);
       alert('Failed to reject request. Please try again.');
-    } finally {
       setRejecting(false);
     }
   };
