@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import { BsShieldCheck, BsCpuFill, BsGraphUpArrow, BsClock } from 'react-icons/bs';
-import { FiCheckCircle } from 'react-icons/fi';
 import { HiOutlineSparkles } from 'react-icons/hi';
 import { IoMdCheckmarkCircle } from 'react-icons/io';
 
@@ -36,7 +35,7 @@ const Home = () => {
 
                             {/* Tagline with Icon */}
                             <div className="flex items-center gap-2">
-                                <HiOutlineSparkles className="text-gray-700 text-2xl md:text-3xl animate-pulse" />
+                                <HiOutlineSparkles className="text-yellow-500 text-2xl md:text-3xl animate-pulse" />
                                 <span className="text-gray-700 font-semibold text-sm md:text-base lg:text-lg tracking-normal uppercase">
                                     AI-Powered Skin Analysis
                                 </span>
@@ -214,10 +213,7 @@ const Home = () => {
                             <p className="text-gray-600 text-sm leading-relaxed mb-4">
                                 State-of-the-art deep learning models trained on millions of dermatological images for precise diagnosis.
                             </p>
-                            <div className="flex items-center gap-2 text-gray-800 text-sm font-semibold">
-                                <FiCheckCircle />
-                                <span>Clinical Grade Accuracy</span>
-                            </div>
+                            
                         </div>
 
                         {/* Feature Card 2 */}
@@ -229,10 +225,6 @@ const Home = () => {
                             <p className="text-gray-600 text-sm leading-relaxed mb-4">
                                 Enterprise-grade data encryption ensures your medical information remains completely confidential and secure.
                             </p>
-                            <div className="flex items-center gap-2 text-gray-800 text-sm font-semibold">
-                                <FiCheckCircle />
-                                <span>256-bit Encryption</span>
-                            </div>
                         </div>
 
                         {/* Feature Card 3 */}
@@ -244,10 +236,7 @@ const Home = () => {
                             <p className="text-gray-600 text-sm leading-relaxed mb-4">
                                 Get comprehensive skin analysis and personalized treatment recommendations in seconds, not days.
                             </p>
-                            <div className="flex items-center gap-2 text-gray-800 text-sm font-semibold">
-                                <FiCheckCircle />
-                                <span>Real-Time Analysis</span>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>

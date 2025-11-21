@@ -7,9 +7,6 @@ import {
     FaBrain,
     FaUserMd,
     FaMobileAlt,
-    FaShieldAlt,
-    FaChartLine,
-    FaUsers,
     FaCheckCircle,
     FaRocket,
     FaHeart,
@@ -53,24 +50,6 @@ const About = () => {
             description: "Get comprehensive skin analysis in seconds from any device",
             color: "from-purple-500 to-purple-600"
         },
-        {
-            icon: <FaShieldAlt className="text-3xl" />,
-            title: "Secure & Private",
-            description: "Your data is encrypted and protected with industry-leading security",
-            color: "from-red-500 to-red-600"
-        },
-        {
-            icon: <FaChartLine className="text-3xl" />,
-            title: "Track Progress",
-            description: "Monitor your skin health journey with detailed analytics",
-            color: "from-orange-500 to-orange-600"
-        },
-        {
-            icon: <FaUsers className="text-3xl" />,
-            title: "Community Support",
-            description: "Join thousands of users improving their skin health",
-            color: "from-pink-500 to-pink-600"
-        }
     ];
 
     const benefits = [
