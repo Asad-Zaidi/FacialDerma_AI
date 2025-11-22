@@ -14,13 +14,14 @@ import { MdOutlineInfo, MdHistory } from "react-icons/md";
 import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
 import suggestionsData from '../Assets/treatmentSuggestions.json';
-import { generatePdfReport } from '../components/PdfReportGenerator';
-// import { apiUpload } from '../api/api';
+import { generatePdfReport, generatePdfReportBlob } from '../components/PdfReportGenerator';
 import {
     apiUpload,
     getAllPredictions,
     apiListDermatologists,
-    apiCreateReviewRequest
+    apiCreateReviewRequest,
+    apiGetFullProfile,
+    apiGetReviewRequests
 } from '../api/api';
 import DermatologistPicker from '../components/DermatologistPicker';
 
@@ -34,7 +35,7 @@ const Analysis = () => {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [analysisStep, setAnalysisStep] = useState('');
     const [showMap, setShowMap] = useState(false);
-    const { accessToken } = useContext(AuthContext);
+    const { accessToken, user } = useContext(AuthContext);
     const resultRef = useRef(null);
     const fileInputRef = useRef(null);
     // New state for review workflow
@@ -43,7 +44,34 @@ const Analysis = () => {
     const [dermSearch, setDermSearch] = useState("");
     const [dermLoading, setDermLoading] = useState(false);
     const [latestPredictionId, setLatestPredictionId] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
+    const [reviewData, setReviewData] = useState(null);
 
+    // Fetch full user profile and review requests on mount
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await apiGetFullProfile();
+                setUserProfile(response.data);
+                
+                // Fetch review requests to get dermatologist info
+                const reviewsResponse = await apiGetReviewRequests();
+                if (reviewsResponse?.data && reviewsResponse.data.length > 0) {
+                    // Get the most recent reviewed request
+                    const reviewed = reviewsResponse.data.find(r => r.status === 'reviewed');
+                    if (reviewed) {
+                        setReviewData(reviewed);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+            }
+        };
+        
+        if (accessToken) {
+            fetchUserData();
+        }
+    }, [accessToken]);
 
     useEffect(() => {
         // Since api.js is not provided in full, we assume a mechanism to set the token is needed
@@ -263,28 +291,53 @@ const Analysis = () => {
     // UPDATED: Renamed function call to use the new utility name
     const handleDownloadReport = () => {
         if (!prediction) return;
-        generatePdfReport(prediction, treatmentSuggestions);
+        // Create enhanced user data with dermatologist info from review
+        const userDataWithDerm = {
+            ...(userProfile || user),
+            dermatologist: reviewData?.dermatologistUsername 
+                ? `Dr. ${reviewData.dermatologistUsername}` 
+                : 'Not Assigned'
+        };
+        // Pass dermatologist comment if available
+        const dermComment = reviewData?.comment || null;
+        generatePdfReport(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
     };
 
     const handleShareResults = async () => {
         if (!prediction) return;
-
-        const shareText = `My skin analysis results: ${prediction.predicted_label} (${(prediction.confidence_score * 100).toFixed(1)}% confidence)`;
-
-        if (navigator.share) {
+        // Prepare user data for PDF
+        const userDataWithDerm = {
+            ...(userProfile || user),
+            dermatologist: reviewData?.dermatologistUsername 
+                ? `Dr. ${reviewData.dermatologistUsername}` 
+                : 'Not Assigned'
+        };
+        const dermComment = reviewData?.comment || null;
+        const pdfBlob = generatePdfReportBlob(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
+        if (!pdfBlob) return;
+        const file = new File([pdfBlob], `Dermatology_Report_${prediction.reportId}_${userDataWithDerm.name?.replace(/\s/g, '')}.pdf`, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
                 await navigator.share({
-                    title: 'Skin Analysis Results',
-                    text: shareText,
+                    files: [file],
+                    title: 'Dermatology Report',
+                    text: 'Your AI-assisted dermatology report.'
                 });
-                toast.success('Results shared successfully!');
-            } catch (error) {
-                console.error('Error sharing:', error);
+                toast.success('PDF report shared successfully!');
+            } catch (err) {
+                toast.error('Sharing was cancelled or failed.');
             }
         } else {
-            // Fallback: Copy to clipboard
-            navigator.clipboard.writeText(shareText);
-            toast.success('Results copied to clipboard!');
+            // Fallback: download
+            const url = URL.createObjectURL(pdfBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast.info('Sharing not supported, PDF downloaded instead.');
         }
     };
 
@@ -484,6 +537,7 @@ const Analysis = () => {
                                         <BsShieldCheck className="text-sm" />
                                         {isLoading ? 'Analyzing...' : 'Analyze Now'}
                                     </button>
+                                    
                                 </div>
                             </div>
                         </div>
