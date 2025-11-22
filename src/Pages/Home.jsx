@@ -72,7 +72,7 @@ const Home = () => {
                                         className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white font-bold py-4 px-8 rounded-xl text-base md:text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden"
                                     >
                                         <span className="relative z-10 flex items-center gap-2">
-                                            Get Started Free
+                                            Get Started
                                             <span className="transform transition-transform group-hover:translate-x-1">→</span>
                                         </span>
                                         <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
