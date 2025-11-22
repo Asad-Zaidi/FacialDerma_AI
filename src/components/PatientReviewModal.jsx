@@ -31,7 +31,7 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
     const predictedLabel = reviewData?.prediction?.result?.predicted_label;
     const recommendedTreatment = treatmentSuggestions[predictedLabel] || ["Consult a dermatologist for personalized advice."];
 
-    const handleDownloadPdf = () => {
+    const handleDownloadPdf = async () => {
         if (!reviewData?.prediction) return;
 
         // Debug: Log reviewData to see what's available
@@ -68,8 +68,8 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
         // Get dermatologist comment
         const dermComment = reviewData.comment || null;
 
-        // Generate PDF
-        generatePdfReport(predictionData, treatmentSuggestions, userData, dermComment);
+        // Generate & download PDF
+        await generatePdfReport(predictionData, treatmentSuggestions, userData, dermComment);
     };
 
     const handleSharePdf = async () => {
@@ -93,7 +93,7 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
                 : 'Not Assigned'
         };
         const dermComment = reviewData.comment || null;
-        const pdfBlob = generatePdfReportBlob(predictionData, treatmentSuggestions, userData, dermComment);
+        const pdfBlob = await generatePdfReportBlob(predictionData, treatmentSuggestions, userData, dermComment);
         if (!pdfBlob) return;
         const file = new File([pdfBlob], `Dermatology_Report_${predictionData.reportId}_${userData.name.replace(/\s/g, '')}.pdf`, { type: 'application/pdf' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {

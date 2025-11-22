@@ -289,7 +289,7 @@ const Analysis = () => {
     };
 
     // UPDATED: Renamed function call to use the new utility name
-    const handleDownloadReport = () => {
+    const handleDownloadReport = async () => {
         if (!prediction) return;
         // Create enhanced user data with dermatologist info from review
         const userDataWithDerm = {
@@ -300,7 +300,7 @@ const Analysis = () => {
         };
         // Pass dermatologist comment if available
         const dermComment = reviewData?.comment || null;
-        generatePdfReport(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
+        await generatePdfReport(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
     };
 
     const handleShareResults = async () => {
@@ -313,7 +313,7 @@ const Analysis = () => {
                 : 'Not Assigned'
         };
         const dermComment = reviewData?.comment || null;
-        const pdfBlob = generatePdfReportBlob(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
+        const pdfBlob = await generatePdfReportBlob(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
         if (!pdfBlob) return;
         const file = new File([pdfBlob], `Dermatology_Report_${prediction.reportId}_${userDataWithDerm.name?.replace(/\s/g, '')}.pdf`, { type: 'application/pdf' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {

@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
  * @param {string|null} dermComment
  * @param {boolean} download - whether to download the PDF (true) or return blob (false)
  */
-const createPdf = (prediction, treatmentSuggestions, userData = null, dermComment = null, download = true) => {
+const createPdf = (prediction, treatmentSuggestions, userData = null, dermComment = null, download = true, imageDataUrl = null) => {
     if (!prediction) {
         console.error("Prediction data is missing.");
         toast.error("Cannot generate report: analysis data is missing.");
@@ -42,6 +42,8 @@ const createPdf = (prediction, treatmentSuggestions, userData = null, dermCommen
     const textStartCol2 = col2X + innerPadding;
     const valueMaxWidth = boxWidth - keyWidth - (2 * innerPadding);
 
+    const headerColor = [30, 41, 59];
+
     const drawDetailRow = (doc, key, value, x, y, keyW, maxW) => {
         doc.setFont('helvetica', 'bold');
         doc.text(`${key}:`, x, y);
@@ -51,23 +53,8 @@ const createPdf = (prediction, treatmentSuggestions, userData = null, dermCommen
         const safeValue = (value === null || value === undefined) ? 'N/A' : String(value);
         const wrappedText = doc.splitTextToSize(safeValue, maxW);
         doc.text(wrappedText, valueX, y);
-        return wrappedText.length;
+        return wrappedText.length; // number of lines
     };
-
-    const headerColor = [30, 41, 59];
-    doc.setFillColor(...headerColor);
-    doc.rect(0, 0, pageWidth, 30, 'F');
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Facial-Derma AI Report', pageWidth / 2, 12, { align: 'center' });
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('AI-Assisted Facial Skin Analysis', pageWidth / 2, 22, { align: 'center' });
-
-    yPosition = 40;
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
@@ -150,10 +137,47 @@ const createPdf = (prediction, treatmentSuggestions, userData = null, dermCommen
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(30, 41, 59);
     const diagnosisText = prediction.predicted_label.toUpperCase();
-    const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, pageWidth - (2 * marginX) - 10);
-    doc.text(wrappedDiagnosis, marginX + 5, yPosition);
-    doc.setTextColor(0, 0, 0);
-    yPosition += 20;
+
+    // If we have an image, place it to the left of the diagnosis and wrap text to its right
+    let imgRenderedHeight = 0;
+    const imageGap = 8; // gap between image and diagnosis text
+    if (imageDataUrl) {
+        try {
+            const imgProps = doc.getImageProperties ? doc.getImageProperties(imageDataUrl) : null;
+            const imgW = 60; // fixed display width for the thumbnail in PDF
+            let imgH = imgW;
+            if (imgProps && imgProps.width && imgProps.height) {
+                imgH = (imgProps.height / imgProps.width) * imgW;
+            }
+            const imgX = marginX + 5;
+            const imgY = yPosition - 4; // slightly higher to align with title area
+            const imgFormat = (typeof imageDataUrl === 'string' && imageDataUrl.includes('image/png')) ? 'PNG' : 'JPEG';
+            doc.addImage(imageDataUrl, imgFormat, imgX, imgY, imgW, imgH);
+            imgRenderedHeight = imgH;
+
+            // Diagnosis text to the right of the image
+            const diagX = imgX + imgW + imageGap;
+            const diagAvailableWidth = pageWidth - diagX - marginX - 5;
+            const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, diagAvailableWidth);
+            doc.text(wrappedDiagnosis, diagX, yPosition);
+            doc.setTextColor(0, 0, 0);
+            // advance yPosition to the greater of image bottom or diagnosis text block
+            const diagLineHeight = 6;
+            const diagBlockHeight = wrappedDiagnosis.length * diagLineHeight;
+            yPosition += Math.max(imgRenderedHeight, diagBlockHeight) + 6;
+        } catch (err) {
+            console.warn('Failed to render image in PDF, falling back to text-only diagnosis', err);
+            const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, pageWidth - (2 * marginX) - 10);
+            doc.text(wrappedDiagnosis, marginX + 5, yPosition);
+            doc.setTextColor(0, 0, 0);
+            yPosition += 20;
+        }
+    } else {
+        const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, pageWidth - (2 * marginX) - 10);
+        doc.text(wrappedDiagnosis, marginX + 5, yPosition);
+        doc.setTextColor(0, 0, 0);
+        yPosition += 20;
+    }
 
     // Confidence Score
     doc.setFillColor(230, 230, 230);
@@ -276,11 +300,47 @@ const createPdf = (prediction, treatmentSuggestions, userData = null, dermCommen
     }
 };
 
-// ✅ Exported functions matching your imports
-export const generatePdfReport = (prediction, treatmentSuggestions, userData = null, dermComment = null) => {
-    return createPdf(prediction, treatmentSuggestions, userData, dermComment, true);
+// Helper: load image URL and convert to data URL
+const loadImageAsDataUrl = async (url) => {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Image fetch failed');
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('Failed to read image blob'));
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+        });
+    } catch (err) {
+        console.warn('Failed to load image as data URL:', err);
+        return null;
+    }
 };
 
-export const generatePdfReportBlob = (prediction, treatmentSuggestions, userData = null, dermComment = null) => {
-    return createPdf(prediction, treatmentSuggestions, userData, dermComment, false);
+// Async functions for consumers
+export const generatePdfReportBlob = async (prediction, treatmentSuggestions, userData = null, dermComment = null) => {
+    // Load image data URL if available
+    let imageDataUrl = null;
+    if (prediction?.imageUrl) {
+        imageDataUrl = await loadImageAsDataUrl(prediction.imageUrl);
+    }
+    const blob = createPdf(prediction, treatmentSuggestions, userData, dermComment, false, imageDataUrl);
+    return blob;
+};
+
+export const generatePdfReport = async (prediction, treatmentSuggestions, userData = null, dermComment = null) => {
+    const blob = await generatePdfReportBlob(prediction, treatmentSuggestions, userData, dermComment);
+    if (!blob) return;
+    const fileName = `Dermatology_Report_${prediction.reportId || 'report'}_${(userData?.name || 'patient').replace(/\s/g, '')}.pdf`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success('PDF report downloaded successfully!');
+    return;
 };
