@@ -14,8 +14,11 @@ import {
     FaVenusMars,
     FaPhone,
     FaExclamationTriangle,
+    FaEye,
+    FaEyeSlash,
 } from "react-icons/fa";
 import { MdSave, MdCancel } from "react-icons/md";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { IoIosHourglass } from "react-icons/io";
 import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { apiGetFullProfile, apiUpdateProfile, getAllPredictions, apiGetReviewRequests, apiGetReviewRequest, apiDeletePrediction } from "../api/api";
@@ -75,6 +78,19 @@ const UserProfile = () => {
     const [reviewError, setReviewError] = useState(null);
     const [sortBy, setSortBy] = useState('date'); // 'date', 'disease', 'status'
     const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
+    const [showPasswords, setShowPasswords] = useState({
+        current: false,
+        new: false,
+        confirm: false
+    });
 
 
     useEffect(() => {
@@ -366,6 +382,67 @@ const UserProfile = () => {
             ...prev,
             [name]: value
         }));
+    };
+
+    const handlePasswordInputChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleChangePassword = async () => {
+        if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+            toast.error('All password fields are required');
+            return;
+        }
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            toast.error('New passwords do not match');
+            return;
+        }
+
+        if (passwordData.newPassword.length < 8) {
+            toast.error('New password must be at least 8 characters');
+            return;
+        }
+
+        try {
+            setPasswordLoading(true);
+            // You'll need to add this API endpoint
+            const response = await fetch('http://localhost:5000/api/users/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    currentPassword: passwordData.currentPassword,
+                    newPassword: passwordData.newPassword
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setPasswordSuccess(true);
+                setTimeout(() => {
+                    toast.success(data.message || 'Password changed successfully');
+                    setShowPasswordModal(false);
+                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                    setPasswordSuccess(false);
+                    setShowPasswords({ current: false, new: false, confirm: false });
+                }, 2000);
+            } else {
+                toast.error(data.detail?.error || data.error || 'Failed to change password');
+            }
+        } catch (error) {
+            console.error('Failed to change password:', error);
+            toast.error('Failed to change password');
+        } finally {
+            setPasswordLoading(false);
+        }
     };
 
     const formatDateTime = (dateString) => {
@@ -759,6 +836,17 @@ const UserProfile = () => {
                                 </div>
                             )}
                         </CardSection>
+
+                        {/* Change Password Button */}
+                        <button
+                            onClick={() => setShowPasswordModal(true)}
+                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl hover:from-blue-700 hover:to-blue-800 font-semibold transition-all transform hover:scale-105 shadow-lg"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Change Password
+                        </button>
                     </div>
 
                     <div className="lg:col-span-2 space-y-5">
@@ -893,6 +981,151 @@ const UserProfile = () => {
                 error={reviewError}
                 reviewData={patientReviewData}
             />
+
+            {/* Change Password Modal */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+                        {passwordSuccess ? (
+                            <div className="flex flex-col items-center justify-center py-8">
+                                <div className="relative">
+                                    <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center animate-pulse">
+                                        <svg className="w-16 h-16 text-green-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-green-500 animate-ping opacity-75"></div>
+                                </div>
+                                <h3 className="mt-6 text-2xl font-bold text-gray-800">Password Changed!</h3>
+                                <p className="mt-2 text-gray-600 text-center">Your password has been updated successfully</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        Change Password
+                                    </h2>
+                            <button
+                                onClick={() => {
+                                    setShowPasswordModal(false);
+                                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                    setShowPasswords({ current: false, new: false, confirm: false });
+                                }}
+                                disabled={passwordLoading}
+                                className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPasswords.current ? "text" : "password"}
+                                        name="currentPassword"
+                                        value={passwordData.currentPassword}
+                                        onChange={handlePasswordInputChange}
+                                        disabled={passwordLoading}
+                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        placeholder="Enter current password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        disabled={passwordLoading}
+                                    >
+                                        {showPasswords.current ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPasswords.new ? "text" : "password"}
+                                        name="newPassword"
+                                        value={passwordData.newPassword}
+                                        onChange={handlePasswordInputChange}
+                                        disabled={passwordLoading}
+                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        placeholder="Enter new password (min 8 characters)"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        disabled={passwordLoading}
+                                    >
+                                        {showPasswords.new ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPasswords.confirm ? "text" : "password"}
+                                        name="confirmPassword"
+                                        value={passwordData.confirmPassword}
+                                        onChange={handlePasswordInputChange}
+                                        disabled={passwordLoading}
+                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        placeholder="Confirm new password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        disabled={passwordLoading}
+                                    >
+                                        {showPasswords.confirm ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    onClick={handleChangePassword}
+                                    disabled={passwordLoading}
+                                    className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold transition-all transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                                >
+                                    {passwordLoading ? (
+                                        <>
+                                            <AiOutlineLoading3Quarters className="animate-spin text-xl" />
+                                            <span>Changing...</span>
+                                        </>
+                                    ) : (
+                                        'Change Password'
+                                    )}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowPasswordModal(false);
+                                        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                        setShowPasswords({ current: false, new: false, confirm: false });
+                                    }}
+                                    disabled={passwordLoading}
+                                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 font-semibold transition-all transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
