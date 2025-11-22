@@ -564,7 +564,7 @@ const UserProfile = () => {
                     <p className="text-red-600 mb-4 font-medium text-sm">{error || "No profile data available"}</p>
                     <button
                         onClick={fetchProfile}
-                        className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                        className="px-5 py-2 bg-gray-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
                     >
                         Try Again
                     </button>
