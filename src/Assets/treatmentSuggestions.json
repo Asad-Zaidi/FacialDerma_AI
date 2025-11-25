@@ -1,32 +1,106 @@
 {
-    "Acne": [
-        "Use a gentle cleanser twice a day.",
-        "Avoid heavy makeup and oil-based skincare products.",
-        "Consider over-the-counter products with salicylic acid or benzoyl peroxide."
-    ],
-    "Rosacea": [
-        "Avoid hot drinks and spicy food.",
-        "Use fragrance-free moisturizers.",
-        "Consult a dermatologist for anti-inflammatory treatments."
-    ],
-    "Melanoma": [
-        "Consult a dermatologist immediately.",
-        "Avoid sun exposure and use SPF 50+ sunscreen.",
-        "Track any changes in moles or dark spots."
-    ],
-    "Perioral Dermatitis": [
-        "Stop using topical steroids if prescribed.",
-        "Use mild, non-irritating skin care products.",
-        "Consult a dermatologist for oral antibiotics."
-    ],
-    "Warts": [
-        "Avoid scratching to prevent spreading.",
-        "Use OTC salicylic acid treatments.",
-        "Cryotherapy or dermatological procedures may be needed."
-    ],
-    "Normal": [
+  "skin_conditions": [
+    {
+      "name": "Acne",
+      "treatments": [
+        "Use a gentle, non-comedogenic cleanser twice daily",
+        "Apply benzoyl peroxide 2.5% wash",
+        "Use salicylic acid 0.5–2% exfoliant or cleanser",
+        "Apply an oil-free, non-comedogenic moisturizer"
+      ],
+      "prevention": [
+        "Avoid picking or squeezing pimples",
+        "Change pillowcases weekly",
+        "Use non-comedogenic makeup"   
+       ],
+      "resources": [
+        "American Academy of Dermatology (AAD) – Acne: https://www.aad.org/public/diseases/acne",
+        "NHS (UK) – Acne: https://www.nhs.uk/conditions/acne",
+        "Mayo Clinic – Acne: https://www.mayoclinic.org/diseases-conditions/acne"
+      ]
+    },
+    {
+      "name": "Eczema",
+      "treatments": [
+        "Moisturize frequently with ceramide-rich creams or petroleum jelly",
+        "Use fragrance-free, hypoallergenic skin products",
+        "Use gentle non-soap cleansers"
+      ],
+      "prevention": [
+        "Avoid wool or rough fabrics",
+        "Avoid triggers like detergents and dust",
+        "Moisturize within 3 minutes after bathing"
+      ],
+      "resources": [
+        "National Eczema Association – Skin Care: https://nationaleczema.org",
+        "NHS – Eczema: https://www.nhs.uk/conditions/atopic-eczema"
+      ]
+    },
+    {
+      "name": "Melasma",
+      "treatments": [
+        "Use daily broad-spectrum sunscreen SPF 30+",
+        "Use gentle brighteners like niacinamide or vitamin C"
+      ],
+      "prevention": [
+        "Wear wide-brim hats and avoid strong sunlight",
+        "Reapply sunscreen every 2 hours outdoors",
+        "Avoid irritating scrubs or harsh treatments"
+
+      ],
+      "resources": [
+        "Mayo Clinic: https://newsnetwork.mayoclinic.org/discussion/mayo-clinic-q-and-a-treating-melasma/",
+        "National Library of Medicine : https://pubmed.ncbi.nlm.nih.gov/31802394/"
+      ]
+    },
+    {
+      "name": "Seborrheic Dermatitis",
+      "treatments": [
+        "Use medicated shampoos containing zinc pyrithione, selenium sulfide, or ketoconazole",
+        "Use lightweight moisturizers to avoid excessive greasiness"
+      ],
+      "prevention": [
+        "Avoid heavy oils or greasy products on scalp/face",
+        "Maintain consistent scalp hygiene",
+        "Avoid overwashing to prevent irritation"
+      ],
+      "resources": [
+        "American Academy of Dermatology – Seborrheic Dermatitis: https://www.aad.org/public/diseases/a-z/seborrheic-dermatitis",
+        "MedlinePlus – Seborrheic Dermatitis: https://medlineplus.gov/ency/article/000963.htm"
+      ]
+    },
+    {
+      "name": "Rosacea",
+      "treatments": [
+        "Use gentle, fragrance-free skincare",
+        "Apply mineral sunscreen (zinc oxide or titanium dioxide)",
+        "Use green-tinted moisturizers to reduce redness appearance"
+      ],
+      "prevention": [
+        "Avoid triggers: spicy foods, heat, hot drinks, alcohol, stress",
+        "Avoid harsh exfoliants or scrubs",
+        "Practice strict sun protection"
+      ],
+      "resources": [
+        "National Rosacea Society – Information: https://www.rosacea.org",
+        "Mayo Clinic – Rosacea: https://www.mayoclinic.org/diseases-conditions/rosacea"
+      ]
+    },
+    {
+      "name": "normal",
+      "treatments": [
+        "No treatmnet found for normal skin."
+      ],
+      "prevention": [
+        "Avoid over-exfoliation",
+        "Practice daily sun protection",
         "Maintain a simple skincare routine.",
-        "Use sunscreen daily.",
         "Stay hydrated and eat a balanced diet."
-    ]
+      ],
+      "resources": [
+        "Harvard Health – Healthy Skin Tips: https://www.health.harvard.edu/topics/skin",
+        "Mayo Clinic – Skin Care: https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/skin-care"
+      ]
+    }
+  ]
 }

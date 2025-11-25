@@ -38,7 +38,7 @@ const Analysis = () => {
     const { accessToken, user } = useContext(AuthContext);
     const resultRef = useRef(null);
     const fileInputRef = useRef(null);
-    
+
     const [showDermPicker, setShowDermPicker] = useState(false);
     const [derms, setDerms] = useState([]);
     const [dermSearch, setDermSearch] = useState("");
@@ -47,17 +47,17 @@ const Analysis = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [reviewData, setReviewData] = useState(null);
 
-    
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const response = await apiGetFullProfile();
                 setUserProfile(response.data);
-                
-                
+
+
                 const reviewsResponse = await apiGetReviewRequests();
                 if (reviewsResponse?.data && reviewsResponse.data.length > 0) {
-                    
+
                     const reviewed = reviewsResponse.data.find(r => r.status === 'reviewed');
                     if (reviewed) {
                         setReviewData(reviewed);
@@ -67,16 +67,16 @@ const Analysis = () => {
                 console.error('Failed to fetch user data:', error);
             }
         };
-        
+
         if (accessToken) {
             fetchUserData();
         }
     }, [accessToken]);
 
     useEffect(() => {
-        
-        
-        
+
+
+
         return () => {
             if (image) URL.revokeObjectURL(image);
         };
@@ -85,6 +85,29 @@ const Analysis = () => {
     useEffect(() => {
         setTreatmentSuggestions(suggestionsData);
     }, []);
+
+    useEffect(() => {
+        console.log("treatmentSuggestions loaded:", treatmentSuggestions);
+        console.log(
+            "matched condition for",
+            prediction?.predicted_label,
+            ":",
+            getTreatmentData(prediction?.predicted_label)
+        );
+    }, [prediction, treatmentSuggestions]);
+
+    const getTreatmentData = (disease) => {
+        if (!disease || !treatmentSuggestions) return null;
+
+        const list = treatmentSuggestions.skin_conditions;
+        if (!Array.isArray(list)) return null;
+
+        const target = list.find(
+            (item) => String(item?.name || '').toLowerCase().trim() === String(disease).toLowerCase().trim()
+        );
+
+        return target || null;
+    };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -106,7 +129,7 @@ const Analysis = () => {
         setErrorMessage(null);
         setPrediction(null);
         setShowResult(false);
-        setShowMap(false); 
+        setShowMap(false);
         toast.success('Image uploaded successfully!');
     };
 
@@ -169,7 +192,7 @@ const Analysis = () => {
         setPrediction(null);
         setErrorMessage(null);
         setShowResult(false);
-        setShowMap(false); 
+        setShowMap(false);
         setUploadProgress(0);
         setAnalysisStep('Initializing...');
 
@@ -178,17 +201,17 @@ const Analysis = () => {
         console.log('Sending prediction request...');
 
         try {
-            
-            
+
+
             const response = await apiUpload(formData);
-            const data = response.data; 
+            const data = response.data;
 
             console.log('Response data:', data);
 
             clearInterval(stepInterval);
 
-            
-            
+
+
 
             setPrediction({
                 predicted_label: data.predicted_label,
@@ -210,7 +233,7 @@ const Analysis = () => {
                 resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 300);
 
-            toast.success('Prediction successful and saved!');            
+            toast.success('Prediction successful and saved!');
             try {
                 const predsResp = await getAllPredictions();
                 const latest = predsResp?.data?.[0];
@@ -227,26 +250,26 @@ const Analysis = () => {
             let errMsg = 'Something went wrong during analysis.';
             if (error.response) {
                 const errorData = error.response.data;
-                
-                
+
+
                 let backendError = errorData.detail || errorData.error;
 
                 if (typeof backendError === 'object' && backendError !== null) {
-                    
+
                     if (backendError.error) {
                         errMsg = backendError.error;
                     } else if (backendError.message) {
                         errMsg = backendError.message;
                     } else {
-                        
+
                         const firstValue = Object.values(backendError)[0];
                         errMsg = typeof firstValue === 'string' ? firstValue : 'Image analysis failed. Please try again.';
                     }
                 } else if (backendError) {
-                    
+
                     errMsg = String(backendError);
                 } else {
-                    
+
                     errMsg = `Image analysis failed with status ${error.response.status}.`;
                 }
             } else if (error.request) {
@@ -255,7 +278,7 @@ const Analysis = () => {
                 errMsg = error.message || 'Something went wrong during analysis.';
             }
 
-            setErrorMessage(errMsg); 
+            setErrorMessage(errMsg);
             toast.error(errMsg);
         } finally {
             setIsLoading(false);
@@ -269,7 +292,7 @@ const Analysis = () => {
         setPrediction(null);
         setErrorMessage(null);
         setShowResult(false);
-        setShowMap(false); 
+        setShowMap(false);
         setUploadProgress(0);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -281,35 +304,34 @@ const Analysis = () => {
         setErrorMessage(null);
         setPrediction(null);
         setShowResult(false);
-        setShowMap(false); 
+        setShowMap(false);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
         toast.info('Image cleared');
     };
 
-    
     const handleDownloadReport = async () => {
         if (!prediction) return;
-        
+
         const userDataWithDerm = {
             ...(userProfile || user),
-            dermatologist: reviewData?.dermatologistUsername 
-                ? `Dr. ${reviewData.dermatologistUsername}` 
+            dermatologist: reviewData?.dermatologistUsername
+                ? `Dr. ${reviewData.dermatologistUsername}`
                 : 'Not Assigned'
         };
-        
+
         const dermComment = reviewData?.comment || null;
         await generatePdfReport(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
     };
 
     const handleShareResults = async () => {
         if (!prediction) return;
-        
+
         const userDataWithDerm = {
             ...(userProfile || user),
-            dermatologist: reviewData?.dermatologistUsername 
-                ? `Dr. ${reviewData.dermatologistUsername}` 
+            dermatologist: reviewData?.dermatologistUsername
+                ? `Dr. ${reviewData.dermatologistUsername}`
                 : 'Not Assigned'
         };
         const dermComment = reviewData?.comment || null;
@@ -328,7 +350,7 @@ const Analysis = () => {
                 toast.error('Sharing was cancelled or failed.');
             }
         } else {
-            
+
             const url = URL.createObjectURL(pdfBlob);
             const a = document.createElement('a');
             a.href = url;
@@ -341,7 +363,6 @@ const Analysis = () => {
         }
     };
 
-    
     const handleToggleMap = () => {
         setShowMap(prevShowMap => !prevShowMap);
     };
@@ -537,7 +558,7 @@ const Analysis = () => {
                                         <BsShieldCheck className="text-sm" />
                                         {isLoading ? 'Analyzing...' : 'Analyze Now'}
                                     </button>
-                                    
+
                                 </div>
                             </div>
                         </div>
@@ -655,7 +676,7 @@ const Analysis = () => {
                                                     disabled={!latestPredictionId}
                                                     onClick={async () => {
                                                         setShowDermPicker(true);
-                                                        
+
                                                         setDermLoading(true);
                                                         try {
                                                             const res = await apiListDermatologists("", 10);
@@ -697,7 +718,7 @@ const Analysis = () => {
                                                 Based on AI analysis and dermatological guidelines
                                             </p>
                                             <ul className="space-y-3 text-gray-700 text-xs md:text-sm w-full">
-                                                {(treatmentSuggestions[prediction.predicted_label] || []).map((tip, idx) => (
+                                                {(getTreatmentData(prediction?.predicted_label)?.treatments || []).map((tip, idx) => (
                                                     <li key={idx} className="flex items-start gap-3 bg-gradient-to-r from-gray-50 to-white p-3.5 rounded-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-300 border border-gray-100 hover:border-gray-300 hover:shadow-md group">
                                                         <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-gray-700 to-gray-500 text-white rounded-full flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform duration-200">
                                                             {idx + 1}
