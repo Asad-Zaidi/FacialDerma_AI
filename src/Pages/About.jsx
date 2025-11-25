@@ -54,8 +54,7 @@ const About = () => {
 
     const benefits = [
         "Instant facial skin condition detection",
-        "Personalized treatment recommendations",
-        "Aesthetic enhancement visualization",
+        "Treatment recommendations",
         "Secure report generation and sharing",
         "User-friendly mobile and web experience",
         "Trusted by users and dermatologists alike"
@@ -237,7 +236,7 @@ const About = () => {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl shadow-xl p-8 text-white"
+                        className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl shadow-xl p-8 text-white"
                     >
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -255,7 +254,7 @@ const About = () => {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-3xl shadow-xl p-8 text-white"
+                        className="bg-gradient-to-br from-purple-600 to-purple-500 rounded-3xl shadow-xl p-8 text-white"
                     >
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">

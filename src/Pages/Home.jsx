@@ -125,8 +125,7 @@ const Home = () => {
                                                 <BsCpuFill className="text-white text-lg" />
                                             </div>
                                             <div>
-                                                <div className="text-xs text-gray-500">AI Confidence</div>
-                                                <div className="text-sm font-bold text-purple-600">80%+</div>
+                                                <div className="text-s text-gray-500">Easy to Use</div>
                                             </div>
                                         </div>
                                     </div>
@@ -161,7 +160,7 @@ const Home = () => {
                         {/* Connection Line */}
                         <div className="hidden md:block absolute top-8 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-gray-400 via-gray-600 to-gray-800 z-0"></div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
                             {/* Step 1 */}
                             <div className="relative text-center group">
                                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white">
@@ -187,6 +186,14 @@ const Home = () => {
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Get Results</h3>
                                 <p className="text-gray-600 text-sm">Receive detailed report & recommendations</p>
+                            </div>
+
+                            <div className="relative text-center group">
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white">
+                                    4
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Get PDF Report</h3>
+                                <p className="text-gray-600 text-sm">Download your detailed skin analysis report</p>
                             </div>
                         </div>
                     </div>

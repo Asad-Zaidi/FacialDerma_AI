@@ -38,7 +38,7 @@ const Analysis = () => {
     const { accessToken, user } = useContext(AuthContext);
     const resultRef = useRef(null);
     const fileInputRef = useRef(null);
-    // New state for review workflow
+    
     const [showDermPicker, setShowDermPicker] = useState(false);
     const [derms, setDerms] = useState([]);
     const [dermSearch, setDermSearch] = useState("");
@@ -47,17 +47,17 @@ const Analysis = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [reviewData, setReviewData] = useState(null);
 
-    // Fetch full user profile and review requests on mount
+    
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const response = await apiGetFullProfile();
                 setUserProfile(response.data);
                 
-                // Fetch review requests to get dermatologist info
+                
                 const reviewsResponse = await apiGetReviewRequests();
                 if (reviewsResponse?.data && reviewsResponse.data.length > 0) {
-                    // Get the most recent reviewed request
+                    
                     const reviewed = reviewsResponse.data.find(r => r.status === 'reviewed');
                     if (reviewed) {
                         setReviewData(reviewed);
@@ -74,9 +74,9 @@ const Analysis = () => {
     }, [accessToken]);
 
     useEffect(() => {
-        // Since api.js is not provided in full, we assume a mechanism to set the token is needed
-        // The original code only used accessToken to check login status, and relied on a manual header
-        // For demonstration, we'll primarily use apiUpload and rely on the context for the login check.
+        
+        
+        
         return () => {
             if (image) URL.revokeObjectURL(image);
         };
@@ -106,7 +106,7 @@ const Analysis = () => {
         setErrorMessage(null);
         setPrediction(null);
         setShowResult(false);
-        setShowMap(false); // Hide map on new image upload
+        setShowMap(false); 
         toast.success('Image uploaded successfully!');
     };
 
@@ -169,7 +169,7 @@ const Analysis = () => {
         setPrediction(null);
         setErrorMessage(null);
         setShowResult(false);
-        setShowMap(false); // Hide map on new analysis
+        setShowMap(false); 
         setUploadProgress(0);
         setAnalysisStep('Initializing...');
 
@@ -178,17 +178,17 @@ const Analysis = () => {
         console.log('Sending prediction request...');
 
         try {
-            // UPDATED: Use apiUpload function from api.js
-            // The apiUpload function is expected to handle the Axios call, headers, and base URL.
+            
+            
             const response = await apiUpload(formData);
-            const data = response.data; // Axios response data is in the 'data' property
+            const data = response.data; 
 
             console.log('Response data:', data);
 
             clearInterval(stepInterval);
 
-            // Axios throws an error for non-2xx status codes, so response.ok check isn't strictly necessary here.
-            // If an error occurs, it will be caught in the catch block.
+            
+            
 
             setPrediction({
                 predicted_label: data.predicted_label,
@@ -210,7 +210,7 @@ const Analysis = () => {
                 resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 300);
 
-            toast.success('Prediction successful and saved!');            // Fetch latest prediction to get predictionId (backend returns newest first)
+            toast.success('Prediction successful and saved!');            
             try {
                 const predsResp = await getAllPredictions();
                 const latest = predsResp?.data?.[0];
@@ -227,26 +227,26 @@ const Analysis = () => {
             let errMsg = 'Something went wrong during analysis.';
             if (error.response) {
                 const errorData = error.response.data;
-                // Safely extract the error message. 
-                // Prioritize 'detail' or 'error' key, and ensure it's a string.
+                
+                
                 let backendError = errorData.detail || errorData.error;
 
                 if (typeof backendError === 'object' && backendError !== null) {
-                    // If it's an object, try to extract the error message from it
+                    
                     if (backendError.error) {
                         errMsg = backendError.error;
                     } else if (backendError.message) {
                         errMsg = backendError.message;
                     } else {
-                        // Try to get the first value from the object
+                        
                         const firstValue = Object.values(backendError)[0];
                         errMsg = typeof firstValue === 'string' ? firstValue : 'Image analysis failed. Please try again.';
                     }
                 } else if (backendError) {
-                    // Use the extracted string error
+                    
                     errMsg = String(backendError);
                 } else {
-                    // Fallback for an unknown structure
+                    
                     errMsg = `Image analysis failed with status ${error.response.status}.`;
                 }
             } else if (error.request) {
@@ -255,7 +255,7 @@ const Analysis = () => {
                 errMsg = error.message || 'Something went wrong during analysis.';
             }
 
-            setErrorMessage(errMsg); // Now, errMsg is guaranteed to be a string
+            setErrorMessage(errMsg); 
             toast.error(errMsg);
         } finally {
             setIsLoading(false);
@@ -269,7 +269,7 @@ const Analysis = () => {
         setPrediction(null);
         setErrorMessage(null);
         setShowResult(false);
-        setShowMap(false); // Hide map on retry
+        setShowMap(false); 
         setUploadProgress(0);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -281,31 +281,31 @@ const Analysis = () => {
         setErrorMessage(null);
         setPrediction(null);
         setShowResult(false);
-        setShowMap(false); // Hide map on clear
+        setShowMap(false); 
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
         toast.info('Image cleared');
     };
 
-    // UPDATED: Renamed function call to use the new utility name
+    
     const handleDownloadReport = async () => {
         if (!prediction) return;
-        // Create enhanced user data with dermatologist info from review
+        
         const userDataWithDerm = {
             ...(userProfile || user),
             dermatologist: reviewData?.dermatologistUsername 
                 ? `Dr. ${reviewData.dermatologistUsername}` 
                 : 'Not Assigned'
         };
-        // Pass dermatologist comment if available
+        
         const dermComment = reviewData?.comment || null;
         await generatePdfReport(prediction, treatmentSuggestions, userDataWithDerm, dermComment);
     };
 
     const handleShareResults = async () => {
         if (!prediction) return;
-        // Prepare user data for PDF
+        
         const userDataWithDerm = {
             ...(userProfile || user),
             dermatologist: reviewData?.dermatologistUsername 
@@ -328,7 +328,7 @@ const Analysis = () => {
                 toast.error('Sharing was cancelled or failed.');
             }
         } else {
-            // Fallback: download
+            
             const url = URL.createObjectURL(pdfBlob);
             const a = document.createElement('a');
             a.href = url;
@@ -341,7 +341,7 @@ const Analysis = () => {
         }
     };
 
-    // Added handler to toggle map visibility
+    
     const handleToggleMap = () => {
         setShowMap(prevShowMap => !prevShowMap);
     };
@@ -655,7 +655,7 @@ const Analysis = () => {
                                                     disabled={!latestPredictionId}
                                                     onClick={async () => {
                                                         setShowDermPicker(true);
-                                                        // Load initial dermatologists list
+                                                        
                                                         setDermLoading(true);
                                                         try {
                                                             const res = await apiListDermatologists("", 10);
