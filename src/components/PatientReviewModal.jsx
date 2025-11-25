@@ -1,5 +1,9 @@
 import React from 'react';
+import { FiDownload, FiShare2 } from 'react-icons/fi';
+import { IoClose } from "react-icons/io5";
+import { toast } from 'react-toastify';
 import treatmentSuggestions from '../Assets/treatmentSuggestions.json';
+import { generatePdfReport, generatePdfReportBlob } from './PdfReportGenerator';
 
 const formatDateTime = (dateString) => {
     if (!dateString) return '';
@@ -16,7 +20,7 @@ const formatDateTime = (dateString) => {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
 };
 
-const PatientReviewModal = ({ open, onClose, loading, error, reviewData }) => {
+const PatientReviewModal = ({ open, onClose, loading, error, reviewData, currentUser = null }) => {
     if (!open) return null;
 
     const formatConfidence = (score) => {
@@ -26,6 +30,95 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData }) => {
 
     const predictedLabel = reviewData?.prediction?.result?.predicted_label;
     const recommendedTreatment = treatmentSuggestions[predictedLabel] || ["Consult a dermatologist for personalized advice."];
+
+    const handleDownloadPdf = async () => {
+        if (!reviewData?.prediction) return;
+
+        // Debug: Log reviewData to see what's available
+        console.log('Review Data:', reviewData);
+        console.log('Patient Info:', reviewData.patientInfo);
+        console.log('Current User:', currentUser);
+
+        // Use patientInfo from backend if available, otherwise fallback to currentUser
+        const patientSource = reviewData.patientInfo || currentUser || {};
+
+        // Prepare prediction data for PDF
+        const predictionData = {
+            predicted_label: reviewData.prediction.result?.predicted_label || 'N/A',
+            confidence_score: reviewData.prediction.result?.confidence_score || 0,
+            timestamp: formatDateTime(reviewData.prediction.createdAt),
+            reportId: reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
+        };
+
+        // Prepare user data with all fields including allergies
+        const userData = {
+            name: patientSource.name || patientSource.username || 'N/A',
+            age: patientSource.age || 'N/A',
+            gender: patientSource.gender || 'N/A',
+            phone: patientSource.phone || 'N/A',
+            bloodGroup: patientSource.bloodGroup || 'N/A',
+            allergies: patientSource.allergies || 'None reported',
+            dermatologist: reviewData.dermatologistInfo?.name || reviewData.dermatologistInfo?.username
+                ? `Dr. ${reviewData.dermatologistInfo?.name || reviewData.dermatologistInfo?.username}`
+                : 'Not Assigned'
+        };
+
+        console.log('User Data for PDF:', userData);
+
+        // Get dermatologist comment
+        const dermComment = reviewData.comment || null;
+
+        // Generate & download PDF
+        await generatePdfReport(predictionData, treatmentSuggestions, userData, dermComment);
+    };
+
+    const handleSharePdf = async () => {
+        if (!reviewData?.prediction) return;
+        const patientSource = reviewData.patientInfo || currentUser || {};
+        const predictionData = {
+            predicted_label: reviewData.prediction.result?.predicted_label || 'N/A',
+            confidence_score: reviewData.prediction.result?.confidence_score || 0,
+            timestamp: formatDateTime(reviewData.prediction.createdAt),
+            reportId: reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
+        };
+        const userData = {
+            name: patientSource.name || patientSource.username || 'N/A',
+            age: patientSource.age || 'N/A',
+            gender: patientSource.gender || 'N/A',
+            phone: patientSource.phone || 'N/A',
+            bloodGroup: patientSource.bloodGroup || 'N/A',
+            allergies: patientSource.allergies || 'None reported',
+            dermatologist: reviewData.dermatologistInfo?.name || reviewData.dermatologistInfo?.username
+                ? `Dr. ${reviewData.dermatologistInfo?.name || reviewData.dermatologistInfo?.username}`
+                : 'Not Assigned'
+        };
+        const dermComment = reviewData.comment || null;
+        const pdfBlob = await generatePdfReportBlob(predictionData, treatmentSuggestions, userData, dermComment);
+        if (!pdfBlob) return;
+        const file = new File([pdfBlob], `Dermatology_Report_${predictionData.reportId}_${userData.name.replace(/\s/g, '')}.pdf`, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: 'Dermatology Report',
+                    text: 'Your AI-assisted dermatology report.'
+                });
+            } catch (err) {
+                toast.error('Sharing was cancelled or failed.');
+            }
+        } else {
+            // Fallback: download
+            const url = URL.createObjectURL(pdfBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast.info('Sharing not supported, PDF downloaded instead.');
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
@@ -42,7 +135,29 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData }) => {
                             {reviewData?.status === 'rejected' ? 'Your review request was not approved' : 'Your analysis has been reviewed'}
                         </p>
                     </div>
-                    <button onClick={onClose} className="px-3 py-1.5 rounded-md text-sm bg-gray-200 hover:bg-gray-300 font-medium transition-colors">Close</button>
+                    <div className="flex gap-2">
+                        {reviewData?.status !== 'rejected' && (
+                            <>
+                                <button
+                                    onClick={handleDownloadPdf}
+                                    className="px-3 py-1.5 rounded-md text-sm bg-gray-600 hover:bg-gray-700 text-white font-medium transition-colors flex items-center gap-2"
+                                >
+                                    <FiDownload className="w-4 h-4" />
+                                    Download PDF
+                                </button>
+                                <button
+                                    onClick={handleSharePdf}
+                                    className="px-3 py-1.5 rounded-md text-sm bg-green-600 hover:bg-green-700 text-white font-medium transition-colors flex items-center gap-2"
+                                >
+                                    <FiShare2 className="w-4 h-4" />
+                                    Share
+                                </button>
+                            </>
+                        )}
+                        <button onClick={onClose}>
+                            <IoClose className="text-gray-500 w-6 h-6 hover:text-gray-600" />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="p-6 overflow-y-auto flex-1">

@@ -37,7 +37,7 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/forgot-password/', {
+            const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: formData.email }),
@@ -46,12 +46,12 @@ const ForgotPassword = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage('Verification code sent to your email!');
+                setMessage(data.message || 'Verification code sent to your email!');
                 setMessageType('success');
                 setStep(2);
                 startCountdown();
             } else {
-                setMessage(data.error || 'Email not found');
+                setMessage(data.detail?.error || data.error || 'Email not found');
                 setMessageType('error');
             }
         } catch (error) {
@@ -69,23 +69,23 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/verify-reset-code/', {
+            const response = await fetch('http://localhost:5000/api/auth/verify-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     email: formData.email, 
-                    code: formData.code 
+                    otp: formData.code 
                 }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                setMessage('Code verified successfully!');
+                setMessage(data.message || 'Code verified successfully!');
                 setMessageType('success');
                 setStep(3);
             } else {
-                setMessage(data.error || 'Invalid verification code');
+                setMessage(data.detail?.error || data.error || 'Invalid verification code');
                 setMessageType('error');
             }
         } catch (error) {
@@ -116,12 +116,12 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/reset-password/', {
+            const response = await fetch('http://localhost:5000/api/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     email: formData.email,
-                    code: formData.code,
+                    otp: formData.code,
                     newPassword: formData.newPassword 
                 }),
             });
@@ -131,7 +131,7 @@ const ForgotPassword = () => {
             if (response.ok) {
                 setStep(4);
             } else {
-                setMessage(data.error || 'Password reset failed');
+                setMessage(data.detail?.error || data.error || 'Password reset failed');
                 setMessageType('error');
             }
         } catch (error) {

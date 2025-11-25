@@ -55,11 +55,11 @@ const Navbar = () => {
                 const res = await apiGetNotifications(false); // Get all notifications
                 console.log('Fetched notifications:', res.data);
                 const notifs = res.data?.notifications || [];
-                
+
                 // Filter out deleted notifications from localStorage
                 const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                 const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
-                
+
                 const unreadCount = filteredNotifs.filter(n => !n.isRead && !n.read).length;
                 setNotifications(filteredNotifs);
                 setNotificationCount(unreadCount);
@@ -76,18 +76,18 @@ const Navbar = () => {
         const userData = JSON.parse(localStorage.getItem('user'));
         setIsLoggedIn(!!userData);
         setUserRole(userData?.role || null);
-        
+
         // Fetch initial notification count if logged in
         if (userData) {
             apiGetNotifications(false)
                 .then(res => {
                     console.log('Initial notifications fetch:', res.data);
                     const notifs = res.data?.notifications || [];
-                    
+
                     // Filter out deleted notifications from localStorage
                     const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                     const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
-                    
+
                     const unreadCount = filteredNotifs.filter(n => !n.isRead && !n.read).length;
                     setNotificationCount(unreadCount);
                     console.log('Initial unread count:', unreadCount);
@@ -234,7 +234,7 @@ const Navbar = () => {
                                                     const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                                                     deletedIds.push(notificationId);
                                                     localStorage.setItem('deletedNotifications', JSON.stringify(deletedIds));
-                                                    
+
                                                     setNotifications(prev => {
                                                         const updated = prev.filter(n => (n.id || n._id) !== notificationId);
                                                         const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
@@ -250,8 +250,8 @@ const Navbar = () => {
                                                             await apiMarkNotificationRead(notifId);
                                                             // Update local state to reflect read status
                                                             setNotifications(prev => {
-                                                                const updated = prev.map(notif => 
-                                                                    (notif.id || notif._id) === notifId 
+                                                                const updated = prev.map(notif =>
+                                                                    (notif.id || notif._id) === notifId
                                                                         ? { ...notif, isRead: true, read: true }
                                                                         : notif
                                                                 );
@@ -499,7 +499,7 @@ const Navbar = () => {
                                                         const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                                                         deletedIds.push(notificationId);
                                                         localStorage.setItem('deletedNotifications', JSON.stringify(deletedIds));
-                                                        
+
                                                         setNotifications(prev => {
                                                             const updated = prev.filter(n => (n.id || n._id) !== notificationId);
                                                             const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
@@ -515,8 +515,8 @@ const Navbar = () => {
                                                                 await apiMarkNotificationRead(notifId);
                                                                 // Update local state to reflect read status
                                                                 setNotifications(prev => {
-                                                                    const updated = prev.map(notif => 
-                                                                        (notif.id || notif._id) === notifId 
+                                                                    const updated = prev.map(notif =>
+                                                                        (notif.id || notif._id) === notifId
                                                                             ? { ...notif, isRead: true, read: true }
                                                                             : notif
                                                                     );
@@ -694,6 +694,7 @@ const Navbar = () => {
                 loading={previewLoading}
                 error={previewError}
                 reviewData={patientReviewData}
+                currentUser={JSON.parse(localStorage.getItem("user"))}
             />
         </>
     );
