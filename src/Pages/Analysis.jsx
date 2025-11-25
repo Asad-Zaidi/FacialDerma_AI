@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
 import NearestDermatologyMap from '../components/NearestDermatologyMap';
@@ -86,6 +86,19 @@ const Analysis = () => {
         setTreatmentSuggestions(suggestionsData);
     }, []);
 
+    const getTreatmentData = useCallback(
+        (disease) => {
+            if (!disease || !treatmentSuggestions) return null;
+            const list = treatmentSuggestions.skin_conditions;
+            if (!Array.isArray(list)) return null;
+            const target = list.find(
+                (item) => String(item?.name || '').toLowerCase().trim() === String(disease).toLowerCase().trim()
+            );
+            return target || null;
+        },
+        [treatmentSuggestions]
+    );
+
     useEffect(() => {
         console.log("treatmentSuggestions loaded:", treatmentSuggestions);
         console.log(
@@ -94,20 +107,7 @@ const Analysis = () => {
             ":",
             getTreatmentData(prediction?.predicted_label)
         );
-    }, [prediction, treatmentSuggestions]);
-
-    const getTreatmentData = (disease) => {
-        if (!disease || !treatmentSuggestions) return null;
-
-        const list = treatmentSuggestions.skin_conditions;
-        if (!Array.isArray(list)) return null;
-
-        const target = list.find(
-            (item) => String(item?.name || '').toLowerCase().trim() === String(disease).toLowerCase().trim()
-        );
-
-        return target || null;
-    };
+    }, [prediction, treatmentSuggestions, getTreatmentData]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
