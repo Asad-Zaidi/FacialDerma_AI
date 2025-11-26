@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import disposableDomainsList from 'disposable-email-domains';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { MdEmail, MdLock, MdPerson, MdCheckCircle } from 'react-icons/md';
@@ -29,10 +30,23 @@ const Auth = () => {
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState('error');
     const [showPasswordInfo, setShowPasswordInfo] = useState(false);
+    const [passwordsMatch, setPasswordsMatch] = useState(true);
+
+    useEffect(() => {
+        if (formData.password.length === 0 && formData.confirmPassword.length === 0) {
+            setPasswordsMatch(null);  // neutral state, no error message
+        } else if (formData.confirmPassword.length === 0) {
+            setPasswordsMatch(null);  // neutral if confirm password is empty
+        } else {
+            setPasswordsMatch(formData.password === formData.confirmPassword);
+        }
+    }, [formData.password, formData.confirmPassword]);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+
     };
 
     // Login Handler
@@ -59,26 +73,34 @@ const Auth = () => {
             const response = await apiLogin(payload); // <-- using apiLogin
             const data = response.data;
 
-            login(data.token, {
-                email: data.user.email,
-                username: data.user.username,
-                role: data.user.role,
-                name: data.user.name
-            });
+            // Only proceed if login is successful and token exists
+            if (data && data.token && data.user) {
+                login(data.token, {
+                    email: data.user.email,
+                    username: data.user.username,
+                    role: data.user.role,
+                    name: data.user.name
+                });
 
-            setTimeout(() => {
-                if (data.user.role === 'patient') {
-                    navigate('/home');
-                } else if (data.user.role === 'dermatologist') {
-                    navigate('/Dermatologist');
-                }
-            }, 1500);
-
+                setTimeout(() => {
+                    setLoading(false);
+                    if (data.user.role === 'patient') {
+                        navigate('/home');
+                    } else if (data.user.role === 'dermatologist') {
+                        navigate('/Dermatologist');
+                    }
+                }, 1500);
+            } else {
+                setMessage('Invalid credentials');
+                setMessageType('error');
+                setLoading(false);
+            }
         } catch (error) {
             const errMsg = error.response?.data?.error || 'Invalid credentials';
             setMessage(errMsg);
             setMessageType('error');
             setLoading(false);
+            return;
         }
     };
 
@@ -91,6 +113,38 @@ const Auth = () => {
 
         if (!role) {
             setMessage('Please select a role.');
+            setMessageType('error');
+            return;
+        }
+
+        // Email format validation
+        const email = formData.email;
+        const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+            setMessage('Please enter a valid email address.');
+            setMessageType('error');
+            return;
+        }
+
+        // Block disposable and suspicious email domains using npm package
+        const emailDomain = email.split('@')[1]?.toLowerCase();
+        if (emailDomain && disposableDomainsList.includes(emailDomain)) {
+            setMessage('Disposable or suspicious email addresses are not allowed.');
+            setMessageType('error');
+            return;
+        }
+        // Block emails with suspicious patterns
+        if (/@(test|temp|1234|fake|mail|noreply|no-reply|example)\./i.test(email)) {
+            setMessage('Please use a real, non-temporary email address.');
+            setMessageType('error');
+            return;
+        }
+
+        // Password strength validation
+        const password = formData.password;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.,$!%*?&])[A-Za-z\d@.,$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            setMessage('Password must be at least 8 characters and include uppercase, lowercase, number, and special character (@ . , $ etc).');
             setMessageType('error');
             return;
         }
@@ -129,8 +183,9 @@ const Auth = () => {
         }
     };
 
-
     const handleSubmit = isLogin ? handleLoginSubmit : handleSignupSubmit;
+
+
 
     return (
         <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
@@ -344,6 +399,7 @@ const Auth = () => {
                                 {!isLogin && (
                                     <div className="relative">
                                         <button
+                                            aria-label="Password requirements info"
                                             type="button"
                                             onMouseEnter={() => setShowPasswordInfo(true)}
                                             onMouseLeave={() => setShowPasswordInfo(false)}
@@ -397,6 +453,7 @@ const Auth = () => {
                                 />
                                 <button
                                     type="button"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                                 >
@@ -409,7 +466,7 @@ const Auth = () => {
                                         to="/forgot-password"
                                         className="text-xs text-slate-700 hover:text-slate-900 font-medium hover:underline transition-colors"
                                     >
-                                        Forgot Password?
+                                        {/* Forgot Password? */}
                                     </Link>
                                 </div>
                             )}
@@ -427,16 +484,24 @@ const Auth = () => {
                                         onChange={handleChange}
                                         placeholder="••••••••"
                                         required
-                                        className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white"
+                                        className={`${passwordsMatch === null ? 'border-gray-300' : passwordsMatch ? 'border-green-500' : 'border-red-500'} w-full pl-9 pr-10 py-2.5 border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all text-sm bg-white`}
+                                        aria-describedby="confirm-password-error"
                                     />
                                     <button
                                         type="button"
+                                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                                     >
                                         {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
                                     </button>
                                 </div>
+                                {passwordsMatch === false && (
+                                    <p id="confirm-password-error" className="text-red-600 text-xs mt-1">
+                                        Passwords do not match
+                                    </p>
+                                )}
+
                             </div>
                         )}
 
