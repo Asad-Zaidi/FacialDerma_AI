@@ -27,93 +27,93 @@ import {
 import DermatologistPicker from '../components/DermatologistPicker';
 
 const Analysis = () => {
-        // Camera capture handler
-        const handleCameraCapture = async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const video = document.createElement('video');
-                video.srcObject = stream;
-                video.play();
 
-                // Create a modal for camera preview
-                const modal = document.createElement('div');
-                modal.style.position = 'fixed';
-                modal.style.top = '0';
-                modal.style.left = '0';
-                modal.style.width = '100vw';
-                modal.style.height = '100vh';
-                modal.style.background = 'rgba(0,0,0,0.8)';
-                modal.style.display = 'flex';
-                modal.style.alignItems = 'center';
-                modal.style.justifyContent = 'center';
-                modal.style.zIndex = '9999';
+    const handleCameraCapture = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.play();
 
-                video.style.maxWidth = '90vw';
-                video.style.maxHeight = '70vh';
-                modal.appendChild(video);
 
-                // Capture button
-                const captureBtn = document.createElement('button');
-                captureBtn.textContent = 'Capture';
-                captureBtn.style.position = 'absolute';
-                captureBtn.style.bottom = '10%';
-                captureBtn.style.left = '50%';
-                captureBtn.style.transform = 'translateX(-50%)';
-                captureBtn.style.padding = '1em 2em';
-                captureBtn.style.fontSize = '1.2em';
-                captureBtn.style.background = '#2563eb';
-                captureBtn.style.color = '#fff';
-                captureBtn.style.border = 'none';
-                captureBtn.style.borderRadius = '8px';
-                captureBtn.style.cursor = 'pointer';
-                modal.appendChild(captureBtn);
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.8)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = '9999';
 
-                // Cancel button
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = 'Cancel';
-                cancelBtn.style.position = 'absolute';
-                cancelBtn.style.top = '5%';
-                cancelBtn.style.right = '5%';
-                cancelBtn.style.padding = '0.5em 1em';
-                cancelBtn.style.fontSize = '1em';
-                cancelBtn.style.background = '#ef4444';
-                cancelBtn.style.color = '#fff';
-                cancelBtn.style.border = 'none';
-                cancelBtn.style.borderRadius = '8px';
-                cancelBtn.style.cursor = 'pointer';
-                modal.appendChild(cancelBtn);
+            video.style.maxWidth = '90vw';
+            video.style.maxHeight = '70vh';
+            modal.appendChild(video);
 
-                document.body.appendChild(modal);
 
-                captureBtn.onclick = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob(blob => {
-                        if (blob) {
-                            const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
-                            setImage(file);
-                            setErrorMessage(null);
-                            setPrediction(null);
-                            setShowResult(false);
-                            setShowMap(false);
-                            toast.success('Image captured from camera!');
-                        }
-                    }, 'image/jpeg', 0.95);
-                    stream.getTracks().forEach(track => track.stop());
-                    document.body.removeChild(modal);
-                };
+            const captureBtn = document.createElement('button');
+            captureBtn.textContent = 'Capture';
+            captureBtn.style.position = 'absolute';
+            captureBtn.style.bottom = '10%';
+            captureBtn.style.left = '50%';
+            captureBtn.style.transform = 'translateX(-50%)';
+            captureBtn.style.padding = '1em 2em';
+            captureBtn.style.fontSize = '1.2em';
+            captureBtn.style.background = '#2563eb';
+            captureBtn.style.color = '#fff';
+            captureBtn.style.border = 'none';
+            captureBtn.style.borderRadius = '8px';
+            captureBtn.style.cursor = 'pointer';
+            modal.appendChild(captureBtn);
 
-                cancelBtn.onclick = () => {
-                    stream.getTracks().forEach(track => track.stop());
-                    document.body.removeChild(modal);
-                };
-            } catch (err) {
-                toast.error('Unable to access camera.');
-            }
-        };
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.style.position = 'absolute';
+            cancelBtn.style.top = '5%';
+            cancelBtn.style.right = '5%';
+            cancelBtn.style.padding = '0.5em 1em';
+            cancelBtn.style.fontSize = '1em';
+            cancelBtn.style.background = '#ef4444';
+            cancelBtn.style.color = '#fff';
+            cancelBtn.style.border = 'none';
+            cancelBtn.style.borderRadius = '8px';
+            cancelBtn.style.cursor = 'pointer';
+            modal.appendChild(cancelBtn);
+
+            document.body.appendChild(modal);
+
+            captureBtn.onclick = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(blob => {
+                    if (blob) {
+                        const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
+                        setImage(file);
+                        setErrorMessage(null);
+                        setPrediction(null);
+                        setShowResult(false);
+                        setShowMap(false);
+                        toast.success('Image captured from camera!');
+                    }
+                }, 'image/jpeg', 0.95);
+                stream.getTracks().forEach(track => track.stop());
+                document.body.removeChild(modal);
+            };
+
+            cancelBtn.onclick = () => {
+                stream.getTracks().forEach(track => track.stop());
+                document.body.removeChild(modal);
+            };
+        } catch (err) {
+            toast.error('Unable to access camera.');
+        }
+    };
     const [image, setImage] = useState(null);
     const [prediction, setPrediction] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -163,8 +163,6 @@ const Analysis = () => {
 
     useEffect(() => {
 
-
-
         return () => {
             if (image) URL.revokeObjectURL(image);
         };
@@ -201,7 +199,7 @@ const Analysis = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Only allow JPG, JPEG, PNG
+
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
             setErrorMessage('Only JPG, JPEG, or PNG images are allowed.');
@@ -459,21 +457,10 @@ const Analysis = () => {
 
     return (
         <div className="relative min-h-screen overflow-hidden flex flex-col bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
-            {/* Blurred Background */}
-            <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: "url('../Assets/background.jpg')",
-                    filter: 'blur(50px)',
-                    zIndex: 0
-                }}
-            />
+
             <Header />
-            {/* Content */}
             <div className="relative z-10 flex flex-col min-h-screen">
 
-
-                {/* Page Header with Badge */}
                 <div className="flex flex-col justify-center items-center mt-10 md:mt-22 lg:mt-18 px-4 mb-2">
                     <div className="flex items-center gap-2 mb-2">
                         <BsShieldCheck className="text-green-600 text-xl" />
@@ -487,14 +474,11 @@ const Analysis = () => {
                     </p>
                 </div>
 
-                {/* Main Dashboard */}
                 <div className="flex flex-col items-center gap-8 px-4 md:px-12 lg:px-24 py-6 w-full">
 
-                    {/* Upload Section */}
                     <section className="w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-xl p-6 md:p-8 lg:p-10 transition-all duration-300 hover:shadow-2xl">
                         <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
 
-                            {/* Description & Instructions */}
                             <div className="w-full lg:w-5/12 flex flex-col justify-start items-start text-left space-y-4">
                                 <div className="flex items-center gap-2">
 
@@ -506,7 +490,6 @@ const Analysis = () => {
                                     For accurate skin analysis, please follow the guidelines below to capture a high-quality facial photograph.
                                 </p>
 
-                                {/* Guidelines */}
                                 <div className="space-y-2.5 pt-2 w-full">
                                     <div className="flex items-start gap-2.5 bg-green-50 p-2.5 rounded-lg border border-green-100">
                                         <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
@@ -540,7 +523,6 @@ const Analysis = () => {
                                     </div>
                                 </div>
 
-                                {/* Additional Info Boxes */}
                                 <div className="space-y-2 w-full">
                                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex gap-2">
                                         <MdOutlineInfo className="text-blue-600 text-lg flex-shrink-0 mt-0.5" />
@@ -557,7 +539,6 @@ const Analysis = () => {
                                 </div>
                             </div>
 
-                            {/* Upload Container */}
                             <div className="w-full lg:w-6/12 flex flex-col items-center gap-4">
                                 <div className="relative w-full">
                                     <label
@@ -574,7 +555,6 @@ const Analysis = () => {
                                         />
                                         {image ? (
                                             <>
-                                                {/* Clear Button - Top Right Corner */}
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
@@ -586,12 +566,10 @@ const Analysis = () => {
                                                     <IoClose className="text-2xl text-gray-600" />
                                                 </button>
 
-                                                {/* Image Info Badge */}
                                                 <div className="absolute bottom-3 left-3 z-20 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">
                                                     {(image.size / 1024).toFixed(0)} KB
                                                 </div>
 
-                                                {/* Image Preview - Contain instead of Cover */}
                                                 <img
                                                     src={URL.createObjectURL(image)}
                                                     alt="Preview"
@@ -613,7 +591,6 @@ const Analysis = () => {
                                     </label>
                                 </div>
 
-                                {/* Error Message */}
                                 {errorMessage && (
                                     <div className="w-full max-w-md bg-red-50 border border-red-300 rounded-lg p-3 text-center space-y-2 shadow-sm animate-shake">
                                         <p className="text-red-700 font-medium text-xs md:text-sm">
@@ -628,7 +605,6 @@ const Analysis = () => {
                                     </div>
                                 )}
 
-                                {/* Action Buttons */}
                                 <div className="flex flex-wrap gap-3 justify-center">
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
@@ -637,7 +613,7 @@ const Analysis = () => {
                                         <FiUpload className="text-sm" />
                                         Choose
                                     </button>
-                                    
+
                                     <button
                                         onClick={handleCameraCapture}
                                         className="bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-2.5 px-4 rounded-full transition-all duration-300 text-xs md:text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
@@ -662,7 +638,6 @@ const Analysis = () => {
                         </div>
                     </section>
 
-                    {/* Loading Overlay with Progress */}
                     {isLoading && (
                         <div className="fixed inset-0 bg-white/90 backdrop-blur-md flex items-center justify-center z-50">
                             <div className="flex flex-col items-center gap-6 bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4">
@@ -686,12 +661,10 @@ const Analysis = () => {
                         </div>
                     )}
 
-                    {/* Results Section */}
                     {showResult && (
                         <section
                             ref={resultRef}
                             className="w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-gray-200 mb-3 rounded-2xl shadow-xl p-6 md:p-8 lg:p-10 animate-fade-in">
-                            {/* Results Header with Actions */}
                             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -723,7 +696,6 @@ const Analysis = () => {
 
                             <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
 
-                                {/* Result Box */}
                                 <div className="w-full lg:w-5/12 flex flex-col justify-center items-start space-y-4 pb-4 lg:pb-0 border-b lg:border-b-0 lg:border-r border-gray-200 lg:pr-8">
                                     {prediction && (
                                         <>
@@ -791,7 +763,6 @@ const Analysis = () => {
                                                 </button>
                                             </div>
 
-                                            {/* Disclaimer */}
                                             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2 w-full">
                                                 <AiOutlineWarning className="text-amber-600 text-lg flex-shrink-0 mt-0.5" />
                                                 <p className="text-xs text-amber-800 leading-relaxed">
@@ -802,7 +773,6 @@ const Analysis = () => {
                                     )}
                                 </div>
 
-                                {/* Treatment Suggestions */}
                                 <div className="w-full lg:w-6/12 flex flex-col justify-start items-start space-y-4">
                                     {prediction?.predicted_label && (
                                         <>
@@ -826,7 +796,6 @@ const Analysis = () => {
                                                 ))}
                                             </ul>
 
-                                            {/* Next Steps CTA */}
                                             <div className="bg-gradient-to-r from-gray-700 to-gray-900 text-white p-4 rounded-xl w-full mt-4 shadow-lg">
                                                 <h5 className="font-semibold text-sm mb-2 flex items-center gap-2">
                                                     <BsShieldCheck /> Next Steps
@@ -840,7 +809,6 @@ const Analysis = () => {
                                 </div>
                             </div>
 
-                            {/* === MODIFIED MAP SECTION === */}
                             <div className="mt-8 pt-8 border-t border-gray-200">
                                 <div className="flex flex-col md:flex-row justify-between items-center mb-6">
                                     <h3 className="text-xl md:text-2xl font-semibold text-gray-700 mb-3 md:mb-0 flex items-center gap-2">
@@ -861,14 +829,12 @@ const Analysis = () => {
                                     </button>
                                 </div>
 
-                                {/* Conditionally rendered map with animation */}
                                 {showMap && (
                                     <div id="map-container" className="animate-fade-in rounded-lg overflow-hidden shadow-lg border border-gray-200">
                                         <NearestDermatologyMap />
                                     </div>
                                 )}
                             </div>
-                            {/* === END OF MODIFIED MAP SECTION === */}
 
                         </section>
                     )}
@@ -890,7 +856,6 @@ const Analysis = () => {
                 />
             </div>
 
-            {/* Enhanced Animations */}
             <style jsx>{`
                 @keyframes fadeIn {
                     from {
