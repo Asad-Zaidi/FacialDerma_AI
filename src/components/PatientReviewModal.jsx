@@ -510,11 +510,44 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
                                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                                     <h4 className="text-sm font-semibold text-green-900 mb-2">Helpful Resources</h4>
                                     <ul className="space-y-1">
-                                        {resourcesLinks.map((res, idx) => (
-                                            <li key={idx} className="text-sm text-green-800">
-                                                <a href={res} target="_blank" rel="noopener noreferrer" className="underline">{res}</a>
-                                            </li>
-                                        ))}
+                                        {resourcesLinks.map((res, idx) => {
+                                            // If resource is a string in 'name: url' format, split and render properly
+                                            if (typeof res === 'string') {
+                                                // Try to split by ':' and check if the second part is a valid URL
+                                                const parts = res.split(/:\s*/);
+                                                if (parts.length === 2 && /^https?:\/\//.test(parts[1])) {
+                                                    return (
+                                                        <li key={idx} className="text-sm text-green-800">
+                                                            <span>{parts[0]}: </span>
+                                                            <a href={parts[1]} target="_blank" rel="noopener noreferrer" className="underline">{parts[1]}</a>
+                                                        </li>
+                                                    );
+                                                } else if (/^https?:\/\//.test(res)) {
+                                                    // Just a URL string
+                                                    return (
+                                                        <li key={idx} className="text-sm text-green-800">
+                                                            <a href={res} target="_blank" rel="noopener noreferrer" className="underline">{res}</a>
+                                                        </li>
+                                                    );
+                                                } else {
+                                                    // Plain text
+                                                    return (
+                                                        <li key={idx} className="text-sm text-green-800">{res}</li>
+                                                    );
+                                                }
+                                            } else if (typeof res === 'object' && res.url) {
+                                                return (
+                                                    <li key={idx} className="text-sm text-green-800">
+                                                        {res.name ? <span>{res.name}: </span> : null}
+                                                        <a href={res.url} target="_blank" rel="noopener noreferrer" className="underline">{res.url}</a>
+                                                    </li>
+                                                );
+                                            } else {
+                                                return (
+                                                    <li key={idx} className="text-sm text-green-800">{String(res)}</li>
+                                                );
+                                            }
+                                        })}
                                     </ul>
                                 </div>
                             )}

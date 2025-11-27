@@ -104,7 +104,9 @@ const Navbar = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         setIsLoggedIn(false);
-        navigate('/home');
+        setUserRole(null);
+        // Only navigate once, do not update menu state after navigation
+        navigate('/home', { replace: true });
     };
 
     const toggleMenu = () => {
@@ -338,6 +340,7 @@ const Navbar = () => {
 
                                     <li>
                                         <button
+                                            type="button"
                                             onClick={() => setShowConfirmSignOut(true)}
                                             className="flex items-center gap-1 px-2 py-1.5 rounded-lg font-medium text-sm lg:text-base text-red-600 hover:bg-red-50 transition-all duration-300"
                                         >
@@ -605,6 +608,7 @@ const Navbar = () => {
 
                                     <li className="pt-4 border-t border-gray-200 mt-4">
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 setShowConfirmSignOut(true);
                                                 closeMenu();
