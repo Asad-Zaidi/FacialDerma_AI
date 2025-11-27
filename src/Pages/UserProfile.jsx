@@ -791,7 +791,7 @@ const UserProfile = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">Emergency Contact</label>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">Emergency Contact (Optional)</label>
                                         <input
                                             type="text"
                                             name="emergencyContact"
@@ -831,7 +831,7 @@ const UserProfile = () => {
                             ) : (
                                 <div className="space-y-2">
                                     <InfoItem icon={<FaPhoneAlt />} label="Phone" value={patient.phone} iconColor="text-green-500" />
-                                    <InfoItem icon={<FaExclamationTriangle />} label="Emergency Contact" value={patient.emergencyContact} iconColor="text-red-500" />
+                                    <InfoItem icon={<FaExclamationTriangle />} label="Emergency Contact (Optional)" value={patient.emergencyContact} iconColor="text-red-500" />
                                     <InfoItem icon={<FaMapMarkerAlt />} label="Address" value={patient.address} iconColor="text-blue-500" />
                                     <InfoItem icon={<FaEnvelope />} label="Email" value={patient.email} iconColor="text-purple-500" />
                                 </div>

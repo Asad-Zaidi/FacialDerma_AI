@@ -10,7 +10,7 @@ import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { FaMapLocationDot } from 'react-icons/fa6';
 import { FiUpload, FiDownload, FiShare2, FiMapPin, FiChevronDown } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
-import { FaCamera } from "react-icons/fa";
+// import { FaCamera } from "react-icons/fa";
 import { MdOutlineInfo, MdHistory } from "react-icons/md";
 import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
@@ -28,92 +28,92 @@ import DermatologistPicker from '../components/DermatologistPicker';
 
 const Analysis = () => {
 
-    const handleCameraCapture = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.play();
+    // const handleCameraCapture = async () => {
+    //     try {
+    //         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    //         const video = document.createElement('video');
+    //         video.srcObject = stream;
+    //         video.play();
 
 
-            const modal = document.createElement('div');
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100vw';
-            modal.style.height = '100vh';
-            modal.style.background = 'rgba(0,0,0,0.8)';
-            modal.style.display = 'flex';
-            modal.style.alignItems = 'center';
-            modal.style.justifyContent = 'center';
-            modal.style.zIndex = '9999';
+    //         const modal = document.createElement('div');
+    //         modal.style.position = 'fixed';
+    //         modal.style.top = '0';
+    //         modal.style.left = '0';
+    //         modal.style.width = '100vw';
+    //         modal.style.height = '100vh';
+    //         modal.style.background = 'rgba(0,0,0,0.8)';
+    //         modal.style.display = 'flex';
+    //         modal.style.alignItems = 'center';
+    //         modal.style.justifyContent = 'center';
+    //         modal.style.zIndex = '9999';
 
-            video.style.maxWidth = '90vw';
-            video.style.maxHeight = '70vh';
-            modal.appendChild(video);
-
-
-            const captureBtn = document.createElement('button');
-            captureBtn.textContent = 'Capture';
-            captureBtn.style.position = 'absolute';
-            captureBtn.style.bottom = '10%';
-            captureBtn.style.left = '50%';
-            captureBtn.style.transform = 'translateX(-50%)';
-            captureBtn.style.padding = '1em 2em';
-            captureBtn.style.fontSize = '1.2em';
-            captureBtn.style.background = '#2563eb';
-            captureBtn.style.color = '#fff';
-            captureBtn.style.border = 'none';
-            captureBtn.style.borderRadius = '8px';
-            captureBtn.style.cursor = 'pointer';
-            modal.appendChild(captureBtn);
+    //         video.style.maxWidth = '90vw';
+    //         video.style.maxHeight = '70vh';
+    //         modal.appendChild(video);
 
 
-            const cancelBtn = document.createElement('button');
-            cancelBtn.textContent = 'Cancel';
-            cancelBtn.style.position = 'absolute';
-            cancelBtn.style.top = '5%';
-            cancelBtn.style.right = '5%';
-            cancelBtn.style.padding = '0.5em 1em';
-            cancelBtn.style.fontSize = '1em';
-            cancelBtn.style.background = '#ef4444';
-            cancelBtn.style.color = '#fff';
-            cancelBtn.style.border = 'none';
-            cancelBtn.style.borderRadius = '8px';
-            cancelBtn.style.cursor = 'pointer';
-            modal.appendChild(cancelBtn);
+    //         const captureBtn = document.createElement('button');
+    //         captureBtn.textContent = 'Capture';
+    //         captureBtn.style.position = 'absolute';
+    //         captureBtn.style.bottom = '10%';
+    //         captureBtn.style.left = '50%';
+    //         captureBtn.style.transform = 'translateX(-50%)';
+    //         captureBtn.style.padding = '1em 2em';
+    //         captureBtn.style.fontSize = '1.2em';
+    //         captureBtn.style.background = '#2563eb';
+    //         captureBtn.style.color = '#fff';
+    //         captureBtn.style.border = 'none';
+    //         captureBtn.style.borderRadius = '8px';
+    //         captureBtn.style.cursor = 'pointer';
+    //         modal.appendChild(captureBtn);
 
-            document.body.appendChild(modal);
 
-            captureBtn.onclick = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob(blob => {
-                    if (blob) {
-                        const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
-                        setImage(file);
-                        setErrorMessage(null);
-                        setPrediction(null);
-                        setShowResult(false);
-                        setShowMap(false);
-                        toast.success('Image captured from camera!');
-                    }
-                }, 'image/jpeg', 0.95);
-                stream.getTracks().forEach(track => track.stop());
-                document.body.removeChild(modal);
-            };
+    //         const cancelBtn = document.createElement('button');
+    //         cancelBtn.textContent = 'Cancel';
+    //         cancelBtn.style.position = 'absolute';
+    //         cancelBtn.style.top = '5%';
+    //         cancelBtn.style.right = '5%';
+    //         cancelBtn.style.padding = '0.5em 1em';
+    //         cancelBtn.style.fontSize = '1em';
+    //         cancelBtn.style.background = '#ef4444';
+    //         cancelBtn.style.color = '#fff';
+    //         cancelBtn.style.border = 'none';
+    //         cancelBtn.style.borderRadius = '8px';
+    //         cancelBtn.style.cursor = 'pointer';
+    //         modal.appendChild(cancelBtn);
 
-            cancelBtn.onclick = () => {
-                stream.getTracks().forEach(track => track.stop());
-                document.body.removeChild(modal);
-            };
-        } catch (err) {
-            toast.error('Unable to access camera.');
-        }
-    };
+    //         document.body.appendChild(modal);
+
+    //         captureBtn.onclick = () => {
+    //             const canvas = document.createElement('canvas');
+    //             canvas.width = video.videoWidth;
+    //             canvas.height = video.videoHeight;
+    //             const ctx = canvas.getContext('2d');
+    //             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    //             canvas.toBlob(blob => {
+    //                 if (blob) {
+    //                     const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
+    //                     setImage(file);
+    //                     setErrorMessage(null);
+    //                     setPrediction(null);
+    //                     setShowResult(false);
+    //                     setShowMap(false);
+    //                     toast.success('Image captured from camera!');
+    //                 }
+    //             }, 'image/jpeg', 0.95);
+    //             stream.getTracks().forEach(track => track.stop());
+    //             document.body.removeChild(modal);
+    //         };
+
+    //         cancelBtn.onclick = () => {
+    //             stream.getTracks().forEach(track => track.stop());
+    //             document.body.removeChild(modal);
+    //         };
+    //     } catch (err) {
+    //         toast.error('Unable to access camera.');
+    //     }
+    // };
     const [image, setImage] = useState(null);
     const [prediction, setPrediction] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -461,7 +461,7 @@ const Analysis = () => {
             <Header />
             <div className="relative z-10 flex flex-col min-h-screen">
 
-                <div className="flex flex-col justify-center items-center mt-10 md:mt-22 lg:mt-18 px-4 mb-2">
+                <div className="flex flex-col justify-center items-center mt-6 px-4 mb-2">
                     <div className="flex items-center gap-2 mb-2">
                         <BsShieldCheck className="text-green-600 text-xl" />
                         <span className="text-xs md:text-sm text-gray-700 font-medium">AI-Powered Analysis</span>
@@ -611,16 +611,16 @@ const Analysis = () => {
                                         className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-2.5 px-4 rounded-full transition-all duration-300 text-xs md:text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
                                     >
                                         <FiUpload className="text-sm" />
-                                        Choose
+                                        Upload
                                     </button>
 
-                                    <button
+                                    {/* <button
                                         onClick={handleCameraCapture}
-                                        className="bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-2.5 px-4 rounded-full transition-all duration-300 text-xs md:text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
+                                        className="bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-700 hover:to-gray-600 text-white font-semibold py-2.5 px-4 rounded-full transition-all duration-300 text-xs md:text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
                                     >
                                         <FaCamera className="text-sm" />
                                         Camera
-                                    </button>
+                                    </button> */}
                                     <button
                                         onClick={handleAnalyzeClick}
                                         disabled={!image || isLoading}
