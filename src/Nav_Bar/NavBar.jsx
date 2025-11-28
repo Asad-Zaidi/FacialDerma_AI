@@ -10,13 +10,29 @@ import Logo from "../Assets/logo.png";
 import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview, apiMarkNotificationRead } from "../api/api";
 
 const Navbar = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    
+    const getInitialAuthState = () => {
+        try {
+            const userData = JSON.parse(localStorage.getItem("user"));
+            return {
+                isLoggedIn: !!userData,
+                userRole: userData?.role || null
+            };
+        } catch (error) {
+            return {
+                isLoggedIn: false,
+                userRole: null
+            };
+        }
+    };
+
+    const initialAuth = getInitialAuthState();
+    const [isLoggedIn] = useState(initialAuth.isLoggedIn);
     const [menuOpen, setMenuOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
     const [notificationCount, setNotificationCount] = useState(0);
-    const [userRole, setUserRole] = useState(null);
+    const [userRole] = useState(initialAuth.userRole); 
     const [showReviewPreview, setShowReviewPreview] = useState(false);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState("");
@@ -25,22 +41,6 @@ const Navbar = () => {
     const [showPatientReview, setShowPatientReview] = useState(false);
     const [patientReviewData, setPatientReviewData] = useState(null);
 
-    useEffect(() => {
-        const data = JSON.parse(localStorage.getItem("user"));
-        if (data) {
-            setIsLoggedIn(true);
-            setUserRole(data.role);
-        }
-    }, []);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
     const toggleNotifications = async () => {
         const next = !showNotifications;
         setShowNotifications(next);
@@ -48,11 +48,11 @@ const Navbar = () => {
 
         if (next) {
             try {
-                const res = await apiGetNotifications(false); // Get all notifications
+                const res = await apiGetNotifications(false); 
                 console.log('Fetched notifications:', res.data);
                 const notifs = res.data?.notifications || [];
 
-                // Filter out deleted notifications from localStorage
+                
                 const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                 const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
 
@@ -69,18 +69,14 @@ const Navbar = () => {
     };
 
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        setIsLoggedIn(!!userData);
-        setUserRole(userData?.role || null);
-
-        // Fetch initial notification count if logged in
-        if (userData) {
+        
+        if (isLoggedIn) {
             apiGetNotifications(false)
                 .then(res => {
                     console.log('Initial notifications fetch:', res.data);
                     const notifs = res.data?.notifications || [];
 
-                    // Filter out deleted notifications from localStorage
+                    
                     const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                     const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
 
@@ -93,7 +89,7 @@ const Navbar = () => {
                     setNotificationCount(0);
                 });
         }
-    }, []);
+    }, [isLoggedIn]);
 
     const toggleMenu = () => {
         setMenuOpen(prev => !prev);
@@ -105,10 +101,9 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white/80 backdrop-blur-sm'
-                }`}>
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg transition-all duration-300">
                 <div className="max-w-auto mx-auto px-1 sm:px-1 lg:px-10">
-                    <div className="flex justify-between items-center h-14 px-3 md:h-16">
+                    <div className="flex justify-between items-center h-16 px-3">
 
                         {/* Logo/Brand */}
                         <div className="flex items-center gap-2 group">
@@ -225,12 +220,12 @@ const Navbar = () => {
                                                     });
                                                 }}
                                                 onItemClick={async (n) => {
-                                                    // Mark notification as read
+                                                    
                                                     if (n?.id || n?._id) {
                                                         const notifId = n.id || n._id;
                                                         try {
                                                             await apiMarkNotificationRead(notifId);
-                                                            // Update local state to reflect read status
+                                                            
                                                             setNotifications(prev => {
                                                                 const updated = prev.map(notif =>
                                                                     (notif.id || notif._id) === notifId
@@ -249,7 +244,7 @@ const Navbar = () => {
                                                     const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                     if (!requestId) return;
 
-                                                    // Dermatologists see preview for review_requested
+                                                    
                                                     if (userRole === 'dermatologist' && n?.type === 'review_requested') {
                                                         setCurrentRequestId(requestId);
                                                         setPreviewError("");
@@ -266,7 +261,7 @@ const Navbar = () => {
                                                             setPreviewLoading(false);
                                                         }
                                                     }
-                                                    // Patients see review for review_submitted
+                                                    
                                                     else if (userRole === 'patient' && n?.type === 'review_submitted') {
                                                         setPreviewError("");
                                                         setPatientReviewData(null);
@@ -282,7 +277,7 @@ const Navbar = () => {
                                                             setPreviewLoading(false);
                                                         }
                                                     }
-                                                    // Patients see rejection reason for review_rejected
+                                                    
                                                     else if (userRole === 'patient' && n?.type === 'review_rejected') {
                                                         setPreviewError("");
                                                         setPatientReviewData(null);
@@ -367,7 +362,7 @@ const Navbar = () => {
                                 {/* Logo Icon Background: Charcoal Gradient */}
                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                                     <img
-                                        src={Logo}  // or {Logo} if imported from src
+                                        src={Logo}  
                                         alt="FacialDerma Logo"
                                         className="w-full h-full object-contain"
                                     />
@@ -483,12 +478,12 @@ const Navbar = () => {
                                                         });
                                                     }}
                                                     onItemClick={async (n) => {
-                                                        // Mark notification as read
+                                                        
                                                         if (n?.id || n?._id) {
                                                             const notifId = n.id || n._id;
                                                             try {
                                                                 await apiMarkNotificationRead(notifId);
-                                                                // Update local state to reflect read status
+                                                                
                                                                 setNotifications(prev => {
                                                                     const updated = prev.map(notif =>
                                                                         (notif.id || notif._id) === notifId
@@ -507,7 +502,7 @@ const Navbar = () => {
                                                         const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                         if (!requestId) return;
 
-                                                        // Dermatologists see preview for review_requested
+                                                        
                                                         if (userRole === 'dermatologist' && n?.type === 'review_requested') {
                                                             setCurrentRequestId(requestId);
                                                             setPreviewError("");
@@ -524,7 +519,7 @@ const Navbar = () => {
                                                                 setPreviewLoading(false);
                                                             }
                                                         }
-                                                        // Patients see review for review_submitted
+                                                        
                                                         else if (userRole === 'patient' && n?.type === 'review_submitted') {
                                                             setPreviewError("");
                                                             setPatientReviewData(null);
@@ -540,7 +535,7 @@ const Navbar = () => {
                                                                 setPreviewLoading(false);
                                                             }
                                                         }
-                                                        // Patients see rejection reason for review_rejected
+                                                        
                                                         else if (userRole === 'patient' && n?.type === 'review_rejected') {
                                                             setPreviewError("");
                                                             setPatientReviewData(null);
@@ -573,7 +568,9 @@ const Navbar = () => {
                                                 }`
                                             }
                                         >
-                                            <FaUser className="text-lg" />
+                                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                                <FaUser className="text-lg text-gray-700" />
+                                            </div>
                                             <span>Profile</span>
                                         </NavLink>
                                     </li>
@@ -599,7 +596,7 @@ const Navbar = () => {
             </nav>
 
             {/* Spacer to prevent content from hiding under fixed navbar */}
-            <div className="h-16 md:h-20"></div>
+            <div className="h-16"></div>
 
             {/* Review Preview Modal for Dermatologists */}
             <ReviewPreviewModal
@@ -616,7 +613,7 @@ const Navbar = () => {
                 onSubmitComment={async (comment) => {
                     if (!currentRequestId) throw new Error('No request ID');
                     await apiSubmitReview(currentRequestId, comment);
-                    // Refresh notifications after submission
+                    
                     const res = await apiGetNotifications(false);
                     const notifs = res.data?.notifications || [];
                     const unreadCount = typeof res.data?.unreadCount === 'number'
@@ -628,7 +625,7 @@ const Navbar = () => {
                 onRejectRequest={async (comment) => {
                     if (!currentRequestId) throw new Error('No request ID');
                     await apiRejectReview(currentRequestId, comment);
-                    // Refresh notifications after rejection
+                    
                     const res = await apiGetNotifications(false);
                     const notifs = res.data?.notifications || [];
                     const unreadCount = typeof res.data?.unreadCount === 'number'
