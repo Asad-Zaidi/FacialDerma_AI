@@ -726,7 +726,7 @@ const Auth = () => {
                 setTimeout(() => {
                     setLoading(false);
                     if (data.user.role === 'patient') {
-                        navigate('/home');
+                        navigate('/Profile');
                     } else if (data.user.role === 'dermatologist') {
                         navigate('/Dermatologist');
                     }
