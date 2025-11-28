@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import {
     FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaStethoscope, FaBriefcase, FaIdCard,
-    FaHospital, FaMoneyBillWave, FaEdit, FaSave, FaTimes, FaCamera
+    FaHospital, FaMoneyBillWave, FaEdit, FaSave, FaTimes, FaCamera, FaKey, FaSignOutAlt, FaEye, FaEyeSlash
 } from 'react-icons/fa';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
-import { apiGetFullProfile, apiUpdateProfile } from '../api/api';
+import { apiGetFullProfile, apiUpdateProfile, apiChangePassword } from '../api/api';
 import MaleAvatar from '../Assets/male-avatar.png';
 import FemaleAvatar from '../Assets/female-avatar.png';
 import UpdateProfilePopup from '../components/UpdateProfilePopup';
+import ConfirmSignout from '../components/ConfirmSignout';
+import AnimatedCheck from '../components/ui/AnimatedCheck';
+import { useAuth } from '../contexts/AuthContext';
 
 const DermatologistProfile = () => {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -19,6 +25,20 @@ const DermatologistProfile = () => {
     const [isEditingContact, setIsEditingContact] = useState(false);
     const [editData, setEditData] = useState({});
     const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
+    const [showPasswords, setShowPasswords] = useState({
+        current: false,
+        new: false,
+        confirm: false
+    });
 
     useEffect(() => { fetchProfile(); }, []);
 
@@ -123,12 +143,54 @@ const DermatologistProfile = () => {
         if (section === 'contact') setIsEditingContact(false);
     };
 
-    // const DefaultAvatar = ({ gender, className }) => {
-    //     const g = (gender || '').toLowerCase();
-    //     if (g === 'male') return <img src={MaleAvatar} alt="Male Avatar" className={`${className} object-cover`} />;
-    //     if (g === 'female') return <img src={FemaleAvatar} alt="Female Avatar" className={`${className} object-cover`} />;
-    //     return <div className={`${className} bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-4xl font-bold`}><FaUser /></div>;
-    // };
+    const handlePasswordInputChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleChangePassword = async () => {
+        if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+            alert('All password fields are required');
+            return;
+        }
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            alert('New passwords do not match');
+            return;
+        }
+        if (passwordData.newPassword.length < 8) {
+            alert('New password must be at least 8 characters');
+            return;
+        }
+        try {
+            setPasswordLoading(true);
+            const response = await apiChangePassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
+            setPasswordSuccess(true);
+            setTimeout(() => {
+                alert(response.data.message || 'Password changed successfully');
+                setShowPasswordModal(false);
+                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswordSuccess(false);
+                setShowPasswords({ current: false, new: false, confirm: false });
+            }, 2000);
+        } catch (error) {
+            console.error('Failed to change password:', error);
+            alert(error.response?.data?.detail?.error || error.response?.data?.error || 'Failed to change password');
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate('/home', { replace: true });
+    };
+
     const DefaultAvatar = ({ gender, className }) => {
         const getDefaultAvatar = () => {
             if (gender === "Female") {
@@ -210,6 +272,24 @@ const DermatologistProfile = () => {
                                 <p className="text-gray-600 text-sm sm:text-base">{profile?.email}</p>
                                 <p className="text-gray-600 text-sm sm:text-base">@{profile?.username}</p>
                                 <p className="text-gray-700 mt-1 text-sm sm:text-base">Specialization: {profile?.specialization || 'Dermatologist'}</p>
+
+                                {/* Change Password and Logout Buttons */}
+                                <div className="mt-4 flex justify-start gap-3">
+                                    <button
+                                        onClick={() => setShowPasswordModal(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white text-xs font-semibold rounded-lg hover:bg-gray-700 transition-all duration-200"
+                                    >
+                                        <FaKey className="text-sm" />
+                                        Change Password
+                                    </button>
+                                    <button
+                                        onClick={() => setShowLogoutModal(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-all duration-200"
+                                    >
+                                        <FaSignOutAlt className="text-sm" />
+                                        Logout
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -256,60 +336,7 @@ const DermatologistProfile = () => {
                         </div>
                     </div>
 
-                    {/* Professional Information */}
-                    {/* <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                <FaStethoscope className="text-blue-600 text-lg sm:text-xl" /> Professional Information
-                            </h2>
-                            {!isEditingProfessional ? (
-                                <button onClick={() => setIsEditingProfessional(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base w-full sm:w-auto justify-center"><FaEdit /> Edit</button>
-                            ) : (
-                                <div className="flex gap-2 w-full sm:w-auto flex-wrap">
-                                    <button onClick={handleSaveProfessional} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base flex-1 sm:flex-none justify-center"><FaSave /> Save</button>
-                                    <button onClick={() => handleCancelEdit('professional')} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm sm:text-base flex-1 sm:flex-none justify-center"><FaTimes /> Cancel</button>
-                                </div>
-                            )}
-                        </div>
-
-                        {!isEditingProfessional ? (
-                            <div className="flex flex-wrap gap-4 text-gray-800 text-sm sm:text-base">
-                                <div><span className="font-semibold">Specialization:</span> {profile?.specialization || 'Not set'}</div>
-                                <div><span className="font-semibold">License:</span> {profile?.license || 'Not set'}</div>
-                                <div><span className="font-semibold">Experience:</span> {profile?.experience ? `${profile.experience} years` : 'Not set'}</div>
-                                <div><span className="font-semibold">Clinic:</span> {profile?.clinic || 'Not set'}</div>
-                                <div><span className="font-semibold">Fees:</span> {profile?.fees ? `$${profile.fees}` : 'Not set'}</div>
-                                <div className="w-full"><span className="font-semibold">Bio:</span> {profile?.bio || 'Not set'}</div>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaStethoscope className="text-blue-600 text-sm" /> Specialization</label>
-                                    <input type="text" value={editData.specialization || ''} onChange={e => handleEditChange('specialization', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Dermatology" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaIdCard className="text-blue-600 text-sm" /> License Number</label>
-                                    <input type="text" value={editData.license || ''} onChange={e => handleEditChange('license', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Medical License" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaBriefcase className="text-blue-600 text-sm" /> Experience</label>
-                                    <input type="number" value={editData.experience || ''} onChange={e => handleEditChange('experience', parseInt(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaHospital className="text-blue-600 text-sm" /> Clinic/Hospital</label>
-                                    <input type="text" value={editData.clinic || ''} onChange={e => handleEditChange('clinic', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Clinic or Hospital" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaMoneyBillWave className="text-blue-600 text-sm" /> Consultation Fees</label>
-                                    <input type="number" value={editData.fees || ''} onChange={e => handleEditChange('fees', parseFloat(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Fees per consultation" />
-                                </div>
-                                <div className="sm:col-span-2">
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaStethoscope className="text-blue-600 text-sm" /> Bio</label>
-                                    <textarea value={editData.bio || ''} onChange={e => handleEditChange('bio', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" rows={3} placeholder="Write a short bio" />
-                                </div>
-                            </div>
-                        )}
-                    </div> */}
+                    
                     <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
                             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -361,28 +388,28 @@ const DermatologistProfile = () => {
                             /* ===== EDIT MODE (Already Good) ===== */
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaStethoscope className="text-blue-600 text-sm" /> Specialization</label>
+                                    <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1"><FaStethoscope className="text-blue-600 text-sm" /> Specialization</label>
                                     <input type="text" value={editData.specialization || ''} onChange={e => handleEditChange('specialization', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Dermatology" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaIdCard className="text-blue-600 text-sm" /> License Number</label>
+                                    <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1"><FaIdCard className="text-blue-600 text-sm" /> License Number</label>
                                     <input type="text" value={editData.license || ''} onChange={e => handleEditChange('license', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Medical License" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaBriefcase className="text-blue-600 text-sm" /> Experience</label>
+                                    <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1"><FaBriefcase className="text-blue-600 text-sm" /> Experience</label>
                                     <input type="number" value={editData.experience || ''} onChange={e => handleEditChange('experience', parseInt(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaHospital className="text-blue-600 text-sm" /> Clinic/Hospital</label>
+                                    <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1"><FaHospital className="text-blue-600 text-sm" /> Clinic/Hospital</label>
                                     <input type="text" value={editData.clinic || ''} onChange={e => handleEditChange('clinic', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Clinic or Hospital" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaMoneyBillWave className="text-blue-600 text-sm" /> Consultation Fees</label>
+                                    <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1"><FaMoneyBillWave className="text-blue-600 text-sm" /> Consultation Fees</label>
                                     <input type="number" value={editData.fees || ''} onChange={e => handleEditChange('fees', parseFloat(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" placeholder="Fees per consultation" />
                                 </div>
 
                                 <div className="sm:col-span-2">
-                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><FaStethoscope className="text-blue-600 text-sm" /> Bio</label>
+                                    <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1"><FaStethoscope className="text-blue-600 text-sm" /> Bio</label>
                                     <textarea value={editData.bio || ''} onChange={e => handleEditChange('bio', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm sm:text-base" rows={3} placeholder="Write a short bio" />
                                 </div>
                             </div>
@@ -433,7 +460,7 @@ const DermatologistProfile = () => {
         /* ===== EDIT MODE (unchanged) ===== */
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1">
                     <FaEnvelope className="text-blue-600 text-sm" /> Email
                 </label>
                 <input
@@ -446,7 +473,7 @@ const DermatologistProfile = () => {
             </div>
 
             <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1">
                     <FaPhone className="text-blue-600 text-sm" /> Phone
                 </label>
                 <input
@@ -459,7 +486,7 @@ const DermatologistProfile = () => {
             </div>
 
             <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1">
                     <FaMapMarkerAlt className="text-blue-600 text-sm" /> Address
                 </label>
                 <input
@@ -478,6 +505,151 @@ const DermatologistProfile = () => {
 
                 {showUpdatePopup && (
                     <UpdateProfilePopup profile={profile} onClose={() => setShowUpdatePopup(false)} onUpdate={fetchProfile} />
+                )}
+
+                {/* Change Password Modal */}
+                {showPasswordModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+                            {passwordSuccess ? (
+                                <AnimatedCheck
+                                    title="Password Changed!"
+                                    message="Your password has been updated successfully"
+                                />
+                            ) : (
+                                <>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                            Change Password
+                                        </h2>
+                                        <button
+                                            onClick={() => {
+                                                setShowPasswordModal(false);
+                                                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                                setShowPasswords({ current: false, new: false, confirm: false });
+                                            }}
+                                            disabled={passwordLoading}
+                                            className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showPasswords.current ? "text" : "password"}
+                                                    name="currentPassword"
+                                                    value={passwordData.currentPassword}
+                                                    onChange={handlePasswordInputChange}
+                                                    disabled={passwordLoading}
+                                                    className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                    placeholder="Enter current password"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                    disabled={passwordLoading}
+                                                >
+                                                    {showPasswords.current ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showPasswords.new ? "text" : "password"}
+                                                    name="newPassword"
+                                                    value={passwordData.newPassword}
+                                                    onChange={handlePasswordInputChange}
+                                                    disabled={passwordLoading}
+                                                    className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                    placeholder="Enter new password (min 8 characters)"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                    disabled={passwordLoading}
+                                                >
+                                                    {showPasswords.new ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showPasswords.confirm ? "text" : "password"}
+                                                    name="confirmPassword"
+                                                    value={passwordData.confirmPassword}
+                                                    onChange={handlePasswordInputChange}
+                                                    disabled={passwordLoading}
+                                                    className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                    placeholder="Confirm new password"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                    disabled={passwordLoading}
+                                                >
+                                                    {showPasswords.confirm ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-3 pt-4">
+                                            <button
+                                                onClick={handleChangePassword}
+                                                disabled={passwordLoading}
+                                                className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 font-semibold transition-all transform hover: shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                                            >
+                                                {passwordLoading ? (
+                                                    <>
+                                                        <FaTimes className="animate-spin text-xl" />
+                                                        <span>Changing...</span>
+                                                    </>
+                                                ) : (
+                                                    'Change Password'
+                                                )}
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setShowPasswordModal(false);
+                                                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                                    setShowPasswords({ current: false, new: false, confirm: false });
+                                                }}
+                                                disabled={passwordLoading}
+                                                className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 font-semibold transition-all transform hover: shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Logout Confirmation Modal */}
+                {showLogoutModal && (
+                    <ConfirmSignout
+                        onConfirm={handleLogout}
+                        onCancel={() => setShowLogoutModal(false)}
+                    />
                 )}
             </div>
             <Footer />

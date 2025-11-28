@@ -1,12 +1,11 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaTimes, FaBell, FaUser } from "react-icons/fa";
 import { IoMdHome, IoMdInformationCircle, IoMdAnalytics } from "react-icons/io";
 import { MdLogin } from "react-icons/md";
 import Notifications from "../components/Notifications";
 import ReviewPreviewModal from "../components/ReviewPreviewModal";
 import PatientReviewModal from "../components/PatientReviewModal";
-import ConfirmSignOut from "../components/ConfirmSignout";
 import Logo from "../Assets/logo.png";
 import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview, apiMarkNotificationRead } from "../api/api";
 
@@ -15,7 +14,6 @@ const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [showConfirmSignOut, setShowConfirmSignOut] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [notificationCount, setNotificationCount] = useState(0);
     const [userRole, setUserRole] = useState(null);
@@ -26,7 +24,6 @@ const Navbar = () => {
     const [currentRequestId, setCurrentRequestId] = useState(null);
     const [showPatientReview, setShowPatientReview] = useState(false);
     const [patientReviewData, setPatientReviewData] = useState(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const data = JSON.parse(localStorage.getItem("user"));
@@ -35,7 +32,6 @@ const Navbar = () => {
             setUserRole(data.role);
         }
     }, []);
-
 
     useEffect(() => {
         const handleScroll = () => {
@@ -99,24 +95,8 @@ const Navbar = () => {
         }
     }, []);
 
-
-    const handleLogout = () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
-        setUserRole(null);
-        // Only navigate once, do not update menu state after navigation
-        navigate('/home', { replace: true });
-    };
-
     const toggleMenu = () => {
         setMenuOpen(prev => !prev);
-    };
-
-    const confirmLogout = () => {
-        handleLogout();
-        setShowConfirmSignOut(false);
-        setMenuOpen(false);
     };
 
     const closeMenu = () => {
@@ -127,7 +107,7 @@ const Navbar = () => {
         <>
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white/80 backdrop-blur-sm'
                 }`}>
-                <div className="max-w-7xl mx-auto px-1 sm:px-1 lg:px-1">
+                <div className="max-w-auto mx-auto px-1 sm:px-1 lg:px-10">
                     <div className="flex justify-between items-center h-14 px-3 md:h-16">
 
                         {/* Logo/Brand */}
@@ -327,27 +307,19 @@ const Navbar = () => {
                                         <NavLink
                                             to={userRole === 'dermatologist' ? "/DProfile" : "/Profile"}
                                             className={({ isActive }) =>
-                                                `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                                    ? 'bg-gray-900 text-white shadow-md'
-                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                                `flex items-center gap-1 px-1 py-1 rounded-full font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                                    ? 'bg-gray-600 text-white shadow-md'
+                                                    : 'text-gray-900 hover:bg-gray-400 hover:text-gray-900'
                                                 }`
                                             }
                                         >
-                                            {/* <FaUser className="text-sm" /> */}
-                                            <span>Profile</span>
+                                            <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
+                                                <FaUser className="text-lg text-gray-600" />
+                                            </div>
                                         </NavLink>
                                     </li>
 
-                                    <li>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmSignOut(true)}
-                                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg font-medium text-sm lg:text-base text-red-600 hover:bg-red-50 transition-all duration-300"
-                                        >
-                                            <FaSignOutAlt className="text-sm" />
-                                            <span>Logout</span>
-                                        </button>
-                                    </li>
+                                    
                                 </>
                             ) : (
                                 <li>
@@ -606,19 +578,7 @@ const Navbar = () => {
                                         </NavLink>
                                     </li>
 
-                                    <li className="pt-4 border-t border-gray-200 mt-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setShowConfirmSignOut(true);
-                                                closeMenu();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base text-red-600 hover:bg-red-50 transition-all duration-300"
-                                        >
-                                            <FaSignOutAlt className="text-lg" />
-                                            <span>Logout</span>
-                                        </button>
-                                    </li>
+                                    
                                 </>
                             ) : (
                                 <li>
@@ -640,14 +600,6 @@ const Navbar = () => {
 
             {/* Spacer to prevent content from hiding under fixed navbar */}
             <div className="h-16 md:h-20"></div>
-
-            {/* Confirm Sign Out Modal */}
-            {showConfirmSignOut && (
-                <ConfirmSignOut
-                    onConfirm={confirmLogout}
-                    onCancel={() => setShowConfirmSignOut(false)}
-                />
-            )}
 
             {/* Review Preview Modal for Dermatologists */}
             <ReviewPreviewModal
