@@ -16,12 +16,13 @@ import {
     FaExclamationTriangle,
     FaEye,
     FaEyeSlash,
+    FaSortUp,
+    FaSortDown,
 } from "react-icons/fa";
 import { MdSave, MdCancel } from "react-icons/md";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { IoIosHourglass } from "react-icons/io";
-import { FaSortUp, FaSortDown } from "react-icons/fa";
-import { apiGetFullProfile, apiUpdateProfile, getAllPredictions, apiGetReviewRequests, apiGetReviewRequest, apiDeletePrediction } from "../api/api";
+import { apiGetFullProfile, apiUpdateProfile, getAllPredictions, apiGetReviewRequests, apiGetReviewRequest, apiDeletePrediction, apiChangePassword } from "../api/api";
 import Header from '../Nav_Bar/Header';
 import MaleAvatar from "../Assets/male-avatar.png";
 import FemaleAvatar from "../Assets/female-avatar.png";
@@ -30,6 +31,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import UpdateProfilePopup from '../components/UpdateProfilePopup';
 import PatientReviewModal from '../components/PatientReviewModal';
 import AnimatedCheck from '../components/ui/AnimatedCheck';
+import ImageCropModal from '../components/ImageCropModal'; 
 
 const CardSection = ({ title, icon, children, editHandler, gradient = false }) => (
     <div className={`${gradient ? 'bg-gradient-to-br from-white via-gray-50 to-white' : 'bg-white'} border border-gray-200 rounded-xl shadow-lg p-4`}>
@@ -65,6 +67,8 @@ const InfoItem = ({ icon, label, value, iconColor = "text-gray-400" }) => (
 const UserProfile = () => {
     const [patient, setPatient] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [predictionsLoading, setPredictionsLoading] = useState(true);
+    const [reviewRequestsLoading, setReviewRequestsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editMode, setEditMode] = useState(null);
     const [editData, setEditData] = useState({});
@@ -77,8 +81,8 @@ const UserProfile = () => {
     const [patientReviewData, setPatientReviewData] = useState(null);
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState(null);
-    const [sortBy, setSortBy] = useState('date'); // 'date', 'disease', 'status'
-    const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
+    const [sortBy, setSortBy] = useState('date');
+    const [sortOrder, setSortOrder] = useState('desc');
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -93,6 +97,9 @@ const UserProfile = () => {
         confirm: false
     });
 
+    
+    const [showCropModal, setShowCropModal] = useState(false);
+    const [imageSrc, setImageSrc] = useState(null);
 
     useEffect(() => {
         fetchProfile();
@@ -100,17 +107,12 @@ const UserProfile = () => {
         fetchReviewRequests();
     }, []);
 
-
     useEffect(() => {
         if (patient) {
-            // Check if we've already shown the popup this session
             const popupShownThisSession = sessionStorage.getItem('profilePopupShown');
-
-            // Check if essential fields are missing
             const isIncomplete = !patient.name || !patient.age || !patient.phone ||
                 !patient.gender || !patient.bloodGroup || !patient.address;
 
-            // Only show if incomplete AND not already shown this session
             if (isIncomplete && !popupShownThisSession) {
                 setShowUpdatePopup(true);
                 sessionStorage.setItem('profilePopupShown', 'true');
@@ -120,32 +122,36 @@ const UserProfile = () => {
 
     const fetchPredictions = async () => {
         try {
+            setPredictionsLoading(true);
             const response = await getAllPredictions();
             setPredictions(response.data || []);
         } catch (error) {
             console.error("Failed to fetch predictions:", error);
+        } finally {
+            setPredictionsLoading(false);
         }
     };
 
     const fetchReviewRequests = async () => {
         try {
+            setReviewRequestsLoading(true);
             const response = await apiGetReviewRequests();
             setReviewRequests(response.data?.requests || []);
         } catch (error) {
             console.error("Failed to fetch review requests:", error);
+        } finally {
+            setReviewRequestsLoading(false);
         }
     };
 
-    // Helper function to get review request status for a prediction
     const getReviewStatus = (predictionId) => {
         const request = reviewRequests.find(
             (req) => req.predictionId === predictionId
         );
         if (!request) return null;
-        return request.status; // 'pending', 'reviewed', or 'rejected'
+        return request.status;
     };
 
-    // Helper function to render status badge
     const renderStatusBadge = (status) => {
         if (!status) {
             return (
@@ -186,13 +192,11 @@ const UserProfile = () => {
         );
     };
 
-    // Function to get sorted predictions
     const getSortedPredictions = () => {
         if (!predictions || predictions.length === 0) return [];
 
         let sorted = [...predictions];
 
-        // Sort based on selected criteria
         sorted.sort((a, b) => {
             let comparison = 0;
 
@@ -239,44 +243,36 @@ const UserProfile = () => {
                 alert('Please select an image file');
                 return;
             }
-
             if (file.size > 5 * 1024 * 1024) {
                 alert('Image size should be less than 5MB');
                 return;
             }
-
-            setSelectedImage(file);
-
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
+            reader.onload = () => {
+                setImageSrc(reader.result);
+                setShowCropModal(true);
             };
             reader.readAsDataURL(file);
         }
     };
 
+    const handleCropSave = (croppedImage) => {
+        setImagePreview(croppedImage);
+        setSelectedImage(croppedImage);
+        setImageSrc(null);
+    };
+
     const handleImageUpload = async () => {
         if (!selectedImage) return;
-
+        setLoading(true);
         try {
-            setLoading(true);
-
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64Image = reader.result;
-
-                const response = await apiUpdateProfile({
-                    profileImage: base64Image
-                });
-
-                setPatient(response.data.user);
-                setSelectedImage(null);
-                setImagePreview(null);
-                // alert('Profile picture updated successfully');
-                toast.success('Profile picture updated successfully');
-            };
-            reader.readAsDataURL(selectedImage);
-
+            const response = await apiUpdateProfile({
+                profileImage: selectedImage
+            });
+            setPatient(response.data.user);
+            setSelectedImage(null);
+            setImagePreview(null);
+            toast.success('Profile picture updated successfully');
         } catch (error) {
             console.error('Failed to upload image:', error);
             alert(error.response?.data?.detail || 'Failed to upload image');
@@ -294,18 +290,14 @@ const UserProfile = () => {
         if (!window.confirm('Are you sure you want to remove your profile picture?')) {
             return;
         }
-
         try {
             setLoading(true);
-
             const response = await apiUpdateProfile({
                 profileImage: ""
             });
-
             setPatient(response.data.user);
             setSelectedImage(null);
             setImagePreview(null);
-            // alert('Profile picture removed successfully');
             toast.success('Profile picture removed successfully');
         } catch (error) {
             console.error('Failed to remove image:', error);
@@ -325,7 +317,6 @@ const UserProfile = () => {
                 return MaleAvatar;
             }
         };
-
         return (
             <img
                 src={getDefaultAvatar()}
@@ -338,7 +329,6 @@ const UserProfile = () => {
     const handleEdit = (section) => {
         setEditMode(section);
         setEditData({ ...patient });
-        console.log("Edit Data:", { ...patient });
     };
 
     const validateBasicInfo = () => {
@@ -398,49 +388,31 @@ const UserProfile = () => {
             toast.error('All password fields are required');
             return;
         }
-
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             toast.error('New passwords do not match');
             return;
         }
-
         if (passwordData.newPassword.length < 8) {
             toast.error('New password must be at least 8 characters');
             return;
         }
-
         try {
             setPasswordLoading(true);
-            // You'll need to add this API endpoint
-            const response = await fetch('http://localhost:5000/api/users/change-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({
-                    currentPassword: passwordData.currentPassword,
-                    newPassword: passwordData.newPassword
-                })
+            const response = await apiChangePassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setPasswordSuccess(true);
-                setTimeout(() => {
-                    toast.success(data.message || 'Password changed successfully');
-                    setShowPasswordModal(false);
-                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                    setPasswordSuccess(false);
-                    setShowPasswords({ current: false, new: false, confirm: false });
-                }, 2000);
-            } else {
-                toast.error(data.detail?.error || data.error || 'Failed to change password');
-            }
+            setPasswordSuccess(true);
+            setTimeout(() => {
+                toast.success(response.data.message || 'Password changed successfully');
+                setShowPasswordModal(false);
+                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswordSuccess(false);
+                setShowPasswords({ current: false, new: false, confirm: false });
+            }, 2000);
         } catch (error) {
             console.error('Failed to change password:', error);
-            toast.error('Failed to change password');
+            toast.error(error.response?.data?.detail?.error || error.response?.data?.error || 'Failed to change password');
         } finally {
             setPasswordLoading(false);
         }
@@ -465,14 +437,13 @@ const UserProfile = () => {
         if (!window.confirm('Are you sure you want to delete this analysis? This action cannot be undone.')) {
             return;
         }
-
         try {
             await apiDeletePrediction(predictionId);
             toast.success('Analysis deleted successfully');
-            
-            // Refresh the predictions list
-            await fetchPredictions();
-            await fetchReviewRequests();
+
+            setPredictions(prev => prev.filter(p => p.id !== predictionId));
+
+            setReviewRequests(prev => prev.filter(r => r.predictionId !== predictionId));
         } catch (error) {
             console.error("Failed to delete analysis:", error);
             const errorMsg = error.response?.data?.detail?.error || error.response?.data?.detail || 'Failed to delete analysis';
@@ -485,35 +456,23 @@ const UserProfile = () => {
             setReviewLoading(true);
             setReviewError(null);
             setShowPatientReview(true);
-
-            // Find the prediction
             const prediction = predictions.find(p => p.id === predictionId);
-
             if (!prediction) {
                 setReviewError("Prediction not found");
                 setReviewLoading(false);
                 return;
             }
-
-            // Find review request for this prediction (reviewed or rejected)
             const reviewRequest = reviewRequests.find(r => r.predictionId === predictionId && (r.status === 'reviewed' || r.status === 'rejected'));
-
             if (reviewRequest) {
-                // Fetch full review details including dermatologist info
                 try {
                     const reviewResponse = await apiGetReviewRequest(reviewRequest.id);
                     const reviewData = reviewResponse.data;
-                    
-                    // Ensure prediction imageUrl is present
-                    // If the review response doesn't have imageUrl, use it from the original prediction
                     if (reviewData.prediction && !reviewData.prediction.imageUrl && prediction.imageUrl) {
                         reviewData.prediction.imageUrl = prediction.imageUrl;
                     }
-                    
                     setPatientReviewData(reviewData);
                 } catch (err) {
                     console.error("Failed to fetch review details:", err);
-                    // Fallback to just showing prediction
                     setPatientReviewData({
                         prediction: prediction,
                         status: 'pending',
@@ -523,7 +482,6 @@ const UserProfile = () => {
                     });
                 }
             } else {
-                // No review request or not reviewed/rejected yet
                 setPatientReviewData({
                     prediction: prediction,
                     status: 'pending',
@@ -586,6 +544,7 @@ const UserProfile = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    {/* Left Column (Profile Info) */}
                     <div className="space-y-5">
                         <div className="bg-gradient-to-br from-white via-blue-50 to-white border border-gray-200 rounded-xl shadow-xl p-5 text-center ">
                             <div className="relative inline-block mb-3">
@@ -602,7 +561,6 @@ const UserProfile = () => {
                                         className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white shadow-2xl"
                                     />
                                 )}
-
                                 <label
                                     htmlFor="profile-image-input"
                                     className="absolute bottom-1 right-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full p-2 cursor-pointer shadow-lg transition-all transform hover:scale-110"
@@ -610,7 +568,6 @@ const UserProfile = () => {
                                 >
                                     <FaEdit className="h-3.5 w-3.5" />
                                 </label>
-
                                 {!selectedImage && patient.profileImage && (
                                     <button
                                         onClick={handleRemoveImage}
@@ -620,7 +577,6 @@ const UserProfile = () => {
                                         <FaTrash className="h-3.5 w-3.5" />
                                     </button>
                                 )}
-
                                 <input
                                     id="profile-image-input"
                                     type="file"
@@ -637,7 +593,7 @@ const UserProfile = () => {
                                         disabled={loading}
                                         className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 font-medium text-xs disabled:opacity-50 transition-all transform hover:scale-105 shadow-md"
                                     >
-                                        <MdSave className="text-sm" /> Upload
+                                        {loading ? <AiOutlineLoading3Quarters className="animate-spin text-sm" /> : <MdSave className="text-sm" />} {loading ? 'Uploading...' : 'Upload'}
                                     </button>
                                     <button
                                         onClick={handleCancelImage}
@@ -655,6 +611,16 @@ const UserProfile = () => {
                             <div className="flex items-center justify-center gap-1.5 text-gray-500 text-xs">
                                 <FaMapMarkerAlt />
                                 <span>{patient.address || "No address provided"}</span>
+                            </div>
+
+                            {/* Change Password Button */}
+                            <div className="mt-4">
+                                <button
+                                    onClick={() => setShowPasswordModal(true)}
+                                    className="px-4 py-2 bg-gray-600 text-white text-xs font-semibold rounded-lg hover:bg-gray-700 transition-all duration-200"
+                                >
+                                    Change Password
+                                </button>
                             </div>
                         </div>
 
@@ -750,7 +716,7 @@ const UserProfile = () => {
                                             className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 text-white py-2 text-xs rounded-lg hover:bg-blue-700 font-semibold transition-all transform hover:scale-105 shadow-md"
                                             disabled={loading}
                                         >
-                                            <MdSave /> Save
+                                            {loading ? <AiOutlineLoading3Quarters className="animate-spin text-sm" /> : <MdSave />} {loading ? 'Saving...' : 'Save'}
                                         </button>
                                         <button
                                             onClick={handleCancel}
@@ -818,7 +784,7 @@ const UserProfile = () => {
                                             className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 text-white py-2 text-xs rounded-lg hover:bg-blue-700 font-semibold transition-all transform hover:scale-105 shadow-md"
                                             disabled={loading}
                                         >
-                                            <MdSave /> Save
+                                            {loading ? <AiOutlineLoading3Quarters className="animate-spin text-sm" /> : <MdSave />} {loading ? 'Saving...' : 'Save'}
                                         </button>
                                         <button
                                             onClick={handleCancel}
@@ -837,23 +803,11 @@ const UserProfile = () => {
                                 </div>
                             )}
                         </CardSection>
-
-                        {/* Change Password Button */}
-                        {/* <button
-                            onClick={() => setShowPasswordModal(true)}
-                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 font-semibold transition-all transform shadow-lg"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                            Change Password
-                        </button> */}
                     </div>
 
                     <div className="lg:col-span-2 space-y-5">
-
                         {/* Custom Card Section with Dropdown Filter */}
-                        <div className="bg-gradient-to-br from-white via-green-50 to-white border border-gray-200 rounded-xl shadow-lg p-5 backdrop-blur-sm">
+                        <div className="bg-gradient-to-br from-white via-green-50 to-white border border-gray-200 rounded-xl shadow-lg p-5 backdrop-blur-sm h-full">
                             {/* Custom Header with Title and Filter Dropdown */}
                             <div className="flex items-center justify-between mb-6 pb-3 border-b-2 border-green-200">
                                 <div className="flex items-center gap-2.5">
@@ -862,10 +816,9 @@ const UserProfile = () => {
                                     </div>
                                     <h3 className="text-lg font-bold text-gray-800">Analysis History</h3>
                                 </div>
-                                
+
                                 {/* Filter Controls */}
                                 <div className="flex items-center gap-3">
-                                    {/* Sort By Dropdown */}
                                     <div className="flex items-center gap-2">
                                         <label className="text-sm font-semibold text-gray-700">Sort by:</label>
                                         <select
@@ -878,8 +831,7 @@ const UserProfile = () => {
                                             <option value="status">Status</option>
                                         </select>
                                     </div>
-                                    
-                                    {/* Sort Order Toggle */}
+
                                     <button
                                         onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                                         className="px-2.5 py-1 text-xs font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-1.5 shadow-md"
@@ -899,12 +851,16 @@ const UserProfile = () => {
                                     </button>
                                 </div>
                             </div>
-                            
-                            {predictions && predictions.length > 0 ? (
-                                <>
 
-                                    <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
-                                        <table className="w-full border-collapse">
+                            {/* 3. UPDATED: Conditional rendering for Loader within the Card */}
+                            {predictionsLoading ? (
+                                <div className="flex flex-col items-center justify-center py-12">
+                                    <AiOutlineLoading3Quarters className="text-4xl text-green-600 animate-spin mb-3" />
+                                    <p className="text-green-600 font-medium text-sm animate-pulse">Loading analysis history...</p>
+                                </div>
+                            ) : predictions && predictions.length > 0 ? (
+                                <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
+                                    <table className="w-full border-collapse">
                                         <thead className="sticky top-0 z-10">
                                             <tr className="bg-gradient-to-r from-green-50 to-teal-50 border-b-2 border-green-200">
                                                 <th className="text-left py-3 px-4 text-sm font-bold text-gray-700">Disease Name</th>
@@ -915,11 +871,10 @@ const UserProfile = () => {
                                         </thead>
                                         <tbody>
                                             {getSortedPredictions().map((prediction, index) => (
-                                                <tr 
-                                                    key={prediction.id} 
-                                                    className={`border-b border-gray-200 hover:bg-green-50 transition-colors ${
-                                                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                                    }`}
+                                                <tr
+                                                    key={prediction.id}
+                                                    className={`border-b border-gray-200 hover:bg-green-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                                        }`}
                                                 >
                                                     <td className="py-3 px-4 text-sm text-gray-800 font-medium">
                                                         {prediction.result?.predicted_label || 'Skin Analysis'}
@@ -928,7 +883,13 @@ const UserProfile = () => {
                                                         {formatDateTime(prediction.createdAt)}
                                                     </td>
                                                     <td className="py-3 px-4 text-center">
-                                                        {renderStatusBadge(getReviewStatus(prediction.id))}
+                                                        {reviewRequestsLoading ? (
+                                                            <div className="flex items-center justify-center">
+                                                                <AiOutlineLoading3Quarters className="text-green-600 h-4 w-4 animate-spin" />
+                                                            </div>
+                                                        ) : (
+                                                            renderStatusBadge(getReviewStatus(prediction.id))
+                                                        )}
                                                     </td>
                                                     <td className="py-3 px-4 text-center">
                                                         <div className="flex items-center justify-center gap-2">
@@ -952,7 +913,6 @@ const UserProfile = () => {
                                         </tbody>
                                     </table>
                                 </div>
-                                </>
                             ) : (
                                 <div className="text-center py-8">
                                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -965,6 +925,14 @@ const UserProfile = () => {
                     </div>
                 </div>
             </div>
+
+            <ImageCropModal
+                isOpen={showCropModal}
+                onClose={() => setShowCropModal(false)}
+                imageSrc={imageSrc}
+                onCropSave={handleCropSave}
+            />
+
             {showUpdatePopup && (
                 <UpdateProfilePopup
                     onClose={() => setShowUpdatePopup(false)}
@@ -989,7 +957,7 @@ const UserProfile = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
                         {passwordSuccess ? (
-                            <AnimatedCheck 
+                            <AnimatedCheck
                                 title="Password Changed!"
                                 message="Your password has been updated successfully"
                             />
@@ -1002,119 +970,119 @@ const UserProfile = () => {
                                         </svg>
                                         Change Password
                                     </h2>
-                            <button
-                                onClick={() => {
-                                    setShowPasswordModal(false);
-                                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                                    setShowPasswords({ current: false, new: false, confirm: false });
-                                }}
-                                disabled={passwordLoading}
-                                className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
-                                <div className="relative">
-                                    <input
-                                        type={showPasswords.current ? "text" : "password"}
-                                        name="currentPassword"
-                                        value={passwordData.currentPassword}
-                                        onChange={handlePasswordInputChange}
-                                        disabled={passwordLoading}
-                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        placeholder="Enter current password"
-                                    />
                                     <button
-                                        type="button"
-                                        onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        onClick={() => {
+                                            setShowPasswordModal(false);
+                                            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                            setShowPasswords({ current: false, new: false, confirm: false });
+                                        }}
                                         disabled={passwordLoading}
+                                        className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {showPasswords.current ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                     </button>
                                 </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
-                                <div className="relative">
-                                    <input
-                                        type={showPasswords.new ? "text" : "password"}
-                                        name="newPassword"
-                                        value={passwordData.newPassword}
-                                        onChange={handlePasswordInputChange}
-                                        disabled={passwordLoading}
-                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        placeholder="Enter new password (min 8 characters)"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                        disabled={passwordLoading}
-                                    >
-                                        {showPasswords.new ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
-                                    </button>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPasswords.current ? "text" : "password"}
+                                                name="currentPassword"
+                                                value={passwordData.currentPassword}
+                                                onChange={handlePasswordInputChange}
+                                                disabled={passwordLoading}
+                                                className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                placeholder="Enter current password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                disabled={passwordLoading}
+                                            >
+                                                {showPasswords.current ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPasswords.new ? "text" : "password"}
+                                                name="newPassword"
+                                                value={passwordData.newPassword}
+                                                onChange={handlePasswordInputChange}
+                                                disabled={passwordLoading}
+                                                className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                placeholder="Enter new password (min 8 characters)"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                disabled={passwordLoading}
+                                            >
+                                                {showPasswords.new ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPasswords.confirm ? "text" : "password"}
+                                                name="confirmPassword"
+                                                value={passwordData.confirmPassword}
+                                                onChange={handlePasswordInputChange}
+                                                disabled={passwordLoading}
+                                                className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                placeholder="Confirm new password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                disabled={passwordLoading}
+                                            >
+                                                {showPasswords.confirm ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-4">
+                                        <button
+                                            onClick={handleChangePassword}
+                                            disabled={passwordLoading}
+                                            className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 font-semibold transition-all transform hover: shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                                        >
+                                            {passwordLoading ? (
+                                                <>
+                                                    <AiOutlineLoading3Quarters className="animate-spin text-xl" />
+                                                    <span>Changing...</span>
+                                                </>
+                                            ) : (
+                                                'Change Password'
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setShowPasswordModal(false);
+                                                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                                setShowPasswords({ current: false, new: false, confirm: false });
+                                            }}
+                                            disabled={passwordLoading}
+                                            className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 font-semibold transition-all transform hover: shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
-                                <div className="relative">
-                                    <input
-                                        type={showPasswords.confirm ? "text" : "password"}
-                                        name="confirmPassword"
-                                        value={passwordData.confirmPassword}
-                                        onChange={handlePasswordInputChange}
-                                        disabled={passwordLoading}
-                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        placeholder="Confirm new password"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                        disabled={passwordLoading}
-                                    >
-                                        {showPasswords.confirm ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3 pt-4">
-                                <button
-                                    onClick={handleChangePassword}
-                                    disabled={passwordLoading}
-                                    className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 font-semibold transition-all transform hover: shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
-                                >
-                                    {passwordLoading ? (
-                                        <>
-                                            <AiOutlineLoading3Quarters className="animate-spin text-xl" />
-                                            <span>Changing...</span>
-                                        </>
-                                    ) : (
-                                        'Change Password'
-                                    )}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowPasswordModal(false);
-                                        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                                        setShowPasswords({ current: false, new: false, confirm: false });
-                                    }}
-                                    disabled={passwordLoading}
-                                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 font-semibold transition-all transform hover: shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
                             </>
                         )}
                     </div>

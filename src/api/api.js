@@ -79,6 +79,10 @@ export const apiUpdateProfile = async (data) => {
     return api.put("/users/me", data);
 };
 
+export const apiChangePassword = async (data) => {
+    return api.post("/users/change-password", data);
+};
+
 // ===========================================================
 // 5. PREDICTION UPLOAD API (FastAPI-compatible)
 // ===========================================================
