@@ -46,10 +46,10 @@
 //   return useContext(AuthContext);
 // };
 
-import React, { useContext, createContext, useState, useEffect } from 'react';
-// 1. Import setAuthToken from your API file
-import { setAuthToken } from '../api/api'; 
 
+
+import React, { useContext, createContext, useState, useEffect } from 'react';
+import { setAuthToken } from '../api/api'; 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {

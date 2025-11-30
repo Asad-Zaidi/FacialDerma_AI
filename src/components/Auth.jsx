@@ -758,6 +758,8 @@ const Auth = () => {
             return;
         }
 
+        
+
         // Use the integrated email validator hook for basic validations
         const emailValidation = validateEmail(formData.email);
         if (!emailValidation.isValid) {
