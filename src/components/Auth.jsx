@@ -714,30 +714,53 @@ const Auth = () => {
             const response = await apiLogin(payload); // <-- using apiLogin
             const data = response.data;
 
-            // Only proceed if login is successful and token exists
-            if (data && data.token && data.user) {
-                login(data.token, {
-                    email: data.user.email,
-                    username: data.user.username,
-                    role: data.user.role,
-                    name: data.user.name
-                });
-
-                setTimeout(() => {
-                    setLoading(false);
-                    if (data.user.role === 'patient') {
-                        navigate('/Profile');
-                    } else if (data.user.role === 'dermatologist') {
-                        navigate('/Dermatologist');
-                    }
-                }, 1500);
-            } else {
-                setMessage('Invalid credentials');
+            // Thorough validation of response structure
+            if (!data || typeof data !== 'object') {
+                setMessage('Invalid response from server');
                 setMessageType('error');
                 setLoading(false);
+                return;
             }
+
+            if (!data.token || typeof data.token !== 'string' || data.token.trim() === '') {
+                setMessage('Invalid token received');
+                setMessageType('error');
+                setLoading(false);
+                return;
+            }
+
+            if (!data.user || typeof data.user !== 'object') {
+                setMessage('Invalid user data received');
+                setMessageType('error');
+                setLoading(false);
+                return;
+            }
+
+            if (!data.user.email || !data.user.username || !data.user.role) {
+                setMessage('Incomplete user data received');
+                setMessageType('error');
+                setLoading(false);
+                return;
+            }
+
+            // Only proceed if all validations pass
+            login(data.token, {
+                email: data.user.email,
+                username: data.user.username,
+                role: data.user.role,
+                name: data.user.name
+            });
+
+            setTimeout(() => {
+                setLoading(false);
+                if (data.user.role === 'patient') {
+                    navigate('/Profile');
+                } else if (data.user.role === 'dermatologist') {
+                    navigate('/Dermatologist');
+                }
+            }, 1500);
         } catch (error) {
-            const errMsg = error.response?.data?.error || 'Invalid credentials';
+            const errMsg = error.response?.data?.error || error.response?.data?.detail?.error || error.response?.data?.message || 'Invalid credentials';
             setMessage(errMsg);
             setMessageType('error');
             setLoading(false);
@@ -1108,7 +1131,7 @@ const Auth = () => {
                                         to="/forgot-password"
                                         className="text-xs text-slate-700 hover:text-slate-900 font-medium hover:underline transition-colors"
                                     >
-                                        {/* Forgot Password? */}
+                                        Forgot Password?
                                     </Link>
                                 </div>
                             )}

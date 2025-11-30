@@ -83,6 +83,18 @@ export const apiChangePassword = async (data) => {
     return api.post("/users/change-password", data);
 };
 
+export const apiForgotPassword = async (data) => {
+    return api.post("/auth/forgot-password", data);
+};
+
+export const apiVerifyOtp = async (data) => {
+    return api.post("/auth/verify-otp", data);
+};
+
+export const apiResetPassword = async (data) => {
+    return api.post("/auth/reset-password", data);
+};
+
 // ===========================================================
 // 5. PREDICTION UPLOAD API (FastAPI-compatible)
 // ===========================================================

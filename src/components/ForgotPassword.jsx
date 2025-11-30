@@ -5,6 +5,7 @@ import { MdEmail, MdLock, MdCheckCircle, MdArrowBack } from 'react-icons/md';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { BsEnvelopeCheck } from 'react-icons/bs';
 import { RiLockPasswordLine } from 'react-icons/ri';
+import { apiForgotPassword, apiVerifyOtp, apiResetPassword } from '../api/api';
 
 const ForgotPassword = () => {
     const navigate = useNavigate();
@@ -37,15 +38,10 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: formData.email }),
-            });
+            const response = await apiForgotPassword({ email: formData.email });
+            const data = response.data;
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response.status === 200 && data.message) {
                 setMessage(data.message || 'Verification code sent to your email!');
                 setMessageType('success');
                 setStep(2);
@@ -55,7 +51,8 @@ const ForgotPassword = () => {
                 setMessageType('error');
             }
         } catch (error) {
-            setMessage('An error occurred. Please try again.');
+            const errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'An error occurred. Please try again.';
+            setMessage(errMsg);
             setMessageType('error');
         } finally {
             setLoading(false);
@@ -69,18 +66,13 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/verify-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: formData.email, 
-                    otp: formData.code 
-                }),
+            const response = await apiVerifyOtp({ 
+                email: formData.email, 
+                otp: formData.code 
             });
+            const data = response.data;
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response.status === 200 && data.message) {
                 setMessage(data.message || 'Code verified successfully!');
                 setMessageType('success');
                 setStep(3);
@@ -89,7 +81,8 @@ const ForgotPassword = () => {
                 setMessageType('error');
             }
         } catch (error) {
-            setMessage('An error occurred. Please try again.');
+            const errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'An error occurred. Please try again.';
+            setMessage(errMsg);
             setMessageType('error');
         } finally {
             setLoading(false);
@@ -116,26 +109,22 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: formData.email,
-                    otp: formData.code,
-                    newPassword: formData.newPassword 
-                }),
+            const response = await apiResetPassword({ 
+                email: formData.email,
+                otp: formData.code,
+                newPassword: formData.newPassword 
             });
+            const data = response.data;
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response.status === 200) {
                 setStep(4);
             } else {
                 setMessage(data.detail?.error || data.error || 'Password reset failed');
                 setMessageType('error');
             }
         } catch (error) {
-            setMessage('An error occurred. Please try again.');
+            const errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'An error occurred. Please try again.';
+            setMessage(errMsg);
             setMessageType('error');
         } finally {
             setLoading(false);
