@@ -18,11 +18,14 @@ import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 
 const PrivateRoute = ({ children, roles }) => {
-  const { user, accessToken, loading } = useContext(AuthContext);
+  const { user, accessToken, loading, loggingOut } = useContext(AuthContext);
 
   if (loading) return <div>Loading...</div>;
 
-  if (!accessToken || !user) return <Navigate to="/login" replace />;
+  // Don't redirect if we're in the middle of logging out
+  if (loggingOut) return children;
+
+  if (!accessToken || !user) return <Navigate to="/Login" replace />;
 
   if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
 

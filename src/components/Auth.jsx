@@ -5,14 +5,12 @@ import { MdEmail, MdLock, MdPerson, MdCheckCircle } from 'react-icons/md';
 import { HiSparkles } from 'react-icons/hi';
 import { useAuth } from '../contexts/AuthContext';
 import { apiLogin, apiSignUp } from "../api/api";
-import { useEmailValidator } from '../hooks/useEmailValidator';
 import { validatePasswordRules } from '../lib/passwordValidation';
 
 const Auth = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { login } = useAuth();
-    const { validateEmail } = useEmailValidator();
 
     const isLogin = location.pathname === '/Login';
 
@@ -136,14 +134,6 @@ const Auth = () => {
 
         if (!role) {
             setMessage('Please select a role.');
-            setMessageType('error');
-            return;
-        }
-
-        // Use the integrated email validator hook for basic validations
-        const emailValidation = validateEmail(formData.email);
-        if (!emailValidation.isValid) {
-            setMessage(emailValidation.error);
             setMessageType('error');
             return;
         }

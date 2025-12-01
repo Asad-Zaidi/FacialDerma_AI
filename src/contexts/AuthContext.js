@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -85,16 +86,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    setLoggingOut(true);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
     setAccessToken(null);
     setUser(null);
     // 5. CRITICAL: Clear the token from the Axios instance on logout
     setAuthToken(null);
+    // Reset loggingOut after a brief delay to allow navigation to complete
+    setTimeout(() => setLoggingOut(false), 100);
   };
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, accessToken, login, logout, loading, loggingOut }}>
       {children}
     </AuthContext.Provider>
   );

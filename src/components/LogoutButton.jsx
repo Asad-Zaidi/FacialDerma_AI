@@ -1,5 +1,4 @@
-import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // Adjust path if AuthContext is located elsewhere
 import { useNavigate } from 'react-router-dom';
 
 const LogoutButton = () => {
@@ -8,7 +7,7 @@ const LogoutButton = () => {
 
     const handleLogout = () => {
         logout();
-        navigate('/');
+        navigate('/', { replace: true });
     };
 
     return (

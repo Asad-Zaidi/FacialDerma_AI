@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -103,11 +102,13 @@ const UserProfile = () => {
 
     useEffect(() => {
         if (patient) {
-            const popupShownThisSession = sessionStorage.getItem('profilePopupShown');
-            const isIncomplete = !patient.name || !patient.age || !patient.phone ||
-                !patient.gender || !patient.bloodGroup || !patient.address;
-
-            if (isIncomplete && !popupShownThisSession) {
+            const popupShown = sessionStorage.getItem('profilePopupShown');
+            console.log("Checking Profile Completeness:", patient);
+            const isIncomplete = !patient.name || !patient.age || !patient.phone || !patient.gender || !patient.address || !patient.height || !patient.weight || !patient.bloodGroup;
+            console.log("Is profile incomplete?", isIncomplete);
+            console.log(`Is Incomplete: ${isIncomplete}, Popup Shown Previously: ${popupShown}`);
+            if (isIncomplete && !popupShown) {
+                console.log("TRIGGERING POPUP");
                 setShowUpdatePopup(true);
                 sessionStorage.setItem('profilePopupShown', 'true');
             }
@@ -372,8 +373,10 @@ const UserProfile = () => {
     };
 
     const handleLogout = () => {
+        sessionStorage.removeItem('profilePopupShown');
         logout();
-        navigate('/home', { replace: true });
+        localStorage.removeItem('token');
+        navigate('/', { replace: true });
     };
 
     const formatDateTime = (dateString) => {
@@ -909,9 +912,9 @@ const UserProfile = () => {
             />
 
             {showUpdatePopup && (
-                <UpdateProfilePopup
-                    onClose={() => setShowUpdatePopup(false)}
-                    userRole="patient"
+                <UpdateProfilePopup profileData={patient} onClose={() => setShowUpdatePopup(false)}
+                onUpdate={fetchProfile}
+                    
                 />
             )}
             <PatientReviewModal
