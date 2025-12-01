@@ -1,4 +1,3 @@
-// ForgotPassword.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { MdEmail, MdLock, MdCheckCircle, MdArrowBack } from 'react-icons/md';
@@ -6,12 +5,11 @@ import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { BsEnvelopeCheck } from 'react-icons/bs';
 import { RiLockPasswordLine } from 'react-icons/ri';
 import { apiForgotPassword, apiVerifyOtp, apiResetPassword } from '../api/api';
+import { validatePasswordRules, getPasswordRuleStatuses } from '../lib/passwordValidation';
 
 const ForgotPassword = () => {
     const navigate = useNavigate();
-    
-    // States
-    const [step, setStep] = useState(1); // 1: Email, 2: Code, 3: New Password, 4: Success
+    const [step, setStep] = useState(1); 
     const [formData, setFormData] = useState({
         email: '',
         code: '',
@@ -25,13 +23,26 @@ const ForgotPassword = () => {
     const [messageType, setMessageType] = useState('error');
     const [countdown, setCountdown] = useState(60);
     const [canResend, setCanResend] = useState(false);
+    const [passwordRules, setPasswordRules] = useState({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false
+    });
+
+    const specialCharsDisplay = "!@#$%^&*(),.?\":{}<>";
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        
+        if (name === 'newPassword') {
+            const rules = getPasswordRuleStatuses(value);
+            setPasswordRules(rules);
+        }
     };
 
-    // Step 1: Request Reset Code
     const handleRequestReset = async (e) => {
         e.preventDefault();
         setMessage('');
@@ -59,7 +70,6 @@ const ForgotPassword = () => {
         }
     };
 
-    // Step 2: Verify Code
     const handleVerifyCode = async (e) => {
         e.preventDefault();
         setMessage('');
@@ -89,7 +99,6 @@ const ForgotPassword = () => {
         }
     };
 
-    // Step 3: Reset Password
     const handleResetPassword = async (e) => {
         e.preventDefault();
         setMessage('');
@@ -100,8 +109,9 @@ const ForgotPassword = () => {
             return;
         }
 
-        if (formData.newPassword.length < 8) {
-            setMessage('Password must be at least 8 characters long');
+        const passwordValidation = validatePasswordRules(formData.newPassword);
+        if (!passwordValidation.isValid) {
+            setMessage(passwordValidation.errors.join(' '));
             setMessageType('error');
             return;
         }
@@ -131,7 +141,6 @@ const ForgotPassword = () => {
         }
     };
 
-    // Countdown Timer for Resend
     const startCountdown = () => {
         setCanResend(false);
         setCountdown(60);
@@ -173,7 +182,7 @@ const ForgotPassword = () => {
             </button>
 
             {/* Main Container */}
-            <div className="relative w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden z-10">
+            <div className="relative w-full max-w-lg bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden z-10">
                 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-8 text-white text-center relative overflow-hidden">
@@ -269,13 +278,23 @@ const ForgotPassword = () => {
                     {step === 2 && (
                         <form onSubmit={handleVerifyCode} className="space-y-5 animate-slide-in">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Verification Code
-                                </label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Verification Code
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep(1)}
+                                        className="text-sm font-medium text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-1"
+                                    >
+                                        <MdArrowBack className="block text-sm" />
+                                        Change Email
+                                    </button>
+                                </div>
                                 <div className="relative">
                                     <BsEnvelopeCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                     <input
-                                        type="text"
+                                        type="text" 
                                         name="code"
                                         value={formData.code}
                                         onChange={handleChange}
@@ -308,31 +327,25 @@ const ForgotPassword = () => {
                                 {loading ? 'Verifying...' : 'Verify Code'}
                             </button>
 
-                            {/* Resend Code */}
-                            <div className="text-center">
-                                {canResend ? (
-                                    <button
-                                        type="button"
-                                        onClick={handleResendCode}
-                                        className="text-sm text-slate-900 font-semibold hover:underline"
-                                    >
-                                        Resend Code
-                                    </button>
-                                ) : (
-                                    <p className="text-sm text-gray-500">
-                                        Resend code in <span className="font-semibold text-slate-900">{countdown}s</span>
-                                    </p>
-                                )}
+                            {/* Resend Code and Change Email */}
+                            <div className="flex items-center justify-between">
+                                <div className="text-center flex-1">
+                                    {canResend ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleResendCode}
+                                            className="text-sm text-slate-900 font-semibold hover:underline"
+                                        >
+                                            Resend Code
+                                        </button>
+                                    ) : (
+                                        <p className="text-sm text-gray-500">
+                                            Resend code in <span className="font-semibold text-slate-900">{countdown}s</span>
+                                        </p>
+                                    )}
+                                </div>
+                                
                             </div>
-
-                            <button
-                                type="button"
-                                onClick={() => setStep(1)}
-                                className="w-full text-gray-600 font-medium py-2 hover:text-gray-800 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <MdArrowBack />
-                                Change Email
-                            </button>
                         </form>
                     )}
 
@@ -390,22 +403,30 @@ const ForgotPassword = () => {
                             </div>
 
                             {/* Password Requirements */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <p className="text-xs font-semibold text-blue-900 mb-2">Password must contain:</p>
-                                <ul className="text-xs text-blue-700 space-y-1">
-                                    <li className="flex items-center gap-2">
-                                        <span className="text-green-500">✓</span>
+                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                <p className="text-xs font-medium text-gray-600 mb-2">Password Requirements:</p>
+                                <div className="grid grid-cols-1 gap-1 text-xs">
+                                    <div className={`flex items-center gap-2 transition-colors duration-200 ${passwordRules.length ? 'text-green-600' : 'text-red-500'}`}>
+                                        <span className={`text-xs ${passwordRules.length ? 'text-green-600' : 'text-red-500'}`}>✓</span>
                                         At least 8 characters
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span className="text-green-500">✓</span>
-                                        One uppercase & lowercase letter
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span className="text-green-500">✓</span>
-                                        One number & special character
-                                    </li>
-                                </ul>
+                                    </div>
+                                    <div className={`flex items-center gap-2 transition-colors duration-200 ${passwordRules.uppercase ? 'text-green-600' : 'text-red-500'}`}>
+                                        <span className={`text-xs ${passwordRules.uppercase ? 'text-green-600' : 'text-red-500'}`}>✓</span>
+                                        One uppercase letter (A-Z)
+                                    </div>
+                                    <div className={`flex items-center gap-2 transition-colors duration-200 ${passwordRules.lowercase ? 'text-green-600' : 'text-red-500'}`}>
+                                        <span className={`text-xs ${passwordRules.lowercase ? 'text-green-600' : 'text-red-500'}`}>✓</span>
+                                        One lowercase letter (a-z)
+                                    </div>
+                                    <div className={`flex items-center gap-2 transition-colors duration-200 ${passwordRules.number ? 'text-green-600' : 'text-red-500'}`}>
+                                        <span className={`text-xs ${passwordRules.number ? 'text-green-600' : 'text-red-500'}`}>✓</span>
+                                        One number (0-9)
+                                    </div>
+                                    <div className={`flex items-center gap-2 transition-colors duration-200 ${passwordRules.special ? 'text-green-600' : 'text-red-500'}`}>
+                                        <span className={`text-xs ${passwordRules.special ? 'text-green-600' : 'text-red-500'}`}>✓</span>
+                                        One special character ({specialCharsDisplay})
+                                    </div>
+                                </div>
                             </div>
 
                             {message && (
@@ -487,7 +508,7 @@ const ForgotPassword = () => {
             )}
 
             {/* Custom Animations */}
-            <style jsx>{`
+            <style>{`
                 @keyframes slide-in {
                     from {
                         opacity: 0;

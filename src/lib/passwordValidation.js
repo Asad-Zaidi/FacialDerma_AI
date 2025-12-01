@@ -4,6 +4,16 @@ export function validatePasswordRules(password) {
     if (!/[A-Z]/.test(password)) errors.push('One uppercase letter (A-Z).');
     if (!/[a-z]/.test(password)) errors.push('One lowercase letter (a-z).');
     if (!/\d/.test(password)) errors.push('One number (0-9).');
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('One special character.');
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('One special character (!@#$%^&*(),.?":{}|<>).');
     return { isValid: errors.length === 0, errors };
+}
+
+export function getPasswordRuleStatuses(password) {
+    return {
+        length: password && password.length >= 8,
+        uppercase: /[A-Z]/.test(password || ''),
+        lowercase: /[a-z]/.test(password || ''),
+        number: /\d/.test(password || ''),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password || '')
+    };
 }

@@ -1,3 +1,5 @@
+import disposableDomainsList from 'disposable-email-domains';
+
 export const useEmailValidator = () => {
     /**
      * Validate email format and domain
@@ -38,6 +40,14 @@ export const useEmailValidator = () => {
             return {
                 isValid: false,
                 error: "Please use a real, non-temporary email address from a legitimate provider."
+            };
+        }
+
+        // Block disposable domains using npm package
+        if (disposableDomainsList.includes(lowerDomain)) {
+            return {
+                isValid: false,
+                error: 'Disposable or suspicious email addresses are not allowed.'
             };
         }
 
