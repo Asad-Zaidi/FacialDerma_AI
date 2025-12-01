@@ -4,10 +4,7 @@ import axios from "axios";
 // ===========================================================
 // 1. API BASE URL
 // ===========================================================
-// If REACT_APP_API_BASE is not provided, it will fallback to FastAPI's default port 5000
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:5000";
-
-// FastAPI endpoints are prefixed with "/api"
 const API_URL = `${API_BASE}/api`;
 
 // ===========================================================
@@ -18,7 +15,7 @@ const api = axios.create({
 });
 
 // ===========================================================
-// 3. ATTACH AUTH TOKEN TO EVERY REQUEST
+// 3. ATTACH AUTH TOKEN
 // ===========================================================
 export const setAuthToken = (token) => {
     if (token) {
@@ -29,143 +26,108 @@ export const setAuthToken = (token) => {
 };
 
 // ===========================================================
-// 3.5. AXIOS RESPONSE INTERCEPTOR - Handle 401/403 errors
+// 3.5. INTERCEPTOR — HANDLE 401/403
 // ===========================================================
 api.interceptors.response.use(
-    (response) => {
-        // If the response is successful, just return it
-        return response;
-    },
+    (response) => response,
     (error) => {
-        // Check if error is 401 (Unauthorized) or 403 (Forbidden)
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            // Clear the stored token and user data
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            
-            // Clear axios auth header
+        const status = error.response?.status;
+        const requestUrl = error.config?.url || "";
+
+        // Auth endpoints should NOT redirect
+        const isAuthEndpoint =
+            requestUrl.includes('/api/auth/login') ||
+            requestUrl.includes('/api/auth/signup') ||
+            requestUrl.includes('/api/auth/forgot-password') ||
+            requestUrl.includes('/api/auth/verify-otp') ||
+            requestUrl.includes('/api/auth/reset-password');
+
+        if ((status === 401 || status === 403) && !isAuthEndpoint) {
+
+            // Clear user session
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("user");
+
             delete api.defaults.headers.common["Authorization"];
-            
-            // Redirect to auth/login page
-            window.location.href = '/';
+
+            // Redirect
+            window.location.assign("/login");
         }
-        
-        // Return the error so it can still be caught by try-catch blocks
+
         return Promise.reject(error);
     }
 );
 
 // ===========================================================
-// 4. AUTH APIs (FastAPI-compatible)
+// 4. AUTH APIs
 // ===========================================================
-export const apiSignUp = async (data) => {
-    return api.post("/auth/signup", data);
-};
+export const apiSignUp = (data) => api.post("/auth/signup", data);
+export const apiLogin = (data) => api.post("/auth/login", data);
+export const getProfile = () => api.get("/users/me");
+export const apiGetFullProfile = () => api.get("/users/me");
+export const apiUpdateProfile = (data) => api.put("/users/me", data);
+export const apiChangePassword = (data) => api.post("/users/change-password", data);
 
-export const apiLogin = async (data) => {
-    return api.post("/auth/login", data);
-};
-
-export const getProfile = async () => {
-    return api.get("/users/me");
-};
-
-export const apiGetFullProfile = async () => {
-    return api.get("/users/me");
-};
-
-export const apiUpdateProfile = async (data) => {
-    return api.put("/users/me", data);
-};
-
-export const apiChangePassword = async (data) => {
-    return api.post("/users/change-password", data);
-};
-
-export const apiForgotPassword = async (data) => {
-    return api.post("/auth/forgot-password", data);
-};
-
-export const apiVerifyOtp = async (data) => {
-    return api.post("/auth/verify-otp", data);
-};
-
-export const apiResetPassword = async (data) => {
-    return api.post("/auth/reset-password", data);
-};
+export const apiForgotPassword = (data) => api.post("/auth/forgot-password", data);
+export const apiVerifyOtp = (data) => api.post("/auth/verify-otp", data);
+export const apiResetPassword = (data) => api.post("/auth/reset-password", data);
 
 // ===========================================================
-// 5. PREDICTION UPLOAD API (FastAPI-compatible)
+// 5. PREDICTION APIS
 // ===========================================================
-export const apiUpload = async (formData) => {
-    return api.post("/predictions/predict", formData, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
+export const apiUpload = (formData) =>
+    api.post("/predictions/predict", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
     });
-};
 
-export const getAllPredictions = async () => {
-    return api.get("/predictions");
-};
+export const getAllPredictions = () => api.get("/predictions");
+export const apiDeletePrediction = (predictionId) =>
+    api.delete(`/predictions/${predictionId}`);
 
-// Delete a prediction
-export const apiDeletePrediction = async (predictionId) => {
-    return api.delete(`/predictions/${predictionId}`);
-};
-
-// List dermatologists with optional search
-export const apiListDermatologists = async (q = "", limit = 10) => {
+// ===========================================================
+// 6. DERMATOLOGISTS
+// ===========================================================
+export const apiListDermatologists = (q = "", limit = 10) => {
     const params = {};
     if (q) params.q = q;
     if (limit) params.limit = limit;
+
     return api.get("/users/dermatologists", { params });
 };
 
-// Create a review request
-export const apiCreateReviewRequest = async ({ predictionId, dermatologistId }) => {
-    return api.post("/review-requests", { predictionId, dermatologistId });
-};
+// ===========================================================
+// 7. REVIEW REQUESTS
+// ===========================================================
+export const apiCreateReviewRequest = ({ predictionId, dermatologistId }) =>
+    api.post("/review-requests", { predictionId, dermatologistId });
 
-// Get review request with prediction details
-export const apiGetReviewRequest = async (requestId) => {
-    return api.get(`/review-requests/${requestId}`);
-};
+export const apiGetReviewRequest = (requestId) =>
+    api.get(`/review-requests/${requestId}`);
 
-// List notifications (optionally unread only)
-export const apiGetNotifications = async (unreadOnly = true) => {
-    const params = {};
-    if (unreadOnly) params.unreadOnly = true;
+export const apiGetReviewRequests = () =>
+    api.get("/review-requests");
+
+export const apiSubmitReview = (requestId, comment) =>
+    api.post(`/review-requests/${requestId}/review`, { comment });
+
+export const apiRejectReview = (requestId, comment) =>
+    api.post(`/review-requests/${requestId}/reject`, { comment });
+
+export const apiDeleteReviewRequest = (requestId) =>
+    api.delete(`/review-requests/${requestId}`);
+
+// ===========================================================
+// 8. NOTIFICATIONS
+// ===========================================================
+export const apiGetNotifications = (unreadOnly = true) => {
+    const params = unreadOnly ? { unreadOnly: true } : {};
     return api.get("/notifications", { params });
 };
 
-// Mark notification as read
-export const apiMarkNotificationRead = async (id) => {
-        return api.patch(`/notifications/${id}/read`);
-};
-
-// Submit review comment for a review request
-export const apiSubmitReview = async (requestId, comment) => {
-    return api.post(`/review-requests/${requestId}/review`, { comment });
-};
-
-// Reject a review request
-export const apiRejectReview = async (requestId, comment) => {
-    return api.post(`/review-requests/${requestId}/reject`, { comment });
-};
-
-// Get all review requests for current user
-export const apiGetReviewRequests = async () => {
-    return api.get("/review-requests");
-};
-
-// Delete a review request
-export const apiDeleteReviewRequest = async (requestId) => {
-    return api.delete(`/review-requests/${requestId}`);
-};
+export const apiMarkNotificationRead = (id) =>
+    api.patch(`/notifications/${id}/read`);
 
 // ===========================================================
-// 6. EXPORT DEFAULT API INSTANCE
+// 9. EXPORT DEFAULT
 // ===========================================================
 export default api;
