@@ -1,705 +1,314 @@
-// import { jsPDF } from 'jspdf';
-// import autoTable from 'jspdf-autotable';
-// import { toast } from 'react-toastify';
-
-// /**
-//  * Core function to generate the PDF, optionally returning as Blob instead of downloading.
-//  * @param {Object} prediction
-//  * @param {Object} treatmentSuggestions
-//  * @param {Object|null} userData
-//  * @param {string|null} dermComment
-//  * @param {boolean} download - whether to download the PDF (true) or return blob (false)
-//  */
-// const createPdf = (prediction, treatmentSuggestions, userData = null, dermComment = null, download = true, imageDataUrl = null) => {
-//     if (!prediction) {
-//         console.error("Prediction data is missing.");
-//         toast.error("Cannot generate report: analysis data is missing.");
-//         return null;
-//     }
-
-//     const doc = new jsPDF();
-//     const pageWidth = doc.internal.pageSize.getWidth();
-//     let yPosition = 20;
-
-//     const patientData = {
-//         name: userData?.name || 'N/A',
-//         age: userData?.age || 'N/A',
-//         gender: userData?.gender || 'N/A',
-//         contact: userData?.phone || 'N/A',
-//         bloodGroup: userData?.bloodGroup || 'N/A',
-//         dermatologist: userData?.dermatologist || 'Not Assigned'
-//     };
-
-//     const marginX = 15;
-//     const col1X = marginX;
-//     const col2X = pageWidth / 2 + 5;
-//     const boxWidth = pageWidth / 2 - marginX - 5;
-//     const innerPadding = 2;
-//     const lineSpacing = 4.5;
-//     const keyWidth = 25;
-
-//     const textStartCol1 = col1X + innerPadding;
-//     const textStartCol2 = col2X + innerPadding;
-//     const valueMaxWidth = boxWidth - keyWidth - (2 * innerPadding);
-
-//     const headerColor = [30, 41, 59];
-
-//     const drawDetailRow = (doc, key, value, x, y, keyW, maxW) => {
-//         doc.setFont('helvetica', 'bold');
-//         doc.text(`${key}:`, x, y);
-//         doc.setFont('helvetica', 'normal');
-
-//         const valueX = x + keyW;
-//         const safeValue = (value === null || value === undefined) ? 'N/A' : String(value);
-//         const wrappedText = doc.splitTextToSize(safeValue, maxW);
-//         doc.text(wrappedText, valueX, y);
-//         return wrappedText.length; // number of lines
-//     };
-
-//     doc.setFontSize(11);
-//     doc.setFont('helvetica', 'bold');
-
-//     // Header boxes
-//     doc.setFillColor(30, 41, 59);
-//     doc.rect(col1X, yPosition, boxWidth, 7, 'F');
-//     doc.setTextColor(255, 255, 255);
-//     doc.text('REPORT DETAILS', textStartCol1, yPosition + 5);
-
-//     doc.setFillColor(30, 41, 59);
-//     doc.rect(col2X, yPosition, boxWidth, 7, 'F');
-//     doc.setTextColor(255, 255, 255);
-//     doc.text('PATIENT DEMOGRAPHICS', textStartCol2, yPosition + 5);
-
-//     yPosition += 7;
-//     doc.setLineWidth(0.1);
-//     doc.setDrawColor(200, 200, 200);
-//     doc.setTextColor(51, 51, 51);
-
-//     doc.setFontSize(9);
-//     let currentY = yPosition + 4;
-//     let lines = 0;
-
-//     // Patient details
-//     lines = drawDetailRow(doc, 'Name', patientData.name, textStartCol2, currentY, keyWidth, valueMaxWidth);
-//     currentY += lineSpacing * lines;
-//     lines = drawDetailRow(doc, 'Age/Gender', `${patientData.age} / ${patientData.gender}`, textStartCol2, currentY, keyWidth, valueMaxWidth);
-//     currentY += lineSpacing * lines;
-//     lines = drawDetailRow(doc, 'Contact', patientData.contact, textStartCol2, currentY, keyWidth, valueMaxWidth);
-//     currentY += lineSpacing * lines;
-//     lines = drawDetailRow(doc, 'Blood', patientData.bloodGroup, textStartCol2, currentY, keyWidth, valueMaxWidth);
-//     currentY += lineSpacing * lines;
-//     lines = drawDetailRow(doc, 'Derm.', patientData.dermatologist, textStartCol2, currentY, keyWidth, valueMaxWidth);
-//     currentY += lineSpacing * lines;
-
-//     const dynamicPatientBoxHeight = (currentY - (yPosition + 4)) + 4;
-//     doc.rect(col2X, yPosition, boxWidth, dynamicPatientBoxHeight);
-//     doc.rect(col1X, yPosition, boxWidth, dynamicPatientBoxHeight);
-
-//     // Report details
-//     let reportY = yPosition + 4;
-//     drawDetailRow(doc, 'Report ID', prediction.reportId || 'N/A', textStartCol1, reportY, keyWidth, valueMaxWidth);
-//     reportY += lineSpacing;
-//     drawDetailRow(doc, 'Date', prediction.timestamp || 'N/A', textStartCol1, reportY, keyWidth, valueMaxWidth);
-//     reportY += lineSpacing;
-//     drawDetailRow(doc, 'Method', 'AI Deep Learning Model', textStartCol1, reportY, keyWidth, valueMaxWidth);
-//     reportY += lineSpacing;
-//     doc.setFont('helvetica', 'bold');
-//     doc.text('Status:', textStartCol1, reportY);
-//     doc.setTextColor(20, 160, 20);
-//     doc.text('COMPLETED', textStartCol1 + keyWidth, reportY);
-//     doc.setTextColor(51, 51, 51);
-
-//     yPosition = yPosition + dynamicPatientBoxHeight + 10;
-
-//     // Analysis & Diagnosis Section
-//     const sectionTitleColor = [82, 82, 82];
-//     doc.setFillColor(230, 230, 230);
-//     doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-//     yPosition += 5;
-//     doc.setFontSize(12);
-//     doc.setFont('helvetica', 'bold');
-//     doc.setTextColor(...sectionTitleColor);
-//     doc.text('ANALYSIS & DIAGNOSIS RESULTS', marginX + 2, yPosition);
-//     doc.setTextColor(0, 0, 0);
-//     yPosition += 5;
-
-//     doc.setDrawColor(...headerColor);
-//     doc.setLineWidth(0.5);
-//     doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 25);
-//     yPosition += 8;
-
-//     doc.setFontSize(10);
-//     doc.setFont('helvetica', 'normal');
-//     doc.text('Primary AI-Detected Condition:', marginX + 5, yPosition);
-//     yPosition += 10;
-
-//     doc.setFontSize(16);
-//     doc.setFont('helvetica', 'bold');
-//     doc.setTextColor(30, 41, 59);
-//     const diagnosisText = prediction.predicted_label.toUpperCase();
-
-//     // If we have an image, place it to the left of the diagnosis and wrap text to its right
-//     let imgRenderedHeight = 0;
-//     const imageGap = 8; // gap between image and diagnosis text
-//     if (imageDataUrl) {
-//         try {
-//             const imgProps = doc.getImageProperties ? doc.getImageProperties(imageDataUrl) : null;
-//             const imgW = 60; // fixed display width for the thumbnail in PDF
-//             let imgH = imgW;
-//             if (imgProps && imgProps.width && imgProps.height) {
-//                 imgH = (imgProps.height / imgProps.width) * imgW;
-//             }
-//             const imgX = marginX + 5;
-//             const imgY = yPosition - 4; // slightly higher to align with title area
-//             const imgFormat = (typeof imageDataUrl === 'string' && imageDataUrl.includes('image/png')) ? 'PNG' : 'JPEG';
-//             doc.addImage(imageDataUrl, imgFormat, imgX, imgY, imgW, imgH);
-//             imgRenderedHeight = imgH;
-
-//             // Diagnosis text to the right of the image
-//             const diagX = imgX + imgW + imageGap;
-//             const diagAvailableWidth = pageWidth - diagX - marginX - 5;
-//             const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, diagAvailableWidth);
-//             doc.text(wrappedDiagnosis, diagX, yPosition);
-//             doc.setTextColor(0, 0, 0);
-//             // advance yPosition to the greater of image bottom or diagnosis text block
-//             const diagLineHeight = 6;
-//             const diagBlockHeight = wrappedDiagnosis.length * diagLineHeight;
-//             yPosition += Math.max(imgRenderedHeight, diagBlockHeight) + 6;
-//         } catch (err) {
-//             console.warn('Failed to render image in PDF, falling back to text-only diagnosis', err);
-//             const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, pageWidth - (2 * marginX) - 10);
-//             doc.text(wrappedDiagnosis, marginX + 5, yPosition);
-//             doc.setTextColor(0, 0, 0);
-//             yPosition += 20;
-//         }
-//     } else {
-//         const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, pageWidth - (2 * marginX) - 10);
-//         doc.text(wrappedDiagnosis, marginX + 5, yPosition);
-//         doc.setTextColor(0, 0, 0);
-//         yPosition += 20;
-//     }
-
-//     // Confidence Score
-//     doc.setFillColor(230, 230, 230);
-//     doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-//     yPosition += 5;
-//     doc.setFontSize(12);
-//     doc.setFont('helvetica', 'bold');
-//     doc.setTextColor(...sectionTitleColor);
-//     doc.text('CONFIDENCE SCORE', marginX + 2, yPosition);
-//     doc.setTextColor(0, 0, 0);
-//     yPosition += 5;
-
-//     const confidencePercent = (prediction.confidence_score * 100).toFixed(2);
-//     const meterWidth = pageWidth - (2 * marginX) - 20;
-//     doc.setFillColor(200, 200, 200);
-//     doc.rect(marginX + 5, yPosition, meterWidth, 6, 'F');
-
-//     const confidenceFillWidth = prediction.confidence_score * meterWidth;
-//     let confidenceColor = [239, 68, 68];
-//     let confidenceInterpretation = 'Low Confidence: Professional consultation strongly advised.';
-//     if (prediction.confidence_score >= 0.85) {
-//         confidenceColor = [20, 160, 20];
-//         confidenceInterpretation = 'High Confidence: Model prediction is highly reliable.';
-//     } else if (prediction.confidence_score >= 0.6) {
-//         confidenceColor = [251, 191, 36];
-//         confidenceInterpretation = 'Moderate Confidence: Additional clinical review recommended.';
-//     }
-//     doc.setFillColor(...confidenceColor);
-//     doc.rect(marginX + 5, yPosition, confidenceFillWidth, 6, 'F');
-
-//     doc.setFontSize(9);
-//     doc.setFont('helvetica', 'bold');
-//     doc.setTextColor(...confidenceColor);
-//     doc.text(`${confidencePercent}%`, marginX + 5 + meterWidth + 5, yPosition + 4);
-//     doc.setTextColor(0, 0, 0);
-//     yPosition += 10;
-
-//     doc.setFontSize(9);
-//     doc.setFont('helvetica', 'italic');
-//     const wrappedInterpretation = doc.splitTextToSize(`* ${confidenceInterpretation}`, pageWidth - (2 * marginX) - 10);
-//     doc.text(wrappedInterpretation, marginX + 5, yPosition);
-//     doc.setFont('helvetica', 'normal');
-//     yPosition += (wrappedInterpretation.length * 4) + 5;
-
-//     // Treatment Recommendations Table
-//     doc.setFillColor(230, 230, 230);
-//     doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-//     yPosition += 5;
-//     doc.setFontSize(12);
-//     doc.setFont('helvetica', 'bold');
-//     doc.setTextColor(...sectionTitleColor);
-//     doc.text('TREATMENT RECOMMENDATIONS', marginX + 2, yPosition);
-//     doc.setTextColor(0, 0, 0);
-//     yPosition += 5;
-
-//     const treatments = treatmentSuggestions[prediction.predicted_label] || [];
-//     const treatmentTableData = treatments.map((treatment, index) => [`${index + 1}`, treatment]);
-
-//     autoTable(doc, {
-//         startY: yPosition,
-//         head: [['#', 'Recommendation Detail']],
-//         body: treatmentTableData,
-//         theme: 'grid',
-//         headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-//         bodyStyles: { fontSize: 9, textColor: [50, 50, 50], minCellHeight: 8 },
-//         columnStyles: { 0: { cellWidth: 10, halign: 'center', fontStyle: 'bold' }, 1: { cellWidth: 'auto' } },
-//         margin: { left: marginX, right: marginX },
-//         alternateRowStyles: { fillColor: [249, 249, 249] }
-//     });
-
-//     yPosition = doc.lastAutoTable.finalY + 15;
-
-//     // Dermatologist Comment
-//     if (dermComment && dermComment.trim() !== '') {
-//         if (yPosition > doc.internal.pageSize.getHeight() - 60) { doc.addPage(); yPosition = 20; }
-//         doc.setFillColor(230, 240, 255);
-//         doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-//         yPosition += 5;
-//         doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(...sectionTitleColor);
-//         doc.text('DERMATOLOGIST REVIEW', marginX + 2, yPosition); doc.setTextColor(0, 0, 0); yPosition += 8;
-
-//         const commentBoxColor = [245, 250, 255];
-//         const commentBorderColor = [59, 130, 246];
-//         const commentInnerPadding = 3;
-//         const commentTextX = marginX + commentInnerPadding;
-//         const commentMaxWidth = pageWidth - (2 * marginX) - (2 * commentInnerPadding);
-
-//         doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-//         const wrappedComment = doc.splitTextToSize(dermComment, commentMaxWidth);
-//         const commentBoxHeight = (wrappedComment.length * 4) + 8;
-
-//         doc.setFillColor(...commentBoxColor);
-//         doc.rect(marginX, yPosition, pageWidth - (2 * marginX), commentBoxHeight, 'F');
-//         doc.setDrawColor(...commentBorderColor);
-//         doc.setLineWidth(0.3);
-//         doc.rect(marginX, yPosition, pageWidth - (2 * marginX), commentBoxHeight);
-//         doc.setTextColor(30, 41, 59);
-//         doc.text(wrappedComment, commentTextX, yPosition + 5);
-//         doc.setTextColor(0, 0, 0);
-//         yPosition += commentBoxHeight + 15;
-//     }
-
-//     // Footer
-//     const footerY = doc.internal.pageSize.getHeight() - 15;
-//     doc.setDrawColor(200, 200, 200);
-//     doc.setLineWidth(0.3);
-//     doc.line(0, footerY - 5, pageWidth, footerY - 5);
-//     doc.setFontSize(7);
-//     doc.setFont('helvetica', 'italic');
-//     doc.setTextColor(100, 100, 100);
-//     doc.text('Document Generated by FacialDerma AI | Page 1 of 1', pageWidth / 2, footerY, { align: 'center' });
-//     doc.text(`Generated On: ${new Date().toLocaleString()}`, pageWidth / 2, footerY + 4, { align: 'center' });
-
-//     if (download) {
-//         doc.save(`Dermatology_Report_${prediction.reportId}_${patientData.name.replace(/\s/g, '')}.pdf`);
-//         toast.success('PDF report downloaded successfully!');
-//         return null;
-//     } else {
-//         return doc.output('blob');
-//     }
-// };
-
+// ========== PDF GENERATION (IMPROVED VERSION) ==========
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'react-toastify';
 
-/** Helper to get the condition data from the new JSON structure */
+/** Find matching condition in treatmentSuggestions JSON */
 const getTreatmentData = (predictedLabel, treatmentSuggestions) => {
     if (!predictedLabel || !treatmentSuggestions?.skin_conditions) return null;
     return treatmentSuggestions.skin_conditions.find(
-        condition => condition.name.toLowerCase() === predictedLabel.toLowerCase()
+        c => c.name.toLowerCase() === predictedLabel.toLowerCase()
     );
 };
 
-/**
- * Core function to generate the PDF, optionally returning as Blob instead of downloading.
- * @param {Object} prediction
- * @param {Object} treatmentSuggestions
- * @param {Object|null} userData
- * @param {string|null} dermComment
- * @param {boolean} download - whether to download the PDF (true) or return blob (false)
- */
-const createPdf = (prediction, treatmentSuggestions, userData = null, dermComment = null, download = true, imageDataUrl = null) => {
+/** Load image as dataURL */
+const loadImageAsDataUrl = async (url) => {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to fetch image");
+
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject("Failed to read blob");
+            reader.readAsDataURL(blob);
+        });
+    } catch (err) {
+        console.warn("Image load error:", err);
+        return null;
+    }
+};
+
+/** MAIN PDF CREATION FUNCTION (Supports blob return) */
+const createPdf = (prediction, treatmentSuggestions, userData, dermComment, download = true, imageDataUrl = null) => {
     if (!prediction) {
-        console.error("Prediction data is missing.");
-        toast.error("Cannot generate report: analysis data is missing.");
+        toast.error("Missing prediction data.");
         return null;
     }
 
-    // --- Debug logs for treatmentSuggestions ---
     const conditionData = getTreatmentData(prediction.predicted_label, treatmentSuggestions);
-    console.log('treatmentSuggestions loaded:', treatmentSuggestions);
-    console.log('matched condition for', prediction?.predicted_label, ':', conditionData);
-
     const treatments = conditionData?.treatments || [];
     const prevention = conditionData?.prevention || [];
     const resources = conditionData?.resources || [];
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    let yPosition = 20;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
 
-    const patientData = {
-        name: userData?.name || 'N/A',
-        age: userData?.age || 'N/A',
-        gender: userData?.gender || 'N/A',
-        contact: userData?.phone || 'N/A',
-        bloodGroup: userData?.bloodGroup || 'N/A',
-        dermatologist: userData?.dermatologist || 'Not Assigned'
+    let y = 20;
+
+    /** Patient Data */
+    const patient = {
+        name: userData?.name || "N/A",
+        age: userData?.age || "N/A",
+        gender: userData?.gender || "N/A",
+        contact: userData?.phone || "N/A",
+        bloodGroup: userData?.bloodGroup || "N/A",
+        dermatologist: userData?.dermatologist || "Not Assigned",
     };
 
-    const marginX = 15;
-    const col1X = marginX;
-    const col2X = pageWidth / 2 + 5;
-    const boxWidth = pageWidth / 2 - marginX - 5;
-    const innerPadding = 2;
-    const lineSpacing = 4.5;
-    const keyWidth = 25;
+    const headerBg = [30, 41, 59];
+    const sectionBg = [230, 230, 230];
 
-    const textStartCol1 = col1X + innerPadding;
-    const textStartCol2 = col2X + innerPadding;
-    const valueMaxWidth = boxWidth - keyWidth - (2 * innerPadding);
+    // ---------------------- HEADER BOXES ----------------------
+    const colWidth = (pageWidth - margin * 2) / 2 - 5;
+    const col1X = margin;
+    const col2X = margin + colWidth + 10;
 
-    const headerColor = [30, 41, 59];
+    doc.setFillColor(...headerBg);
+    doc.rect(col1X, y, colWidth, 8, "F");
+    doc.rect(col2X, y, colWidth, 8, "F");
 
-    const drawDetailRow = (doc, key, value, x, y, keyW, maxW) => {
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${key}:`, x, y);
-        doc.setFont('helvetica', 'normal');
-
-        const valueX = x + keyW;
-        const safeValue = (value === null || value === undefined) ? 'N/A' : String(value);
-        const wrappedText = doc.splitTextToSize(safeValue, maxW);
-        doc.text(wrappedText, valueX, y);
-        return wrappedText.length; // number of lines
-    };
-
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-
-    // Header boxes
-    doc.setFillColor(30, 41, 59);
-    doc.rect(col1X, yPosition, boxWidth, 7, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.text('REPORT DETAILS', textStartCol1, yPosition + 5);
+    doc.text("REPORT DETAILS", col1X + 4, y + 5);
+    doc.text("PATIENT DEMOGRAPHICS", col2X + 4, y + 5);
 
-    doc.setFillColor(30, 41, 59);
-    doc.rect(col2X, yPosition, boxWidth, 7, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('PATIENT DEMOGRAPHICS', textStartCol2, yPosition + 5);
-
-    yPosition += 7;
-    doc.setLineWidth(0.1);
-    doc.setDrawColor(200, 200, 200);
-    doc.setTextColor(51, 51, 51);
+    y += 15;
 
     doc.setFontSize(9);
-    let currentY = yPosition + 4;
-    let lines = 0;
-
-    // Patient details
-    lines = drawDetailRow(doc, 'Name', patientData.name, textStartCol2, currentY, keyWidth, valueMaxWidth);
-    currentY += lineSpacing * lines;
-    lines = drawDetailRow(doc, 'Age/Gender', `${patientData.age} / ${patientData.gender}`, textStartCol2, currentY, keyWidth, valueMaxWidth);
-    currentY += lineSpacing * lines;
-    lines = drawDetailRow(doc, 'Contact', patientData.contact, textStartCol2, currentY, keyWidth, valueMaxWidth);
-    currentY += lineSpacing * lines;
-    lines = drawDetailRow(doc, 'Blood', patientData.bloodGroup, textStartCol2, currentY, keyWidth, valueMaxWidth);
-    currentY += lineSpacing * lines;
-    lines = drawDetailRow(doc, 'Derm.', patientData.dermatologist, textStartCol2, currentY, keyWidth, valueMaxWidth);
-    currentY += lineSpacing * lines;
-
-    const dynamicPatientBoxHeight = (currentY - (yPosition + 4)) + 4;
-    doc.rect(col2X, yPosition, boxWidth, dynamicPatientBoxHeight);
-    doc.rect(col1X, yPosition, boxWidth, dynamicPatientBoxHeight);
-
-    // Report details
-    let reportY = yPosition + 4;
-    drawDetailRow(doc, 'Report ID', prediction.reportId || 'N/A', textStartCol1, reportY, keyWidth, valueMaxWidth);
-    reportY += lineSpacing;
-    drawDetailRow(doc, 'Date', prediction.timestamp || 'N/A', textStartCol1, reportY, keyWidth, valueMaxWidth);
-    reportY += lineSpacing;
-    drawDetailRow(doc, 'Method', 'AI Deep Learning Model', textStartCol1, reportY, keyWidth, valueMaxWidth);
-    reportY += lineSpacing;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Status:', textStartCol1, reportY);
-    doc.setTextColor(20, 160, 20);
-    doc.text('COMPLETED', textStartCol1 + keyWidth, reportY);
-    doc.setTextColor(51, 51, 51);
-
-    yPosition = yPosition + dynamicPatientBoxHeight + 10;
-
-    // Analysis & Diagnosis Section
-    const sectionTitleColor = [82, 82, 82];
-    doc.setFillColor(230, 230, 230);
-    doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-    yPosition += 5;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...sectionTitleColor);
-    doc.text('ANALYSIS & DIAGNOSIS RESULTS', marginX + 2, yPosition);
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
-    yPosition += 5;
 
-    doc.setDrawColor(...headerColor);
-    doc.setLineWidth(0.5);
-    doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 25);
-    yPosition += 8;
+    // Left Column
+    const reportLeft = [
+        ["Report ID", prediction.reportId || "N/A"],
+        ["Date", prediction.timestamp || "N/A"],
+        ["Method", "AI Deep Learning Model"],
+        ["Status", "Completed"],
+    ];
+
+    reportLeft.forEach(([k, v]) => {
+        doc.setFont("helvetica", "bold");
+        doc.text(`${k}:`, col1X + 4, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(String(v), col1X + 32, y);
+        y += 6;
+    });
+
+    // Reset Y for patient col
+    let y2 = 35;
+
+    const patientLeft = [
+        ["Name", patient.name],
+        ["Age/Gender", `${patient.age} / ${patient.gender}`],
+        ["Contact", patient.contact],
+        ["Blood Group", patient.bloodGroup],
+        ["Derm.", patient.dermatologist],
+    ];
+
+    patientLeft.forEach(([k, v]) => {
+        doc.setFont("helvetica", "bold");
+        doc.text(`${k}:`, col2X + 4, y2);
+        doc.setFont("helvetica", "normal");
+        doc.text(String(v), col2X + 32, y2);
+        y2 += 6;
+    });
+
+    y += 10;
+
+    // ---------------------- SECTION: Diagnosis ----------------------
+    const addSectionHeader = (title) => {
+        doc.setFillColor(...sectionBg);
+        doc.rect(margin, y, pageWidth - margin * 2, 8, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(70, 70, 70);
+        doc.text(title, margin + 2, y + 5);
+        doc.setTextColor(0, 0, 0);
+        y += 12;
+    };
+
+    addSectionHeader("ANALYSIS & DIAGNOSIS RESULTS");
 
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Primary AI-Detected Condition:', marginX + 5, yPosition);
-    yPosition += 10;
+    doc.text("Primary AI-Detected Condition:", margin + 2, y);
+    y += 8;
 
     doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(30, 41, 59);
+
     const diagnosisText = prediction.predicted_label.toUpperCase();
 
-    // If we have an image, place it to the left of the diagnosis and wrap text to its right
-    let imgRenderedHeight = 0;
-    const imageGap = 8; // gap between image and diagnosis text
+    // Diagnosis + Image
     if (imageDataUrl) {
         try {
-            const imgProps = doc.getImageProperties ? doc.getImageProperties(imageDataUrl) : null;
-            const imgW = 60;
-            let imgH = imgW;
-            if (imgProps && imgProps.width && imgProps.height) {
-                imgH = (imgProps.height / imgProps.width) * imgW;
-            }
-            const imgX = marginX + 5;
-            const imgY = yPosition - 4;
-            const imgFormat = (typeof imageDataUrl === 'string' && imageDataUrl.includes('image/png')) ? 'PNG' : 'JPEG';
-            doc.addImage(imageDataUrl, imgFormat, imgX, imgY, imgW, imgH);
-            imgRenderedHeight = imgH;
+            let imgW = 55;
+            let imgH = 55;
 
-            const diagX = imgX + imgW + imageGap;
-            const diagAvailableWidth = pageWidth - diagX - marginX - 5;
-            const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, diagAvailableWidth);
-            doc.text(wrappedDiagnosis, diagX, yPosition);
-            doc.setTextColor(0, 0, 0);
+            const xImg = margin + 2;
+            const yImg = y;
 
-            const diagLineHeight = 6;
-            const diagBlockHeight = wrappedDiagnosis.length * diagLineHeight;
-            yPosition += Math.max(imgRenderedHeight, diagBlockHeight) + 6;
+            doc.addImage(imageDataUrl, "JPEG", xImg, yImg, imgW, imgH);
+
+            doc.text(diagnosisText, xImg + imgW + 8, yImg + 10);
+
+            y += imgH + 10;
         } catch (err) {
-            console.warn('Failed to render image in PDF, falling back to text-only diagnosis', err);
-            const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, pageWidth - (2 * marginX) - 10);
-            doc.text(wrappedDiagnosis, marginX + 5, yPosition);
-            doc.setTextColor(0, 0, 0);
-            yPosition += 20;
+            console.warn("Image error:", err);
+            doc.text(diagnosisText, margin + 2, y);
+            y += 18;
         }
     } else {
-        const wrappedDiagnosis = doc.splitTextToSize(diagnosisText, pageWidth - (2 * marginX) - 10);
-        doc.text(wrappedDiagnosis, marginX + 5, yPosition);
-        doc.setTextColor(0, 0, 0);
-        yPosition += 20;
+        doc.text(diagnosisText, margin + 2, y);
+        y += 18;
     }
 
-    // Confidence Score
-    doc.setFillColor(230, 230, 230);
-    doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-    yPosition += 5;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...sectionTitleColor);
-    doc.text('CONFIDENCE SCORE', marginX + 2, yPosition);
     doc.setTextColor(0, 0, 0);
-    yPosition += 5;
 
-    const confidencePercent = (prediction.confidence_score * 100).toFixed(2);
-    const meterWidth = pageWidth - (2 * marginX) - 20;
+    // ---------------------- CONFIDENCE METER ----------------------
+    addSectionHeader("CONFIDENCE SCORE");
+
+    const meterWidth = pageWidth - margin * 2 - 30;
+    const meterX = margin + 2;
+
     doc.setFillColor(200, 200, 200);
-    doc.rect(marginX + 5, yPosition, meterWidth, 6, 'F');
+    doc.rect(meterX, y, meterWidth, 6, "F");
 
-    const confidenceFillWidth = prediction.confidence_score * meterWidth;
     let confidenceColor = [239, 68, 68];
-    let confidenceInterpretation = 'Low Confidence: Professional consultation strongly advised.';
+    let message = "Low Confidence — clinical verification recommended.";
+
     if (prediction.confidence_score >= 0.85) {
         confidenceColor = [20, 160, 20];
-        confidenceInterpretation = 'High Confidence: Model prediction is highly reliable.';
+        message = "High Confidence — prediction is reliable.";
     } else if (prediction.confidence_score >= 0.6) {
         confidenceColor = [251, 191, 36];
-        confidenceInterpretation = 'Moderate Confidence: Additional clinical review recommended.';
+        message = "Moderate Confidence — consider clinical review.";
     }
+
+    const filled = meterWidth * prediction.confidence_score;
+
     doc.setFillColor(...confidenceColor);
-    doc.rect(marginX + 5, yPosition, confidenceFillWidth, 6, 'F');
+    doc.rect(meterX, y, filled, 6, "F");
 
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
     doc.setTextColor(...confidenceColor);
-    doc.text(`${confidencePercent}%`, marginX + 5 + meterWidth + 5, yPosition + 4);
-    doc.setTextColor(0, 0, 0);
-    yPosition += 10;
+    doc.text(`${(prediction.confidence_score * 100).toFixed(2)}%`, meterX + meterWidth + 5, y + 4);
 
+    y += 12;
+
+    doc.setTextColor(0, 0, 0);
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'italic');
-    const wrappedInterpretation = doc.splitTextToSize(`* ${confidenceInterpretation}`, pageWidth - (2 * marginX) - 10);
-    doc.text(wrappedInterpretation, marginX + 5, yPosition);
-    doc.setFont('helvetica', 'normal');
-    yPosition += (wrappedInterpretation.length * 4) + 5;
+    doc.text(`* ${message}`, meterX, y);
+    y += 10;
 
-    // --- TREATMENT RECOMMENDATIONS ---
-    doc.setFillColor(230, 230, 230);
-    doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-    yPosition += 5;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...sectionTitleColor);
-    doc.text('TREATMENT RECOMMENDATIONS', marginX + 2, yPosition);
-    doc.setTextColor(0, 0, 0);
-    yPosition += 5;
+    // ---------------------- TREATMENT ----------------------
+    addSectionHeader("TREATMENT RECOMMENDATIONS");
 
-    const treatmentTableData = treatments.map((treatment, index) => [`${index + 1}`, treatment]);
     autoTable(doc, {
-        startY: yPosition,
-        head: [['#', 'Recommendation Detail']],
-        body: treatmentTableData,
-        theme: 'grid',
-        headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-        bodyStyles: { fontSize: 9, textColor: [50, 50, 50], minCellHeight: 8 },
-        columnStyles: { 0: { cellWidth: 10, halign: 'center', fontStyle: 'bold' }, 1: { cellWidth: 'auto' } },
-        margin: { left: marginX, right: marginX },
-        alternateRowStyles: { fillColor: [249, 249, 249] }
+        startY: y,
+        theme: "grid",
+        headStyles: { fillColor: headerBg, textColor: 255 },
+        head: [["#", "Recommendation"]],
+        body: treatments.map((t, i) => [i + 1, t]),
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9 },
     });
-    yPosition = doc.lastAutoTable.finalY + 15;
 
-    // --- PREVENTION SECTION ---
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ---------------------- PREVENTION ----------------------
     if (prevention.length) {
-        doc.setFillColor(230, 230, 230);
-        doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-        yPosition += 5;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...sectionTitleColor);
-        doc.text('PREVENTION RECOMMENDATIONS', marginX + 2, yPosition);
-        doc.setTextColor(0, 0, 0);
-        yPosition += 5;
-
-        prevention.forEach((tip, i) => {
+        addSectionHeader("PREVENTION GUIDELINES");
+        prevention.forEach((item, i) => {
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`${i + 1}. ${tip}`, marginX + 5, yPosition);
-            yPosition += 5;
+            doc.text(`${i + 1}. ${item}`, margin + 2, y);
+            y += 5;
         });
-        yPosition += 5;
+        y += 8;
     }
 
-    // --- RESOURCES SECTION ---
+    // ---------------------- RESOURCES ----------------------
     if (resources.length) {
-        doc.setFillColor(230, 230, 230);
-        doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-        yPosition += 5;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...sectionTitleColor);
-        doc.text('HELPFUL RESOURCES', marginX + 2, yPosition);
-        doc.setTextColor(0, 0, 0);
-        yPosition += 5;
-
-        resources.forEach((link, i) => {
+        addSectionHeader("HELPFUL RESOURCES");
+        resources.forEach((item, i) => {
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`${i + 1}. ${link}`, marginX + 5, yPosition);
-            yPosition += 5;
+            doc.text(`${i + 1}. ${item}`, margin + 2, y);
+            y += 5;
         });
-        yPosition += 5;
+        y += 8;
     }
 
-    // --- Remaining code (Dermatologist Comment, Footer, download) remains unchanged ---
-    if (dermComment && dermComment.trim() !== '') {
-        if (yPosition > doc.internal.pageSize.getHeight() - 60) { doc.addPage(); yPosition = 20; }
-        doc.setFillColor(230, 240, 255);
-        doc.rect(marginX, yPosition, pageWidth - (2 * marginX), 8, 'F');
-        yPosition += 5;
-        doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(...sectionTitleColor);
-        doc.text('DERMATOLOGIST REVIEW', marginX + 2, yPosition); doc.setTextColor(0, 0, 0); yPosition += 8;
+    // ---------------------- DERM COMMENT ----------------------
+    if (dermComment?.trim()) {
+        if (y > pageHeight - 40) {
+            doc.addPage();
+            y = 20;
+        }
+        addSectionHeader("DERMATOLOGIST REVIEW");
 
-        const commentBoxColor = [245, 250, 255];
-        const commentBorderColor = [59, 130, 246];
-        const commentInnerPadding = 3;
-        const commentTextX = marginX + commentInnerPadding;
-        const commentMaxWidth = pageWidth - (2 * marginX) - (2 * commentInnerPadding);
+        const wrapped = doc.splitTextToSize(dermComment, pageWidth - margin * 2 - 4);
 
-        doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-        const wrappedComment = doc.splitTextToSize(dermComment, commentMaxWidth);
-        const commentBoxHeight = (wrappedComment.length * 4) + 8;
-
-        doc.setFillColor(...commentBoxColor);
-        doc.rect(marginX, yPosition, pageWidth - (2 * marginX), commentBoxHeight, 'F');
-        doc.setDrawColor(...commentBorderColor);
-        doc.setLineWidth(0.3);
-        doc.rect(marginX, yPosition, pageWidth - (2 * marginX), commentBoxHeight);
-        doc.setTextColor(30, 41, 59);
-        doc.text(wrappedComment, commentTextX, yPosition + 5);
-        doc.setTextColor(0, 0, 0);
-        yPosition += commentBoxHeight + 15;
+        doc.setFontSize(10);
+        doc.text(wrapped, margin + 2, y);
+        y += wrapped.length * 5 + 10;
     }
 
-    const footerY = doc.internal.pageSize.getHeight() - 15;
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.line(0, footerY - 5, pageWidth, footerY - 5);
+    // ---------------------- FOOTER ----------------------
+    // Existing footer
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont("helvetica", "italic");
+    doc.text(
+        `Generated by FacialDerma AI | ${new Date().toLocaleString()}`,
+        pageWidth / 2,
+        pageHeight - 20,
+        { align: "center" }
+    );
+
+    // Add disclaimer in yellow with Times New Roman
+    doc.setFont("times", "normal"); // Change font
     doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(100, 100, 100);
-    doc.text('Document Generated by FacialDerma AI | Page 1 of 1', pageWidth / 2, footerY, { align: 'center' });
-    doc.text(`Generated On: ${new Date().toLocaleString()}`, pageWidth / 2, footerY + 4, { align: 'center' });
+    doc.setTextColor(255, 190, 10); // Yellow color
+    const disclaimer = "Disclaimer: Facial Derma AI uses automated image analysis to detect potential skin conditions. While we strive for accuracy, the predictions may contain errors and should not replace professional medical advice, diagnosis, or treatment. Always consult a certified dermatologist for proper evaluation.";
 
-    if (download) {
-        doc.save(`Dermatology_Report_${prediction.reportId}_${patientData.name.replace(/\s/g, '')}.pdf`);
-        toast.success('PDF report downloaded successfully!');
-        return null;
-    } else {
-        return doc.output('blob');
-    }
+    // Split text to fit page width
+    const wrappedDisclaimer = doc.splitTextToSize(disclaimer, pageWidth - 20);
+    doc.text(wrappedDisclaimer, 10, pageHeight - 12); // Left aligned with margin
+
+
+    // ---------------------- OUTPUT ----------------------
+    if (!download) return doc.output("blob");
+
+    const fileName = `Report_${prediction.reportId}_${patient.name.replace(/\s/g, "")}.pdf`;
+    doc.save(fileName);
+    toast.success("PDF Generated Successfully!");
+    return null;
 };
 
-// --- The rest of your helper functions remain unchanged ---
-
-
-// Helper: load image URL and convert to data URL
-const loadImageAsDataUrl = async (url) => {
-    try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Image fetch failed');
-        const blob = await res.blob();
-        return await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onerror = () => reject(new Error('Failed to read image blob'));
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-        });
-    } catch (err) {
-        console.warn('Failed to load image as data URL:', err);
-        return null;
-    }
+/** Public Function – returns Blob */
+export const generatePdfReportBlob = async (prediction, treatmentSuggestions, userData, dermComment) => {
+    let imageDataUrl = prediction?.imageUrl ? await loadImageAsDataUrl(prediction.imageUrl) : null;
+    return createPdf(prediction, treatmentSuggestions, userData, dermComment, false, imageDataUrl);
 };
 
-// Async functions for consumers
-export const generatePdfReportBlob = async (prediction, treatmentSuggestions, userData = null, dermComment = null) => {
-    // Load image data URL if available
-    let imageDataUrl = null;
-    if (prediction?.imageUrl) {
-        imageDataUrl = await loadImageAsDataUrl(prediction.imageUrl);
-    }
-    const blob = createPdf(prediction, treatmentSuggestions, userData, dermComment, false, imageDataUrl);
-    return blob;
-};
-
-export const generatePdfReport = async (prediction, treatmentSuggestions, userData = null, dermComment = null) => {
+/** Public Function – automatic Download */
+export const generatePdfReport = async (prediction, treatmentSuggestions, userData, dermComment) => {
     const blob = await generatePdfReportBlob(prediction, treatmentSuggestions, userData, dermComment);
     if (!blob) return;
-    const fileName = `Dermatology_Report_${prediction.reportId || 'report'}_${(userData?.name || 'patient').replace(/\s/g, '')}.pdf`;
+
+    const fileName = `Report_${prediction.reportId}_${(userData?.name || userData?.username || "patient").replace(/\s/g, " ")}.pdf`;
+
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = fileName;
-    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('PDF report downloaded successfully!');
-    return;
+
+    toast.success("PDF Report Downloaded!");
 };

@@ -128,6 +128,12 @@ export const apiMarkNotificationRead = (id) =>
     api.patch(`/notifications/${id}/read`);
 
 // ===========================================================
-// 9. EXPORT DEFAULT
+// 9. USERNAME AVAILABILITY
+// ===========================================================
+export const apiCheckUsername = (username) =>
+    api.get("/users/check-username", { params: { username } });
+
+// ===========================================================
+// 10. EXPORT DEFAULT
 // ===========================================================
 export default api;

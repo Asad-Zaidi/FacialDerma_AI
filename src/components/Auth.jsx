@@ -5,6 +5,7 @@ import { MdEmail, MdLock, MdPerson, MdCheckCircle } from 'react-icons/md';
 import { HiSparkles } from 'react-icons/hi';
 import { useAuth } from '../contexts/AuthContext';
 import { apiLogin, apiSignUp } from "../api/api";
+import { apiCheckUsername } from "../api/api";
 import { validatePasswordRules } from '../lib/passwordValidation';
 
 const Auth = () => {
@@ -29,6 +30,7 @@ const Auth = () => {
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState('error');
     const [passwordsMatch, setPasswordsMatch] = useState(true);
+    const [usernameCheck, setUsernameCheck] = useState({ checking: false, available: null, message: '' });
 
     useEffect(() => {
         if (formData.password.length === 0 && formData.confirmPassword.length === 0) {
@@ -39,6 +41,29 @@ const Auth = () => {
             setPasswordsMatch(formData.password === formData.confirmPassword);
         }
     }, [formData.password, formData.confirmPassword]);
+
+    // Debounced username availability check (signup only)
+    useEffect(() => {
+        if (isLogin) return; // only on signup
+        const username = formData.username?.trim();
+        if (!username) {
+            setUsernameCheck({ checking: false, available: null, message: '' });
+            return;
+        }
+
+        setUsernameCheck(prev => ({ ...prev, checking: true, message: '' }));
+        const timer = setTimeout(async () => {
+            try {
+                const res = await apiCheckUsername(username);
+                const available = !!res.data?.available;
+                setUsernameCheck({ checking: false, available, message: available ? 'Username is available' : 'Username is already taken' });
+            } catch (err) {
+                setUsernameCheck({ checking: false, available: null, message: 'Unable to check the username' });
+            }
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [formData.username, isLogin]);
 
 
     const handleChange = (e) => {
@@ -53,18 +78,11 @@ const Auth = () => {
         e.preventDefault();
         setMessage('');
 
-        if (!role) {
-            setMessage('Please select a role');
-            setMessageType('error');
-            return;
-        }
-
         setLoading(true);
 
         const payload = {
             emailOrUsername: formData.email,
             password: formData.password,
-            role: role,
         };
 
         try {
@@ -264,7 +282,7 @@ const Auth = () => {
                 </div>
 
                 {/* Right Side - Form */}
-                <div className="p-8 flex flex-col justify-center bg-white/80 backdrop-blur-sm">
+                <div className="p-8 flex flex-col justify-center bg-white/80 backdrop-blur-sm relative">
 
                     {/* Mobile Logo */}
                     <div className="md:hidden flex items-center justify-center gap-2 mb-6">
@@ -309,259 +327,290 @@ const Auth = () => {
                         </button>
                     </div>
 
-                    {/* Role Selection */}
-                    <div className="mb-5">
-                        <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                            {isLogin ? 'Login as' : 'Register as'}
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {[
-                                { value: 'patient', label: 'Patient' },
-                                { value: 'dermatologist', label: 'Doctor' }
-                            ].map(option => (
-                                <button
-                                    key={option.value}
-                                    type="button"
-                                    onClick={() => setRole(option.value)}
-                                    className={`relative flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border-2 font-medium text-xs transition-all transform ${role === option.value
-                                        ? 'border-slate-900 bg-slate-50 text-slate-900 shadow-md'
-                                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                        }`}
-                                >
-                                    {option.label}
-                                    {role === option.value && (
-                                        <MdCheckCircle className="absolute top-1.5 right-1.5 text-slate-900 text-sm animate-scale-in" />
-                                    )}
-                                </button>
-                            ))}
+                    {/* Role Selection - Only for Signup */}
+                    {!isLogin && (
+                        <div className="mb-5">
+                            <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                                Register as
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { value: 'patient', label: 'Patient' },
+                                    { value: 'dermatologist', label: 'Doctor' }
+                                ].map(option => (
+                                    <label
+                                        key={option.value}
+                                        className="flex items-center gap-2 cursor-pointer select-none pl-8"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="role"
+                                            value={option.value}
+                                            checked={role === option.value}
+                                            onChange={(e) => setRole(e.target.value)}
+                                            className="sr-only"
+                                        />
+
+                                        {/* Custom radio circle */}
+                                        <div
+                                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all
+            ${role === option.value ? "border-slate-900 bg-slate-900" : "border-gray-400"}
+        `}
+                                        >
+                                            {role === option.value && (
+                                                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                                            )}
+                                        </div>
+
+                                        {/* Label text */}
+                                        <span className="text-sm font-medium text-gray-700">
+                                            {option.label}
+                                        </span>
+                                    </label>
+
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className={isLogin ? "space-y-6" : "space-y-4"}>
 
                         {!isLogin && (
-                            <>
-                                <div className="relative">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-slide-down">
+                                {/* Username field with isolated relative container */}
+                                <div>
+                                    <div className="relative">
+                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            value={formData.username}
+                                            onChange={handleChange}
+                                            required
+                                            className={`
+                                                w-full pl-10 pr-3 py-3
+                                                border border-gray-300 rounded-lg
+                                                focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                outline-none transition-all text-sm bg-white peer
+                                                ${usernameCheck.available === false ? 'border-red-500' : usernameCheck.available === true ? 'border-green-500' : ''}
+                                            `}
+                                        />
+                                        <label
+                                            className={`
+                                                absolute left-10 bg-white px-1 pointer-events-none
+                                                text-gray-500 transition-all duration-200
+                                                ${formData.username
+                                                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                }
+                                            `}
+                                        >
+                                            Username
+                                        </label>
+                                    </div>
+                                    <div className="mt-1 text-xs min-h-[16px] leading-4">
+                                        {formData.username && (
+                                            <>
+                                                {usernameCheck.checking ? (
+                                                    <span className="text-gray-500">Checking availability...</span>
+                                                ) : usernameCheck.available === true ? (
+                                                    <span className="text-green-600">{usernameCheck.message}</span>
+                                                ) : usernameCheck.available === false ? (
+                                                    <span className="text-red-600">{usernameCheck.message}</span>
+                                                ) : usernameCheck.message ? (
+                                                    <span className="text-gray-500">{usernameCheck.message}</span>
+                                                ) : null}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
 
-    <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-
-    <input
-        type="text"
-        name="username"
-        value={formData.username}
-        onChange={handleChange}
-        required
-        className="
-            w-full pl-10 pr-3 py-3
-            border border-gray-300 rounded-lg
-            focus:ring-2 focus:ring-slate-900 focus:border-transparent
-            outline-none transition-all text-sm bg-white peer
-        "
-    />
-
-    <label
-        className={`
-            absolute left-10 bg-white px-1 pointer-events-none
-            text-gray-500 transition-all duration-200
-            ${formData.username
-                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-            }
-        `}
-    >
-        Username
-    </label>
-</div>
-
-
-                                {/* ADD THIS NEW FIELD */}
-                                <div className="animate-slide-down relative">
-    <div className="relative">
-        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-        
-        <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="
-                w-full pl-10 pr-3 py-3
-                border border-gray-300 rounded-lg
-                focus:ring-2 focus:ring-slate-900 focus:border-transparent
-                outline-none transition-all text-sm bg-white peer
-            "
-        />
-
-        <label
-            className={`
-                absolute left-10 bg-white px-1 pointer-events-none
-                text-gray-500 transition-all duration-200
-                ${formData.name
-                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                }
-            `}
-        >
-            Full Name (Optional)
-        </label>
-    </div>
-</div>
-
-                            </>
+                                {/* Full Name field with matching reserved status space */}
+                                <div>
+                                    <div className="relative">
+                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            className="
+                                                w-full pl-10 pr-3 py-3
+                                                border border-gray-300 rounded-lg
+                                                focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                outline-none transition-all text-sm bg-white peer
+                                            "
+                                        />
+                                        <label
+                                            className={`
+                                                absolute left-10 bg-white px-1 pointer-events-none
+                                                text-gray-500 transition-all duration-200
+                                                ${formData.name
+                                                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                }
+                                            `}
+                                        >
+                                            Full Name (Optional)
+                                        </label>
+                                    </div>
+                                    <div className="mt-1 text-xs min-h-[16px] leading-4"></div>
+                                </div>
+                            </div>
                         )}
 
                         <div className="relative animate-slide-down">
-    <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-    <input
-        type="text"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        required
-        className="
+                            <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                            <input
+                                type="text"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                                className="
             w-full pl-10 pr-3 py-3
             border border-gray-300 rounded-lg
             focus:ring-2 focus:ring-slate-900 focus:border-transparent
             outline-none transition-all text-sm bg-white peer
         "
-    />
-    <label
-        className={`
+                            />
+                            <label
+                                className={`
             absolute left-10 bg-white px-1 pointer-events-none
             text-gray-500 transition-all duration-200
             ${formData.email
-                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-            }
+                                        ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                        : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                    }
         `}
-    >
-        {isLogin ? "Email or Username" : "Email"}
-    </label>
-</div>
+                            >
+                                {isLogin ? "Email or Username" : "Email"}
+                            </label>
+                        </div>
 
                         <div className="relative">
-    <div className="relative">
-        <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-        
-        <input
-            type={showPassword ? 'text' : 'password'}
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="
+                            <div className="relative">
+                                <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    className="
                 w-full pl-10 pr-10 py-3
                 border border-gray-300 rounded-lg
                 focus:ring-2 focus:ring-slate-900 focus:border-transparent
                 outline-none transition-all text-sm bg-white peer
             "
-        />
+                                />
 
-        <button
-            type="button"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
-        >
-            {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
-        </button>
+                                <button
+                                    type="button"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                >
+                                    {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                </button>
 
-        <label
-            className={`
+                                <label
+                                    className={`
                 absolute left-10 bg-white px-1 pointer-events-none
                 text-gray-500 transition-all duration-200
                 ${formData.password
-                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                }
+                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                        }
             `}
-        >
-            Password
-        </label>
-    </div>
+                                >
+                                    Password
+                                </label>
+                            </div>
 
-    {isLogin && (
-        <div className="mt-2 text-right">
-            <Link
-                to="/forgot-password"
-                className="text-xs text-slate-700 hover:text-slate-900 font-medium hover:underline transition-colors"
-            >
-                Forgot Password?
-            </Link>
-        </div>
-    )}
-</div>
+                            {isLogin && (
+                                <div className="mt-2 text-right">
+                                    <Link
+                                        to="/forgot-password"
+                                        className="text-xs text-slate-700 hover:text-slate-900 font-medium hover:underline transition-colors"
+                                    >
+                                        Forgot Password?
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
 
 
                         {!isLogin && (
                             <div className="animate-slide-down relative">
-    <div className="relative">
-        <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                <div className="relative">
+                                    <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
 
-        <input
-            type={showConfirmPassword ? 'text' : 'password'}
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            aria-describedby="confirm-password-error"
-            className={`
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        required
+                                        aria-describedby="confirm-password-error"
+                                        className={`
                 ${passwordsMatch === null
-                    ? 'border-gray-300'
-                    : passwordsMatch
-                        ? 'border-green-500'
-                        : 'border-red-500'
-                }
+                                                ? 'border-gray-300'
+                                                : passwordsMatch
+                                                    ? 'border-green-500'
+                                                    : 'border-red-500'
+                                            }
                 w-full pl-10 pr-10 py-3
                 border rounded-lg
                 focus:ring-2 focus:ring-slate-900 focus:border-transparent
                 outline-none transition-all text-sm bg-white peer
             `}
-        />
+                                    />
 
-        <button
-            type="button"
-            aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
-        >
-            {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
-        </button>
+                                    <button
+                                        type="button"
+                                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                    >
+                                        {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                    </button>
 
-        <label
-            className={`
+                                    <label
+                                        className={`
                 absolute left-10 bg-white px-1 pointer-events-none
                 text-gray-500 transition-all duration-200
                 ${formData.confirmPassword
-                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                }
+                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                            }
             `}
-        >
-            Confirm Password
-        </label>
-    </div>
+                                    >
+                                        Confirm Password
+                                    </label>
+                                </div>
 
-    {passwordsMatch === false && (
-        <p id="confirm-password-error" className="text-red-600 text-xs mt-1">
-            Passwords do not match
-        </p>
-    )}
-</div>
+                                {passwordsMatch === false && (
+                                    <p id="confirm-password-error" className="text-red-600 text-xs mt-1">
+                                        Passwords do not match
+                                    </p>
+                                )}
+                            </div>
 
                         )}
 
                         {/* Error Message Only */}
                         {message && messageType === 'error' && (
-                            <div className="relative overflow-hidden p-3 rounded-lg text-xs font-medium animate-slide-down bg-gradient-to-r from-red-50 to-rose-50 text-red-700 border-2 border-red-200">
+                            <div className="relative overflow-hidden text-xs font-medium animate-slide-down  text-red-700 mt-0 ">
                                 <span className="flex-1">{message}</span>
                             </div>
                         )}
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || (!isLogin && usernameCheck.available === false)}
                             className="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm relative overflow-hidden group"
                         >
                             <span className="relative z-10 flex items-center justify-center gap-2">
@@ -577,41 +626,41 @@ const Auth = () => {
                             <p>
                                 Don't have an account?{' '}
                                 <Link to="/Signup" className="text-slate-900 font-semibold hover:underline transition-all">
-                                    Register here
+                                    Register
                                 </Link>
                             </p>
                         ) : (
                             <p>
                                 Already have an account?{' '}
                                 <Link to="/Login" className="text-slate-900 font-semibold hover:underline transition-all">
-                                    Login here
+                                    Login
                                 </Link>
                             </p>
                         )}
                     </div>
+
+                    {/* Loader Overlay within the form area */}
+                    {loading && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-20 animate-fade-in rounded-lg">
+                            <div className="flex flex-col items-center gap-4 animate-scale-in">
+                                {/* Smaller Spinner */}
+                                <div className="relative">
+                                    <div className="w-16 h-16 border-4 border-slate-100 rounded-full"></div>
+                                    <div className="absolute top-0 left-0 w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+
+                                {/* Loading Text */}
+                                <div className="text-center">
+                                    <h3 className="text-lg font-bold text-gray-900">
+                                        {isLogin ? 'Signing you in...' : 'Creating your account...'}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mt-1">Please wait a moment</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
-
-            {/* Full Screen Loader Overlay */}
-            {loading && (
-                <div className="fixed inset-0 bg-white/60 backdrop-blur-lg flex items-center justify-center z-[9999] animate-fade-in">
-                    <div className="flex flex-col items-center gap-6 animate-scale-in">
-                        {/* Large Spinner */}
-                        <div className="relative">
-                            <div className="w-40 h-40 border-[8px] border-slate-100 rounded-full"></div>
-                            <div className="absolute top-0 left-0 w-40 h-40 border-[8px] border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-
-                        {/* Loading Text */}
-                        <div className="text-center">
-                            <h3 className="text-xl font-bold text-gray-900">
-                                {isLogin ? 'Signing you in...' : 'Creating your account...'}
-                            </h3>
-                            <p className="text-sm text-gray-600 mt-1">Please wait a moment</p>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Custom Animations */}
             <style jsx>{`

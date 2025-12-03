@@ -480,7 +480,11 @@ const DermatologistHome = () => {
                                                         Request ID: {request.id.substring(0, 8)}...
                                                     </p>
                                                     <p className="text-xs text-gray-500 mt-1">
-                                                        {new Date(request.createdAt).toLocaleString()}
+                                                        {(() => {
+                                                            const date = new Date(request.createdAt);
+                                                            date.setHours(date.getHours() + 5); // Add 5 hours for timezone correction
+                                                            return date.toLocaleString();
+                                                        })()}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-2">

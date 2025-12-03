@@ -287,6 +287,7 @@ const formatDateTime = (dateString) => {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
+    date.setHours(date.getHours() + 5);
     let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
@@ -324,7 +325,7 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
             predicted_label: reviewData.prediction.result?.predicted_label || 'N/A',
             confidence_score: reviewData.prediction.result?.confidence_score || 0,
             timestamp: formatDateTime(reviewData.prediction.createdAt),
-            reportId: reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
+            reportId: reviewData.prediction.reportId || reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
         };
 
         const userData = {
@@ -352,7 +353,7 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
             predicted_label: reviewData.prediction.result?.predicted_label || 'N/A',
             confidence_score: reviewData.prediction.result?.confidence_score || 0,
             timestamp: formatDateTime(reviewData.prediction.createdAt),
-            reportId: reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
+            reportId: reviewData.prediction.reportId || reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
         };
 
         const userData = {

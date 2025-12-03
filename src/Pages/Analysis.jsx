@@ -311,7 +311,7 @@ const Analysis = () => {
                     hour: '2-digit',
                     minute: '2-digit'
                 }),
-                reportId: `DSA-${Date.now()}`
+                reportId: data.report_id
             });
             setShowResult(true);
             setUploadProgress(100);
