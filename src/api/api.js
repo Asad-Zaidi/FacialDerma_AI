@@ -134,6 +134,12 @@ export const apiCheckUsername = (username) =>
     api.get("/users/check-username", { params: { username } });
 
 // ===========================================================
-// 10. EXPORT DEFAULT
+// 10. MAP APIs
+// ===========================================================
+export const apiGetNearbyDermatology = (lat, lng, radius = 10000) =>
+    api.get("/map/nearest-dermatology", { params: { lat, lng, radius } });
+
+// ===========================================================
+// 11. EXPORT DEFAULT
 // ===========================================================
 export default api;

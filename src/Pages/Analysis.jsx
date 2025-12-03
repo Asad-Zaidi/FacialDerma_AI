@@ -207,9 +207,9 @@ const Analysis = () => {
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            setErrorMessage('Image size must be under 5MB.');
-            toast.error('Image size must be under 5MB.');
+        if (file.size > 10 * 1024 * 1024) {
+            setErrorMessage('Image size must be under 10MB.');
+            toast.error('Image size must be under 10MB.');
             return;
         }
 
@@ -474,48 +474,45 @@ const Analysis = () => {
                     </p>
                 </div>
 
-                <div className="flex flex-col items-center gap-8 px-4 md:px-12 lg:px-24 py-6 w-full">
-
+                <div className="flex flex-col items-center gap-8 px-4 md:px-12 lg:px-24 py-2 w-full">
                     <section className="w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-xl p-6 md:p-8 lg:p-10 transition-all duration-300 hover:shadow-2xl">
-                        <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
-
-                            <div className="w-full lg:w-5/12 flex flex-col justify-start items-start text-left space-y-4">
+                        <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
+                            <div className="w-full lg:w-6/12 flex flex-col justify-start items-start text-left space-y-4">
                                 <div className="flex items-center gap-2">
-
                                     <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-800">
                                         Upload Your Photo
                                     </h2>
                                 </div>
-                                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
+                                <p className="text-gray-600 font-bold text-xs md:text-sm leading-relaxed">
                                     For accurate skin analysis, please follow the guidelines below to capture a high-quality facial photograph.
                                 </p>
 
-                                <div className="space-y-2.5 pt-2 w-full">
-                                    <div className="flex items-start gap-2.5 bg-green-50 p-2.5 rounded-lg border border-green-100">
+                                <div className="space-y-2.5 pt-2 w-full bg-green-50 p-2.5 rounded-lg border border-green-200">
+                                    <div className="flex items-start gap-2.5">
                                         <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Natural Lighting:</span> Use daylight or bright indoor lighting, avoid harsh shadows
                                         </p>
                                     </div>
-                                    <div className="flex items-start gap-2.5 bg-green-50 p-2.5 rounded-lg border border-green-100">
+                                    <div className="flex items-start gap-2.5">
                                         <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">No Makeup:</span> Remove all cosmetics, moisturizers, and skincare products
                                         </p>
                                     </div>
-                                    <div className="flex items-start gap-2.5 bg-green-50 p-2.5 rounded-lg border border-green-100">
+                                    <div className="flex items-start gap-2.5">
                                         <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Front-Facing:</span> Position your face directly toward the camera at eye level
                                         </p>
                                     </div>
-                                    <div className="flex items-start gap-2.5 bg-green-50 p-2.5 rounded-lg border border-green-100">
+                                    <div className="flex items-start gap-2.5">
                                         <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Clear & Sharp:</span> Ensure the image is in focus and not blurry
                                         </p>
                                     </div>
-                                    <div className="flex items-start gap-2.5 bg-green-50 p-2.5 rounded-lg border border-green-100">
+                                    <div className="flex items-start gap-2.5">
                                         <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Neutral Expression:</span> Keep a relaxed, neutral facial expression
@@ -527,7 +524,7 @@ const Analysis = () => {
                                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex gap-2">
                                         <MdOutlineInfo className="text-blue-600 text-lg flex-shrink-0 mt-0.5" />
                                         <p className="text-xs text-blue-800 leading-relaxed">
-                                            <span className="font-semibold">Supported Formats:</span> JPG, PNG, JPEG • Maximum file size: 5MB
+                                            <span className="font-semibold">Supported Formats:</span> JPG, PNG, JPEG • Maximum file size: 10MB
                                         </p>
                                     </div>
                                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2">
@@ -585,7 +582,7 @@ const Analysis = () => {
                                                     Drag and drop your image here or <br />
                                                     <span className="font-semibold text-gray-700">click to browse</span>
                                                 </p>
-                                                <p className="text-xs text-gray-400 mt-2">JPG, PNG, JPEG (Max 5MB)</p>
+                                                <p className="text-xs text-gray-400 mt-2">JPG, PNG, JPEG (Max 10MB)</p>
                                             </div>
                                         )}
                                     </label>
