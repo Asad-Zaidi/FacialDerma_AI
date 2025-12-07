@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { MdEmail, MdLock, MdPerson, MdCheckCircle } from 'react-icons/md';
 import { HiSparkles } from 'react-icons/hi';
+import { GrLicense } from "react-icons/gr";
 import { useAuth } from '../contexts/AuthContext';
 import { apiLogin, apiSignUp } from "../api/api";
 import { apiCheckUsername } from "../api/api";
@@ -21,7 +22,8 @@ const Auth = () => {
         name: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        license: ''
     });
     const [role, setRole] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -132,6 +134,8 @@ const Auth = () => {
                     navigate('/Profile');
                 } else if (data.user.role === 'dermatologist') {
                     navigate('/Dermatologist');
+                } else if (data.user.role === 'admin') {
+                    navigate('/Admin');
                 }
             }, 1500);
         } catch (error) {
@@ -178,6 +182,7 @@ const Auth = () => {
             username: formData.username,
             email: formData.email,
             password: formData.password,
+            ...(role === 'dermatologist' && formData.license && { license: formData.license }),
         };
 
         try {
@@ -368,12 +373,10 @@ const Auth = () => {
                                         </span>
                                     </label>
 
-                                ))}
+                                ))}   
                             </div>
                         </div>
-                    )}
-
-                    {/* Form */}
+                    )}                    {/* Form */}
                     <form onSubmit={handleSubmit} className={isLogin ? "space-y-6" : "space-y-4"}>
 
                         {!isLogin && (
@@ -488,6 +491,40 @@ const Auth = () => {
                                 {isLogin ? "Email or Username" : "Email"}
                             </label>
                         </div>
+
+                        {/* License Number - Only for Dermatologist Signup */}
+                        {!isLogin && role === 'dermatologist' && (
+                            <div className="relative animate-slide-down">
+                                <GrLicense className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                <input
+                                    type="text"
+                                    name="license"
+                                    value={formData.license}
+                                    onChange={handleChange}
+                                    required={role === 'dermatologist'}
+                                    disabled={role !== 'dermatologist'}
+                                    className={`
+                                        w-full pl-10 pr-3 py-3
+                                        border border-gray-300 rounded-lg
+                                        focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                        outline-none transition-all text-sm bg-white peer
+                                        ${role !== 'dermatologist' ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}
+                                    `}
+                                />
+                                <label
+                                    className={`
+                                        absolute left-10 bg-white px-1 pointer-events-none
+                                        text-gray-500 transition-all duration-200
+                                        ${formData.license
+                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                        }
+                                    `}
+                                >
+                                    License No. *
+                                </label>
+                            </div>
+                        )}
 
                         <div className="relative">
                             <div className="relative">

@@ -140,6 +140,19 @@ export const apiGetNearbyDermatology = (lat, lng, radius = 10000) =>
     api.get("/map/nearest-dermatology", { params: { lat, lng, radius } });
 
 // ===========================================================
-// 11. EXPORT DEFAULT
+// 11. ADMIN APIs
+// ===========================================================
+export const apiGetDashboardStats = () => api.get("/admin/dashboard/stats");
+export const apiGetPendingVerifications = () => api.get("/admin/dermatologists/pending");
+export const apiVerifyDermatologist = (dermatologistId, data) => 
+    api.post(`/admin/dermatologists/${dermatologistId}/verify`, data);
+export const apiGetAllUsers = (params = {}) => api.get("/admin/users", { params });
+export const apiSuspendUser = (userId) => api.post(`/admin/users/${userId}/suspend`);
+export const apiDeleteUser = (userId) => api.delete(`/admin/users/${userId}`);
+export const apiUpdateAdminProfile = (data) => api.put("/admin/profile", data);
+export const apiChangeAdminPassword = (data) => api.post("/admin/change-password", data);
+
+// ===========================================================
+// 12. EXPORT DEFAULT
 // ===========================================================
 export default api;
