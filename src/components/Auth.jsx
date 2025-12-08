@@ -121,12 +121,8 @@ const Auth = () => {
             }
 
             // Only proceed if all validations pass
-            login(data.token, {
-                email: data.user.email,
-                username: data.user.username,
-                role: data.user.role,
-                name: data.user.name
-            });
+            // Pass all user data from backend including suspension status
+            login(data.token, data.user);
 
             setTimeout(() => {
                 setLoading(false);

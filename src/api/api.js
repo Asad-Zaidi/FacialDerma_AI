@@ -148,6 +148,7 @@ export const apiVerifyDermatologist = (dermatologistId, data) =>
     api.post(`/admin/dermatologists/${dermatologistId}/verify`, data);
 export const apiGetAllUsers = (params = {}) => api.get("/admin/users", { params });
 export const apiSuspendUser = (userId) => api.post(`/admin/users/${userId}/suspend`);
+export const apiUnsuspendUser = (userId) => api.post(`/admin/users/${userId}/unsuspend`);
 export const apiDeleteUser = (userId) => api.delete(`/admin/users/${userId}`);
 export const apiUpdateAdminProfile = (data) => api.put("/admin/profile", data);
 export const apiChangeAdminPassword = (data) => api.post("/admin/change-password", data);

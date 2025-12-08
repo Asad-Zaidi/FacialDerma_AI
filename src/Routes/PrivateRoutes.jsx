@@ -16,6 +16,7 @@
 import { Navigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import SuspensionCheck from '../components/SuspensionCheck';
 
 const PrivateRoute = ({ children, roles }) => {
   const { user, accessToken, loading, loggingOut } = useContext(AuthContext);
@@ -29,7 +30,8 @@ const PrivateRoute = ({ children, roles }) => {
 
   if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
 
-  return children;
+  // Wrap children with SuspensionCheck to block suspended users
+  return <SuspensionCheck>{children}</SuspensionCheck>;
 };
 
 export default PrivateRoute;
