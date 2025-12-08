@@ -33,6 +33,8 @@ const Auth = () => {
     const [messageType, setMessageType] = useState('error');
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [usernameCheck, setUsernameCheck] = useState({ checking: false, available: null, message: '' });
+    const [showPendingModal, setShowPendingModal] = useState(false);
+    const [pendingMessage, setPendingMessage] = useState('');
 
     useEffect(() => {
         if (formData.password.length === 0 && formData.confirmPassword.length === 0) {
@@ -136,6 +138,15 @@ const Auth = () => {
             }, 1500);
         } catch (error) {
             const errMsg = error.response?.data?.error || error.response?.data?.detail?.error || error.response?.data?.message || 'Invalid credentials';
+            
+            // Check if it's a pending verification message
+            if (errMsg.includes('verification is pending') || errMsg.includes('pending admin approval')) {
+                setPendingMessage('Your verification is pending. Please wait for approval.');
+                setShowPendingModal(true);
+                setLoading(false);
+                return;
+            }
+            
             setMessage(errMsg);
             setMessageType('error');
             setLoading(false);
@@ -759,6 +770,55 @@ const Auth = () => {
                     transform: scale(1.02);
                 }
             `}</style>
+
+            {/* Pending Verification Modal */}
+            {showPendingModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+                        {/* Decorative top bar */}
+                        <div className="h-2 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500"></div>
+                        
+                        <div className="p-8">
+                            {/* Icon */}
+                            <div className="flex justify-center mb-6">
+                                <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center animate-pulse">
+                                    <svg 
+                                        className="w-10 h-10 text-yellow-600" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round" 
+                                            strokeWidth={2} 
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="text-2xl font-bold text-gray-800 text-center mb-3">
+                                Verification Pending
+                            </h3>
+
+                            {/* Message */}
+                            <p className="text-gray-600 text-center mb-8 leading-relaxed">
+                                {pendingMessage}
+                            </p>
+
+                            {/* Button */}
+                            <button
+                                onClick={() => setShowPendingModal(false)}
+                                className="w-full py-3 px-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-102"
+                            >
+                                Okay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

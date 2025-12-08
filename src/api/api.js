@@ -42,7 +42,10 @@ api.interceptors.response.use(
             requestUrl.includes('/api/auth/verify-otp') ||
             requestUrl.includes('/api/auth/reset-password');
 
-        if ((status === 401 || status === 403) && !isAuthEndpoint) {
+        // Only logout on 401 (unauthorized/invalid token)
+        // Don't logout on 403 - it could be suspension or other access denial
+        // The SuspensionCheck component will handle displaying suspension status
+        if (status === 401 && !isAuthEndpoint) {
 
             // Clear user session
             localStorage.removeItem("accessToken");
