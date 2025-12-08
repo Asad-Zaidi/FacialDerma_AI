@@ -235,9 +235,9 @@ const Admin = () => {
     // Verification Card Component
     const VerificationCard = ({ verification }) => {
         const statusColors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            approved: 'bg-green-100 text-green-800',
-            rejected: 'bg-red-100 text-red-800'
+            pending: 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200',
+            approved: 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200',
+            rejected: 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200'
         };
 
         return (
@@ -248,7 +248,7 @@ const Admin = () => {
                         <p className="m-0 my-1 text-gray-600 text-sm">{verification.email || 'N/A'}</p>
                         <p className="m-0 mt-1 text-gray-500 text-xs italic">@{verification.username || 'N/A'}</p>
                     </div>
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase ${statusColors[verification.status] || statusColors.pending}`}>
+                    <span className={`px-2 py-1 border rounded-full text-xs font-semibold uppercase transition-colors duration-200 ${statusColors[verification.status] || statusColors.pending}`}>
                         {verification.status}
                     </span>
                 </div>
