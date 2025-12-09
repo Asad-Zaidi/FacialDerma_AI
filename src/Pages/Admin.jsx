@@ -1086,7 +1086,7 @@ const Admin = () => {
                                     )}
 
                                     {/* Patient Contact Information */}
-                                    {selectedUser.role === 'patient' && (
+                                    {/* {selectedUser.role === 'patient' && (
                                         <div className="mb-8">
                                             <h3 className="m-0 mb-4 text-purple-600 text-xl pb-2.5 border-b-2 border-gray-100">Contact Information</h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1116,7 +1116,7 @@ const Admin = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                    )} */}
 
                                     {/* Dermatologist-specific Information */}
                                     {selectedUser.role === 'dermatologist' && (
