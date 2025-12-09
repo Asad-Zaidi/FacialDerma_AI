@@ -12,7 +12,8 @@ import {
     apiSuspendUser,
     apiUnsuspendUser,
     apiDeleteUser,
-    apiChangeAdminPassword
+    apiChangeAdminPassword,
+    apiGetActivityLogs
 } from '../api/api';
 import {
     FaUsers,
@@ -74,6 +75,7 @@ const Admin = () => {
     const [verificationToReject, setVerificationToReject] = useState(null);
     const [rejectionReason, setRejectionReason] = useState('');
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [activityLogs, setActivityLogs] = useState([]);
 
     // Update time every minute
     useEffect(() => {
@@ -136,6 +138,19 @@ const Admin = () => {
             setUnverifiedDermatologists(response.data);
         } catch (error) {
             toast.error('Failed to fetch rejected verifications');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Fetch Activity Logs
+    const fetchActivityLogs = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await apiGetActivityLogs();
+            setActivityLogs(response.data);
+        } catch (error) {
+            toast.error('Failed to fetch activity logs');
         } finally {
             setLoading(false);
         }
@@ -258,8 +273,10 @@ const Admin = () => {
             fetchRejectedVerifications();
         } else if (activeTab === 'users') {
             fetchAllUsers();
+        } else if (activeTab === 'activityLog') {
+            fetchActivityLogs();
         }
-    }, [activeTab, filters, fetchDashboardStats, fetchPendingVerifications, fetchRejectedVerifications, fetchAllUsers]);
+    }, [activeTab, filters, fetchDashboardStats, fetchPendingVerifications, fetchRejectedVerifications, fetchAllUsers, fetchActivityLogs]);
 
     // Stat Card Component
     const StatCard = ({ icon: Icon, title, value, color }) => {
@@ -710,6 +727,39 @@ const Admin = () => {
                                             </div>
                                         )}
                                     </>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Activity Log Tab */}
+                        {activeTab === 'activityLog' && (
+                            <div>
+                                <h2 className="mb-6 text-gray-800 text-xl md:text-2xl">Activity Log</h2>
+                                {activityLogs.length === 0 ? (
+                                    <p className="text-center py-16 text-gray-400 text-xl">No activity logs found</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {activityLogs.map(log => (
+                                            <div key={log.id} className="bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex-1">
+                                                        <p className="text-gray-800 font-semibold">{log.action}</p>
+                                                        <p className="text-gray-600 text-sm">
+                                                            By: {log.adminName || 'Unknown'} ({log.adminEmail || 'N/A'})
+                                                        </p>
+                                                        {log.details && Object.keys(log.details).length > 0 && (
+                                                            <div className="mt-2 text-sm text-gray-500">
+                                                                <strong>Details:</strong> {JSON.stringify(log.details, null, 2)}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-right text-sm text-gray-500">
+                                                        {new Date(log.timestamp).toLocaleString('en-GB')}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         )}
