@@ -10,7 +10,6 @@ import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { FaMapLocationDot } from 'react-icons/fa6';
 import { FiUpload, FiDownload, FiShare2, FiMapPin, FiChevronDown } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
-// import { FaCamera } from "react-icons/fa";
 import { MdOutlineInfo, MdHistory } from "react-icons/md";
 import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
@@ -25,95 +24,10 @@ import {
     apiGetReviewRequests
 } from '../api/api';
 import DermatologistPicker from '../components/DermatologistPicker';
+import DiseaseLikelihood from '../components/DiseaseLikelihood';
 
 const Analysis = () => {
-
-    // const handleCameraCapture = async () => {
-    //     try {
-    //         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    //         const video = document.createElement('video');
-    //         video.srcObject = stream;
-    //         video.play();
-
-
-    //         const modal = document.createElement('div');
-    //         modal.style.position = 'fixed';
-    //         modal.style.top = '0';
-    //         modal.style.left = '0';
-    //         modal.style.width = '100vw';
-    //         modal.style.height = '100vh';
-    //         modal.style.background = 'rgba(0,0,0,0.8)';
-    //         modal.style.display = 'flex';
-    //         modal.style.alignItems = 'center';
-    //         modal.style.justifyContent = 'center';
-    //         modal.style.zIndex = '9999';
-
-    //         video.style.maxWidth = '90vw';
-    //         video.style.maxHeight = '70vh';
-    //         modal.appendChild(video);
-
-
-    //         const captureBtn = document.createElement('button');
-    //         captureBtn.textContent = 'Capture';
-    //         captureBtn.style.position = 'absolute';
-    //         captureBtn.style.bottom = '10%';
-    //         captureBtn.style.left = '50%';
-    //         captureBtn.style.transform = 'translateX(-50%)';
-    //         captureBtn.style.padding = '1em 2em';
-    //         captureBtn.style.fontSize = '1.2em';
-    //         captureBtn.style.background = '#2563eb';
-    //         captureBtn.style.color = '#fff';
-    //         captureBtn.style.border = 'none';
-    //         captureBtn.style.borderRadius = '8px';
-    //         captureBtn.style.cursor = 'pointer';
-    //         modal.appendChild(captureBtn);
-
-
-    //         const cancelBtn = document.createElement('button');
-    //         cancelBtn.textContent = 'Cancel';
-    //         cancelBtn.style.position = 'absolute';
-    //         cancelBtn.style.top = '5%';
-    //         cancelBtn.style.right = '5%';
-    //         cancelBtn.style.padding = '0.5em 1em';
-    //         cancelBtn.style.fontSize = '1em';
-    //         cancelBtn.style.background = '#ef4444';
-    //         cancelBtn.style.color = '#fff';
-    //         cancelBtn.style.border = 'none';
-    //         cancelBtn.style.borderRadius = '8px';
-    //         cancelBtn.style.cursor = 'pointer';
-    //         modal.appendChild(cancelBtn);
-
-    //         document.body.appendChild(modal);
-
-    //         captureBtn.onclick = () => {
-    //             const canvas = document.createElement('canvas');
-    //             canvas.width = video.videoWidth;
-    //             canvas.height = video.videoHeight;
-    //             const ctx = canvas.getContext('2d');
-    //             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    //             canvas.toBlob(blob => {
-    //                 if (blob) {
-    //                     const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
-    //                     setImage(file);
-    //                     setErrorMessage(null);
-    //                     setPrediction(null);
-    //                     setShowResult(false);
-    //                     setShowMap(false);
-    //                     toast.success('Image captured from camera!');
-    //                 }
-    //             }, 'image/jpeg', 0.95);
-    //             stream.getTracks().forEach(track => track.stop());
-    //             document.body.removeChild(modal);
-    //         };
-
-    //         cancelBtn.onclick = () => {
-    //             stream.getTracks().forEach(track => track.stop());
-    //             document.body.removeChild(modal);
-    //         };
-    //     } catch (err) {
-    //         toast.error('Unable to access camera.');
-    //     }
-    // };
+    const { accessToken, user } = useContext(AuthContext);
     const [image, setImage] = useState(null);
     const [prediction, setPrediction] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -123,10 +37,8 @@ const Analysis = () => {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [analysisStep, setAnalysisStep] = useState('');
     const [showMap, setShowMap] = useState(false);
-    const { accessToken, user } = useContext(AuthContext);
     const resultRef = useRef(null);
     const fileInputRef = useRef(null);
-
     const [showDermPicker, setShowDermPicker] = useState(false);
     const [derms, setDerms] = useState([]);
     const [dermSearch, setDermSearch] = useState("");
@@ -289,17 +201,10 @@ const Analysis = () => {
         console.log('Sending prediction request...');
 
         try {
-
-
             const response = await apiUpload(formData);
             const data = response.data;
-
             console.log('Response data:', data);
-
             clearInterval(stepInterval);
-
-
-
 
             setPrediction({
                 predicted_label: data.predicted_label,
@@ -741,88 +646,55 @@ const Analysis = () => {
                                                     )}
                                                 </div>
 
-                                                {/* Disease Likelihood Bar Chart */}
+                                                {/* Disease Likelihood Analysis */}
                                                 {prediction?.all_probabilities && (
-                                                    <div className="w-full mt-6 pt-6 border-t border-gray-200">
-                                                        <h4 className="text-sm font-semibold text-gray-700 mb-4">Disease Likelihood Analysis</h4>
-                                                        <div className="space-y-3">
-                                                            {Object.entries(prediction.all_probabilities)
-                                                                .sort(([, a], [, b]) => b - a)
-                                                                .map(([disease, probability], idx) => {
-                                                                    const percentageValue = probability * 100;
-                                                                    const isPredicted = disease === prediction.predicted_label;
-                                                                    const isHighProb = probability > 0.1;
-                                                                    const isVerySmall = percentageValue < 1;
-                                                                    
-                                                                    return (
-                                                                        <div key={idx} className="flex items-center gap-2 md:gap-3">
-                                                                            {/* Disease Name */}
-                                                                            <div className="w-32 md:w-40 flex-shrink-0">
-                                                                                <p className={`text-xs md:text-sm font-medium truncate ${
-                                                                                    isPredicted 
-                                                                                        ? 'text-gray-900 font-bold' 
-                                                                                        : 'text-gray-600'
-                                                                                }`}>
-                                                                                    {disease}
-                                                                                </p>
-                                                                            </div>
-                                                                            
-                                                                            {/* Bar Container */}
-                                                                            <div className="flex-grow flex items-center gap-2">
-                                                                                <div className="flex-grow bg-gray-100 rounded-full h-6 md:h-7 overflow-hidden shadow-sm border border-gray-200 relative">
-                                                                                    <div
-                                                                                        className={`h-full rounded-full transition-all duration-500 flex items-center justify-center px-2 font-bold text-white text-xs ${
-                                                                                            isPredicted
-                                                                                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 shadow-md'
-                                                                                                : isHighProb
-                                                                                                ? 'bg-gradient-to-r from-amber-400 to-amber-500'
-                                                                                                : 'bg-gradient-to-r from-gray-300 to-gray-400'
-                                                                                        }`}
-                                                                                        style={{ 
-                                                                                            width: `${Math.max(percentageValue, 3)}%`,
-                                                                                            minWidth: isVerySmall ? '30px' : 'auto'
-                                                                                        }}
-                                                                                    >
-                                                                                        {/* Show percentage inside bar only for sufficiently large bars */}
-                                                                                        {percentageValue >= 20 && (
-                                                                                            <span className="text-center whitespace-nowrap">
-                                                                                                {percentageValue.toFixed(1)}%
-                                                                                            </span>
-                                                                                        )}
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                {/* Percentage Text Outside */}
-                                                                                <span className="w-14 md:w-16 text-right text-xs md:text-sm font-bold text-gray-800 flex-shrink-0">
-                                                                                    {percentageValue.toFixed(1)}%
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                        </div>
-                                                    </div>
+                                                    <DiseaseLikelihood
+                                                        prediction={prediction}
+                                                        className="w-full mt-6 pt-6 border-t border-gray-200"
+                                                    />
                                                 )}
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mt-4">
+                                                    <p className='text-md text-gray-600'>Want Review from an Expert?</p>
+                                                    <button
+                                                        disabled={!latestPredictionId}
+                                                        onClick={async () => {
+                                                            setShowDermPicker(true);
 
-                                                <button
-                                                    disabled={!latestPredictionId}
-                                                    onClick={async () => {
-                                                        setShowDermPicker(true);
-
-                                                        setDermLoading(true);
-                                                        try {
-                                                            const res = await apiListDermatologists("", 10);
-                                                            setDerms(res.data || []);
-                                                        } catch (e) {
-                                                            toast.error("Failed to load dermatologists");
-                                                        } finally {
-                                                            setDermLoading(false);
-                                                        }
-                                                    }}
-                                                    className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                                                >
-                                                    Review from Expert
-                                                </button>
+                                                            setDermLoading(true);
+                                                            try {
+                                                                const res = await apiListDermatologists("", 10);
+                                                                setDerms(res.data || []);
+                                                            } catch (e) {
+                                                                toast.error("Failed to load dermatologists");
+                                                            } finally {
+                                                                setDermLoading(false);
+                                                            }
+                                                        }}
+                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 w-full sm:w-auto"
+                                                    >
+                                                        Get Review
+                                                    </button>
+                                                </div>
+                                                
+                                                {/* Action Buttons */}
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleDownloadReport}
+                                                        className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                                        title="Download PDF Report"
+                                                    >
+                                                        <FiDownload className="text-sm" />
+                                                        <span className="hidden sm:inline">Download PDF</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={handleShareResults}
+                                                        className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                                        title="Share Results"
+                                                    >
+                                                        <FiShare2 className="text-sm" />
+                                                        <span className="hidden sm:inline">Share</span>
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2 w-full">
