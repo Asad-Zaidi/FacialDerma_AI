@@ -139,24 +139,60 @@ const Auth = () => {
             }, 1500);
         } catch (error) {
             const status = error.response?.status;
-            let errMsg = error.response?.data?.error || error.response?.data?.detail?.error || error.response?.data?.message || 'Invalid credentials';
+            const errorData = error.response?.data;
+            let errMsg = errorData?.error || errorData?.detail?.error || errorData?.message || 'Invalid credentials';
             
-            // Special handling for unverified email (403 Forbidden)
-            if (status === 403 && errMsg.toLowerCase().includes('email')) {
-                errMsg = 'Email not verified. Please check your inbox and verify your email address before logging in.';
+            console.log('Login error:', { status, errMsg, errorData });
+            
+            // Handle 403 Forbidden errors (access denied)
+            if (status === 403) {
+                const errMsgLower = errMsg.toLowerCase();
+                
+                // Email not verified
+                if (errMsgLower.includes('email') && errMsgLower.includes('verif')) {
+                    errMsg = 'Email not verified. Please check your inbox and verify your email address before logging in.';
+                    setMessage(errMsg);
+                    setMessageType('error');
+                }
+                // Pending admin approval
+                else if (errMsgLower.includes('pending') && errMsgLower.includes('approval')) {
+                    setPendingMessage('Your account is pending admin approval. You will receive an email once your credentials are verified by our team. This usually takes 24-48 hours.');
+                    setShowPendingModal(true);
+                    setLoading(false);
+                    return;
+                }
+                // Account rejected
+                else if (errMsgLower.includes('rejected')) {
+                    setMessage(errMsg);
+                    setMessageType('error');
+                }
+                // Needs admin verification
+                else if (errMsgLower.includes('admin verification') || errMsgLower.includes('needs verification')) {
+                    setMessage('Your account needs admin verification. Please complete your profile or contact support.');
+                    setMessageType('error');
+                }
+                // Account suspended
+                else if (errMsgLower.includes('suspended')) {
+                    setMessage(errMsg);
+                    setMessageType('error');
+                }
+                // Generic 403
+                else {
+                    setMessage(errMsg || 'Access denied. Please contact support.');
+                    setMessageType('error');
+                }
+            }
+            // Handle 401 Unauthorized (invalid credentials)
+            else if (status === 401) {
+                setMessage(errMsg || 'Invalid email/username or password.');
+                setMessageType('error');
+            }
+            // Other errors
+            else {
+                setMessage(errMsg || 'Login failed. Please try again.');
+                setMessageType('error');
             }
             
-            
-            // Check if it's a pending verification message
-            if (errMsg.includes('verification is pending') || errMsg.includes('pending admin approval')) {
-                setPendingMessage('Your verification is pending. Please wait for approval.');
-                setShowPendingModal(true);
-                setLoading(false);
-                return;
-            }
-            
-            setMessage(errMsg);
-            setMessageType('error');
             setLoading(false);
             return;
         }
