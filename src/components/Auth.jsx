@@ -33,7 +33,6 @@ const Auth = () => {
     const [messageType, setMessageType] = useState('error');
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [usernameCheck, setUsernameCheck] = useState({ checking: false, available: null, message: '' });
-    const [signupSuccess, setSignupSuccess] = useState(false);
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [pendingMessage, setPendingMessage] = useState('');
 
@@ -142,6 +141,11 @@ const Auth = () => {
             const errorData = error.response?.data;
             let errMsg = errorData?.error || errorData?.detail?.error || errorData?.message || 'Invalid credentials';
             
+            // Ensure errMsg is a string
+            if (typeof errMsg === 'object') {
+                errMsg = errMsg.message || errMsg.error || JSON.stringify(errMsg) || 'An error occurred';
+            }
+            
             console.log('Login error:', { status, errMsg, errorData });
             
             // Handle 403 Forbidden errors (access denied)
@@ -244,7 +248,6 @@ const Auth = () => {
             // Show email verification message
             setMessage('Registration successful! Please check your email to verify your account.');
             setMessageType('success');
-            setSignupSuccess(true);
             setLoading(false);
 
             // Redirect to login after user reads the message (6 seconds to give them time)
@@ -253,7 +256,13 @@ const Auth = () => {
             }, 6000);
 
         } catch (error) {
-            const errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'Signup failed';
+            let errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'Signup failed';
+            
+            // Ensure errMsg is a string
+            if (typeof errMsg === 'object') {
+                errMsg = errMsg.message || errMsg.error || JSON.stringify(errMsg) || 'An error occurred';
+            }
+            
             setMessage(errMsg);
             setMessageType('error');
             setLoading(false);

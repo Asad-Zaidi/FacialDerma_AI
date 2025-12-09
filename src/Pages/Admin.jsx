@@ -34,6 +34,7 @@ import {
 import { PiWarningCircleLight } from 'react-icons/pi';
 import { MdClose } from 'react-icons/md';
 import { BsShieldExclamation } from 'react-icons/bs';
+import { RxActivityLog } from "react-icons/rx";
 import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
 
@@ -72,6 +73,34 @@ const Admin = () => {
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [verificationToReject, setVerificationToReject] = useState(null);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Update time every minute
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000); // Update every minute
+
+        return () => clearInterval(timer);
+    }, []);
+
+    // Get greeting based on time
+    const getGreeting = () => {
+        const hour = currentTime.getHours();
+        if (hour < 12) return 'Good Morning';
+        if (hour < 17) return 'Good Afternoon';
+        return 'Good Evening';
+    };
+
+    // Format date and day
+    const formatDate = () => {
+        return currentTime.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
 
     // Fetch Dashboard Stats
     const fetchDashboardStats = useCallback(async () => {
@@ -467,6 +496,14 @@ const Admin = () => {
                             <FaUsers className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
                             {!sidebarCollapsed && <span>Users</span>}
                         </button>
+                        <button
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'activityLog' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            onClick={() => setActiveTab('activityLog')}
+                            title="Activity Log"
+                        >
+                            <RxActivityLog className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            {!sidebarCollapsed && <span>Activity Log</span>}
+                        </button>
                     </nav>
 
                     <div className="py-5 border-t border-white border-opacity-20">
@@ -492,12 +529,17 @@ const Admin = () => {
                 {/* Main Content Area */}
                 <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-[70px] w-[calc(100%-70px)]' : 'ml-64 w-[calc(100%-256px)]'}`}>
                     {/* Header */}
-                    <div className="p-6 md:p-8 bg-white border-b border-gray-200 mb-8">
-                        <h1 className="m-0 text-2xl md:text-3xl text-gray-800">Admin Dashboard</h1>
+                    <div className="p-5 md:p-5 bg-white border-b border-gray-200 mb-8 flex justify-between items-center">
+                        <h1 className="m-0 text-xl md:text-2xl text-gray-800">
+                            {getGreeting()}, Admin!
+                        </h1>
+                        <div className="text-right">
+                            <p className="text-sm text-gray-600">{formatDate()}</p>
+                        </div>
                     </div>
 
                     {/* Content */}
-                    <div className="relative mx-6 md:mx-8 mb-8 bg-white rounded-xl p-6 md:p-8 shadow-lg min-h-[400px]">
+                    <div className="relative mx-6 md:mx-8 mb-8 bg-green-50  rounded-xl p-6 md:p-8 shadow-lg min-h-[400px]">
                         {loading && (
                             <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center rounded-xl z-50">
                                 <FaSpinner className="text-5xl text-purple-600 animate-spin" />
