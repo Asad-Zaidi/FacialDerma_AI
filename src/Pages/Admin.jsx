@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import {
     apiGetDashboardStats,
     apiGetPendingVerifications,
+    apiGetRejectedVerifications,
     apiVerifyDermatologist,
     apiGetAllUsers,
     apiSuspendUser,
@@ -51,6 +52,7 @@ const Admin = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stats, setStats] = useState(null);
     const [pendingVerifications, setPendingVerifications] = useState([]);
+    const [unverifiedDermatologists, setUnverifiedDermatologists] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({ role: '', skip: 0, limit: 50 });
@@ -97,6 +99,19 @@ const Admin = () => {
         }
     }, []);
 
+    // Fetch Rejected Verifications
+    const fetchRejectedVerifications = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await apiGetRejectedVerifications();
+            setUnverifiedDermatologists(response.data);
+        } catch (error) {
+            toast.error('Failed to fetch rejected verifications');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     // Fetch All Users
     const fetchAllUsers = useCallback(async () => {
         try {
@@ -117,6 +132,7 @@ const Admin = () => {
             await apiVerifyDermatologist(dermatologistId, { status, reviewComments });
             toast.success(`Dermatologist ${status} successfully`);
             fetchPendingVerifications();
+            fetchRejectedVerifications();
             fetchDashboardStats();
         } catch (error) {
             console.error('Verify dermatologist error:', error);
@@ -169,6 +185,8 @@ const Admin = () => {
             setShowDeleteModal(false);
             setUserToDelete(null);
             fetchAllUsers();
+            fetchPendingVerifications();
+            fetchRejectedVerifications();
         } catch (error) {
             console.error('Delete user error:', error);
             const errorMsg = error.response?.data?.detail || error.message || 'Failed to delete user';
@@ -185,7 +203,7 @@ const Admin = () => {
         // Add any logout logic here if needed (e.g., clearing tokens)
         navigate('/login');
     };
-
+    
     // Change Password
     const handleChangePassword = async (e) => {
         e.preventDefault();
@@ -208,10 +226,11 @@ const Admin = () => {
             fetchDashboardStats();
         } else if (activeTab === 'verifications') {
             fetchPendingVerifications();
+            fetchRejectedVerifications();
         } else if (activeTab === 'users') {
             fetchAllUsers();
         }
-    }, [activeTab, filters, fetchDashboardStats, fetchPendingVerifications, fetchAllUsers]);
+    }, [activeTab, filters, fetchDashboardStats, fetchPendingVerifications, fetchRejectedVerifications, fetchAllUsers]);
 
     // Stat Card Component
     const StatCard = ({ icon: Icon, title, value, color }) => {
@@ -242,7 +261,8 @@ const Admin = () => {
         const statusColors = {
             pending: 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200',
             approved: 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200',
-            rejected: 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200'
+            rejected: 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200',
+            unverified: 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
         };
 
         return (
@@ -254,7 +274,7 @@ const Admin = () => {
                         <p className="m-0 mt-1 text-gray-500 text-xs italic">@{verification.username || 'N/A'}</p>
                     </div>
                     <span className={`px-2 py-1 border rounded-full text-xs font-semibold uppercase transition-colors duration-200 ${statusColors[verification.status] || statusColors.pending}`}>
-                        {verification.status}
+                        {verification.status === 'rejected' ? 'unverified' : verification.status}
                     </span>
                 </div>
                 <div className="mb-4">
@@ -271,19 +291,33 @@ const Admin = () => {
                         onClick={() => handleVerifyDermatologist(verification.dermatologistId, 'approved')}
                         disabled={loading}
                     >
-                        <FaCheckCircle /> Approve
+                        <FaCheckCircle /> {verification.status === 'rejected' ? 'Re-Approve' : 'Approve'}
                     </button>
-                    <button
-                        className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold bg-gradient-to-br from-red-500 to-red-700 text-white hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none text-sm"
-                        onClick={() => {
-                            setVerificationToReject(verification);
-                            setRejectionReason('');
-                            setShowRejectModal(true);
-                        }}
-                        disabled={loading}
-                    >
-                        <FaTimesCircle /> Reject
-                    </button>
+                    {verification.status === 'pending' && (
+                        <button
+                            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold bg-gradient-to-br from-red-500 to-red-700 text-white hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none text-sm"
+                            onClick={() => {
+                                setVerificationToReject(verification);
+                                setRejectionReason('');
+                                setShowRejectModal(true);
+                            }}
+                            disabled={loading}
+                        >
+                            <FaTimesCircle /> Reject
+                        </button>
+                    )}
+                    {verification.status === 'rejected' && (
+                        <button
+                            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold bg-gradient-to-br from-red-500 to-red-700 text-white hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none text-sm"
+                            onClick={() => {
+                                setUserToDelete({ id: verification.dermatologistId, name: verification.name, email: verification.email });
+                                setShowDeleteModal(true);
+                            }}
+                            disabled={loading}
+                        >
+                            <FaTrash /> Delete
+                        </button>
+                    )}
                 </div>
             </div>
         );
@@ -515,18 +549,37 @@ const Admin = () => {
                         {/* Verifications Tab */}
                         {activeTab === 'verifications' && (
                             <div>
-                                <h2 className="mb-6 text-gray-800 text-xl md:text-2xl">Pending Dermatologist Verifications</h2>
-                                {pendingVerifications.length === 0 ? (
-                                    <p className="text-center py-16 text-gray-400 text-xl">No pending verifications</p>
-                                ) : (
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-                                        {pendingVerifications.map(verification => (
-                                            <VerificationCard
-                                                key={verification.id}
-                                                verification={verification}
-                                            />
-                                        ))}
+                                <h2 className="mb-6 text-gray-800 text-xl md:text-2xl">Dermatologist Verifications</h2>
+                                {/* Pending Verifications */}
+                                {pendingVerifications.length > 0 && (
+                                    <div className="mb-8">
+                                        <h3 className="mb-4 text-gray-700 text-lg font-semibold">Pending Verifications</h3>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                                            {pendingVerifications.map(verification => (
+                                                <VerificationCard
+                                                    key={verification.id}
+                                                    verification={verification}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
+                                )}
+                                {/* Rejected Dermatologists */}
+                                {unverifiedDermatologists.length > 0 && (
+                                    <div>
+                                        <h3 className="mb-4 text-gray-700 text-lg font-semibold">Rejected Dermatologists</h3>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                                            {unverifiedDermatologists.map(verification => (
+                                                <VerificationCard
+                                                    key={verification.id}
+                                                    verification={verification}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {pendingVerifications.length === 0 && unverifiedDermatologists.length === 0 && (
+                                    <p className="text-center py-16 text-gray-400 text-xl">No verifications</p>
                                 )}
                             </div>
                         )}

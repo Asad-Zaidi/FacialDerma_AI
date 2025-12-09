@@ -147,6 +147,7 @@ export const apiGetNearbyDermatology = (lat, lng, radius = 10000) =>
 // ===========================================================
 export const apiGetDashboardStats = () => api.get("/admin/dashboard/stats");
 export const apiGetPendingVerifications = () => api.get("/admin/dermatologists/pending");
+export const apiGetRejectedVerifications = () => api.get("/admin/dermatologists/rejected");
 export const apiVerifyDermatologist = (dermatologistId, data) => 
     api.post(`/admin/dermatologists/${dermatologistId}/verify`, data);
 export const apiGetAllUsers = (params = {}) => api.get("/admin/users", { params });
