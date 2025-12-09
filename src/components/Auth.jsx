@@ -31,6 +31,7 @@ const Auth = () => {
     const [messageType, setMessageType] = useState('error');
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [usernameCheck, setUsernameCheck] = useState({ checking: false, available: null, message: '' });
+    const [signupSuccess, setSignupSuccess] = useState(false);
 
     useEffect(() => {
         if (formData.password.length === 0 && formData.confirmPassword.length === 0) {
@@ -135,7 +136,14 @@ const Auth = () => {
                 }
             }, 1500);
         } catch (error) {
-            const errMsg = error.response?.data?.error || error.response?.data?.detail?.error || error.response?.data?.message || 'Invalid credentials';
+            const status = error.response?.status;
+            let errMsg = error.response?.data?.error || error.response?.data?.detail?.error || error.response?.data?.message || 'Invalid credentials';
+            
+            // Special handling for unverified email (403 Forbidden)
+            if (status === 403 && errMsg.toLowerCase().includes('email')) {
+                errMsg = 'Email not verified. Please check your inbox and verify your email address before logging in.';
+            }
+            
             setMessage(errMsg);
             setMessageType('error');
             setLoading(false);
@@ -185,10 +193,16 @@ const Auth = () => {
 
             console.log('Signup successful:', response);
 
+            // Show email verification message
+            setMessage('Registration successful! Please check your email to verify your account.');
+            setMessageType('success');
+            setSignupSuccess(true);
+            setLoading(false);
+
+            // Redirect to login after user reads the message (6 seconds to give them time)
             setTimeout(() => {
-                setLoading(false); // Stop loader before redirect
                 navigate('/Login');
-            }, 1500);
+            }, 6000);
 
         } catch (error) {
             const errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'Signup failed';
@@ -601,9 +615,22 @@ const Auth = () => {
 
                         )}
 
-                        {/* Error Message Only */}
+                        {/* Success Message */}
+                        {message && messageType === 'success' && (
+                            <div className="relative overflow-hidden text-xs font-medium animate-slide-down bg-green-50 border border-green-200 text-green-700 p-3 rounded-lg mt-0 mb-4">
+                                <div className="flex items-start gap-2">
+                                    <span className="text-lg flex-shrink-0">✓</span>
+                                    <div className="flex-1">
+                                        <span className="font-semibold block">{message}</span>
+                                        <span className="text-xs text-green-600 block mt-1">Redirecting to login in a few seconds...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Error Message */}
                         {message && messageType === 'error' && (
-                            <div className="relative overflow-hidden text-xs font-medium animate-slide-down  text-red-700 mt-0 ">
+                            <div className="relative overflow-hidden text-xs font-medium animate-slide-down text-red-700 mt-0 mb-4">
                                 <span className="flex-1">{message}</span>
                             </div>
                         )}

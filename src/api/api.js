@@ -38,6 +38,7 @@ api.interceptors.response.use(
         const isAuthEndpoint =
             requestUrl.includes('/api/auth/login') ||
             requestUrl.includes('/api/auth/signup') ||
+            requestUrl.includes('/api/auth/verify-email') ||
             requestUrl.includes('/api/auth/forgot-password') ||
             requestUrl.includes('/api/auth/verify-otp') ||
             requestUrl.includes('/api/auth/reset-password');
@@ -138,6 +139,9 @@ export const apiCheckUsername = (username) =>
 // ===========================================================
 export const apiGetNearbyDermatology = (lat, lng, radius = 10000) =>
     api.get("/map/nearest-dermatology", { params: { lat, lng, radius } });
+
+export const apiVerifyEmail = (token) =>
+    api.get("/auth/verify-email", { params: { token } });
 
 // ===========================================================
 // 11. EXPORT DEFAULT
