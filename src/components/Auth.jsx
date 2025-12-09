@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { MdEmail, MdLock, MdPerson, MdCheckCircle } from 'react-icons/md';
 import { HiSparkles } from 'react-icons/hi';
+import { GrLicense } from "react-icons/gr";
 import { useAuth } from '../contexts/AuthContext';
 import { apiLogin, apiSignUp } from "../api/api";
 import { apiCheckUsername } from "../api/api";
@@ -21,7 +22,8 @@ const Auth = () => {
         name: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        license: ''
     });
     const [role, setRole] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +34,8 @@ const Auth = () => {
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [usernameCheck, setUsernameCheck] = useState({ checking: false, available: null, message: '' });
     const [signupSuccess, setSignupSuccess] = useState(false);
+    const [showPendingModal, setShowPendingModal] = useState(false);
+    const [pendingMessage, setPendingMessage] = useState('');
 
     useEffect(() => {
         if (formData.password.length === 0 && formData.confirmPassword.length === 0) {
@@ -120,12 +124,8 @@ const Auth = () => {
             }
 
             // Only proceed if all validations pass
-            login(data.token, {
-                email: data.user.email,
-                username: data.user.username,
-                role: data.user.role,
-                name: data.user.name
-            });
+            // Pass all user data from backend including suspension status
+            login(data.token, data.user);
 
             setTimeout(() => {
                 setLoading(false);
@@ -133,6 +133,8 @@ const Auth = () => {
                     navigate('/Profile');
                 } else if (data.user.role === 'dermatologist') {
                     navigate('/Dermatologist');
+                } else if (data.user.role === 'admin') {
+                    navigate('/Admin');
                 }
             }, 1500);
         } catch (error) {
@@ -142,6 +144,15 @@ const Auth = () => {
             // Special handling for unverified email (403 Forbidden)
             if (status === 403 && errMsg.toLowerCase().includes('email')) {
                 errMsg = 'Email not verified. Please check your inbox and verify your email address before logging in.';
+            }
+            
+            
+            // Check if it's a pending verification message
+            if (errMsg.includes('verification is pending') || errMsg.includes('pending admin approval')) {
+                setPendingMessage('Your verification is pending. Please wait for approval.');
+                setShowPendingModal(true);
+                setLoading(false);
+                return;
             }
             
             setMessage(errMsg);
@@ -186,6 +197,7 @@ const Auth = () => {
             username: formData.username,
             email: formData.email,
             password: formData.password,
+            ...(role === 'dermatologist' && formData.license && { license: formData.license }),
         };
 
         try {
@@ -382,12 +394,10 @@ const Auth = () => {
                                         </span>
                                     </label>
 
-                                ))}
+                                ))}   
                             </div>
                         </div>
-                    )}
-
-                    {/* Form */}
+                    )}                    {/* Form */}
                     <form onSubmit={handleSubmit} className={isLogin ? "space-y-6" : "space-y-4"}>
 
                         {!isLogin && (
@@ -502,6 +512,40 @@ const Auth = () => {
                                 {isLogin ? "Email or Username" : "Email"}
                             </label>
                         </div>
+
+                        {/* License Number - Only for Dermatologist Signup */}
+                        {!isLogin && role === 'dermatologist' && (
+                            <div className="relative animate-slide-down">
+                                <GrLicense className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                <input
+                                    type="text"
+                                    name="license"
+                                    value={formData.license}
+                                    onChange={handleChange}
+                                    required={role === 'dermatologist'}
+                                    disabled={role !== 'dermatologist'}
+                                    className={`
+                                        w-full pl-10 pr-3 py-3
+                                        border border-gray-300 rounded-lg
+                                        focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                        outline-none transition-all text-sm bg-white peer
+                                        ${role !== 'dermatologist' ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}
+                                    `}
+                                />
+                                <label
+                                    className={`
+                                        absolute left-10 bg-white px-1 pointer-events-none
+                                        text-gray-500 transition-all duration-200
+                                        ${formData.license
+                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                        }
+                                    `}
+                                >
+                                    License No. *
+                                </label>
+                            </div>
+                        )}
 
                         <div className="relative">
                             <div className="relative">
@@ -753,6 +797,55 @@ const Auth = () => {
                     transform: scale(1.02);
                 }
             `}</style>
+
+            {/* Pending Verification Modal */}
+            {showPendingModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+                        {/* Decorative top bar */}
+                        <div className="h-2 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500"></div>
+                        
+                        <div className="p-8">
+                            {/* Icon */}
+                            <div className="flex justify-center mb-6">
+                                <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center animate-pulse">
+                                    <svg 
+                                        className="w-10 h-10 text-yellow-600" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round" 
+                                            strokeWidth={2} 
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="text-2xl font-bold text-gray-800 text-center mb-3">
+                                Verification Pending
+                            </h3>
+
+                            {/* Message */}
+                            <p className="text-gray-600 text-center mb-8 leading-relaxed">
+                                {pendingMessage}
+                            </p>
+
+                            {/* Button */}
+                            <button
+                                onClick={() => setShowPendingModal(false)}
+                                className="w-full py-3 px-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-102"
+                            >
+                                Okay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -9,6 +9,7 @@ import Auth from "./components/Auth";
 import ForgotPassword from "./components/ForgotPassword";
 import EmailVerification from "./components/EmailVerification";
 import Dermatologist from "./Pages/DermatologistHome";
+import Admin from "./Pages/Admin";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./Routes/PrivateRoutes";
 import { ToastContainer } from 'react-toastify';
@@ -74,6 +75,13 @@ const AppRouter = () => {
                     <Route path="/Analysis" element={
                         <PrivateRoute roles={['patient']}>
                             <Analysis />
+                        </PrivateRoute>
+                    } />
+
+                    {/* Admin Dashboard */}
+                    <Route path="/Admin" element={
+                        <PrivateRoute roles={['admin']}>
+                            <Admin />
                         </PrivateRoute>
                     } />
 

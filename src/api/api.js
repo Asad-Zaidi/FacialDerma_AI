@@ -43,7 +43,10 @@ api.interceptors.response.use(
             requestUrl.includes('/api/auth/verify-otp') ||
             requestUrl.includes('/api/auth/reset-password');
 
-        if ((status === 401 || status === 403) && !isAuthEndpoint) {
+        // Only logout on 401 (unauthorized/invalid token)
+        // Don't logout on 403 - it could be suspension or other access denial
+        // The SuspensionCheck component will handle displaying suspension status
+        if (status === 401 && !isAuthEndpoint) {
 
             // Clear user session
             localStorage.removeItem("accessToken");
@@ -144,6 +147,21 @@ export const apiVerifyEmail = (token) =>
     api.get("/auth/verify-email", { params: { token } });
 
 // ===========================================================
-// 11. EXPORT DEFAULT
+// 11. ADMIN APIs
+// ===========================================================
+export const apiGetDashboardStats = () => api.get("/admin/dashboard/stats");
+export const apiGetPendingVerifications = () => api.get("/admin/dermatologists/pending");
+export const apiGetRejectedVerifications = () => api.get("/admin/dermatologists/rejected");
+export const apiVerifyDermatologist = (dermatologistId, data) => 
+    api.post(`/admin/dermatologists/${dermatologistId}/verify`, data);
+export const apiGetAllUsers = (params = {}) => api.get("/admin/users", { params });
+export const apiSuspendUser = (userId) => api.post(`/admin/users/${userId}/suspend`);
+export const apiUnsuspendUser = (userId) => api.post(`/admin/users/${userId}/unsuspend`);
+export const apiDeleteUser = (userId) => api.delete(`/admin/users/${userId}`);
+export const apiUpdateAdminProfile = (data) => api.put("/admin/profile", data);
+export const apiChangeAdminPassword = (data) => api.post("/admin/change-password", data);
+
+// ===========================================================
+// 12. EXPORT DEFAULT
 // ===========================================================
 export default api;

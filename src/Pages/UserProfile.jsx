@@ -16,7 +16,6 @@ import {
     FaPhone,
     FaExclamationTriangle,
     FaSortUp,
-    FaSortDown,
     FaKey,
     FaSignOutAlt,
 } from "react-icons/fa";
@@ -34,6 +33,7 @@ import PatientReviewModal from '../components/PatientReviewModal';
 import ImageCropModal from '../components/ImageCropModal';
 import ConfirmSignout from '../components/ConfirmSignout';
 import ChangePassword from '../components/ChangePassword';
+import DropDown from "../components/ui/DropDown";
 import { useAuth } from '../contexts/AuthContext';
 
 const CardSection = ({ title, icon, children, editHandler, gradient = false }) => (
@@ -625,16 +625,23 @@ const UserProfile = () => {
                                     </div>
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">Gender</label>
-                                        <select
+                                        <DropDown
                                             name="gender"
+                                            label="Gender"
                                             value={editData.gender}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                                        >
-                                            <option value="">Select Gender</option>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                        </select>
+                                            options={[
+                                                { value: "", label: "Select Gender" },
+                                                { value: "Male", label: "Male" },
+                                                { value: "Female", label: "Female" }
+                                            ]}
+                                            borderClass="border-blue-600"
+                                            selectedClass="bg-blue-600 text-gray-950"
+                                            highlightClass="bg-blue-200 text-gray-900"
+                                            ringClass="ring-2 ring-blue-500"
+                                            placeholderClass="text-gray-400"
+                                        />
+
                                     </div>
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">Age</label>
@@ -673,22 +680,28 @@ const UserProfile = () => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
-                                        <select
+                                        <DropDown
                                             name="bloodGroup"
+                                            label="Blood Group"
                                             value={editData.bloodGroup}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            <option value="">Select Blood Group</option>
-                                            <option value="A+">A+</option>
-                                            <option value="A-">A-</option>
-                                            <option value="B+">B+</option>
-                                            <option value="B-">B-</option>
-                                            <option value="AB+">AB+</option>
-                                            <option value="AB-">AB-</option>
-                                            <option value="O+">O+</option>
-                                            <option value="O-">O-</option>
-                                        </select>
+                                            options={[
+                                                { value: "", label: "Select Group" },
+                                                { value: "A+", label: "A+" },
+                                                { value: "A-", label: "A-" },
+                                                { value: "B+", label: "B+" },
+                                                { value: "B-", label: "B-" },
+                                                { value: "AB+", label: "AB+" },
+                                                { value: "AB-", label: "AB-" },
+                                                { value: "O+", label: "O+" },
+                                                { value: "O-", label: "O-" },
+                                            ]}
+                                            borderClass="border-blue-600"
+                                            selectedClass="bg-blue-600 text-gray-950"
+                                            highlightClass="bg-blue-200 text-gray-900"
+                                            ringClass="ring-2 ring-blue-500"
+                                            placeholderClass="text-gray-400"
+                                        />
                                     </div>
                                     <div className="flex gap-2 pt-1">
                                         <button
@@ -801,34 +814,39 @@ const UserProfile = () => {
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-2">
                                         <label className="text-sm font-semibold text-gray-700">Sort by:</label>
-                                        <select
+                                        <DropDown
+                                            name="sortBy"
+                                            label="Sort By"
                                             value={sortBy}
                                             onChange={(e) => setSortBy(e.target.value)}
-                                            className="py-0.5 text-xs font-medium border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white cursor-pointer hover:border-green-400 transition-all"
-                                        >
-                                            <option value="date">Date</option>
-                                            <option value="disease">Disease</option>
-                                            <option value="status">Status</option>
-                                        </select>
+                                            options={[
+                                                { value: "date", label: "Date" },
+                                                { value: "disease", label: "Disease" },
+                                                { value: "status", label: "Status" },
+                                            ]}
+                                            widthClass="w-32 sm:w-32"
+                                            borderClass="border-gray-300"
+                                            selectedClass="bg-green-500 text-gray-950"
+                                            highlightClass="bg-green-200 text-green-900"
+                                            ringClass="ring-green-500"
+                                            placeholder="Sort By"
+                                            placeholderClass="text-gray-500"
+                                        />
+
                                     </div>
 
                                     <button
-                                        onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                                        className="px-2.5 py-1 text-xs font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-1.5 shadow-md"
-                                        title={sortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
+                                        onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                                        className="px-2.5 py-1 text-xs font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-1 shadow-md"
+                                        title={sortOrder === "asc" ? "Ascending Order" : "Descending Order"}
                                     >
-                                        {sortOrder === 'asc' ? (
-                                            <>
-                                                <FaSortUp className="text-sm top-1" />
-                                                <span>Asce</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FaSortDown className="text-sm" />
-                                                <span>Desc</span>
-                                            </>
-                                        )}
+                                        {/* Icon wrapper to rotate around center */}
+                                        <span className={`inline-block transition-transform duration-200 transform ${sortOrder === "desc" ? "rotate-180" : "rotate-0"}`}>
+                                            <FaSortUp className="w-3 h-3" />
+                                        </span>
+                                        <span>{sortOrder === "asc" ? "Asce" : "Desc"}</span>
                                     </button>
+
                                 </div>
                             </div>
 
@@ -915,8 +933,8 @@ const UserProfile = () => {
 
             {showUpdatePopup && (
                 <UpdateProfilePopup profileData={patient} onClose={() => setShowUpdatePopup(false)}
-                onUpdate={fetchProfile}
-                    
+                    onUpdate={fetchProfile}
+
                 />
             )}
             <PatientReviewModal
