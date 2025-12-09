@@ -304,6 +304,7 @@ const Analysis = () => {
             setPrediction({
                 predicted_label: data.predicted_label,
                 confidence_score: data.confidence_score,
+                all_probabilities: data.all_probabilities,
                 timestamp: new Date().toLocaleString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -739,6 +740,70 @@ const Analysis = () => {
                                                         </p>
                                                     )}
                                                 </div>
+
+                                                {/* Disease Likelihood Bar Chart */}
+                                                {prediction?.all_probabilities && (
+                                                    <div className="w-full mt-6 pt-6 border-t border-gray-200">
+                                                        <h4 className="text-sm font-semibold text-gray-700 mb-4">Disease Likelihood Analysis</h4>
+                                                        <div className="space-y-3">
+                                                            {Object.entries(prediction.all_probabilities)
+                                                                .sort(([, a], [, b]) => b - a)
+                                                                .map(([disease, probability], idx) => {
+                                                                    const percentageValue = probability * 100;
+                                                                    const isPredicted = disease === prediction.predicted_label;
+                                                                    const isHighProb = probability > 0.1;
+                                                                    const isVerySmall = percentageValue < 1;
+                                                                    
+                                                                    return (
+                                                                        <div key={idx} className="flex items-center gap-2 md:gap-3">
+                                                                            {/* Disease Name */}
+                                                                            <div className="w-32 md:w-40 flex-shrink-0">
+                                                                                <p className={`text-xs md:text-sm font-medium truncate ${
+                                                                                    isPredicted 
+                                                                                        ? 'text-gray-900 font-bold' 
+                                                                                        : 'text-gray-600'
+                                                                                }`}>
+                                                                                    {disease}
+                                                                                </p>
+                                                                            </div>
+                                                                            
+                                                                            {/* Bar Container */}
+                                                                            <div className="flex-grow flex items-center gap-2">
+                                                                                <div className="flex-grow bg-gray-100 rounded-full h-6 md:h-7 overflow-hidden shadow-sm border border-gray-200 relative">
+                                                                                    <div
+                                                                                        className={`h-full rounded-full transition-all duration-500 flex items-center justify-center px-2 font-bold text-white text-xs ${
+                                                                                            isPredicted
+                                                                                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 shadow-md'
+                                                                                                : isHighProb
+                                                                                                ? 'bg-gradient-to-r from-amber-400 to-amber-500'
+                                                                                                : 'bg-gradient-to-r from-gray-300 to-gray-400'
+                                                                                        }`}
+                                                                                        style={{ 
+                                                                                            width: `${Math.max(percentageValue, 3)}%`,
+                                                                                            minWidth: isVerySmall ? '30px' : 'auto'
+                                                                                        }}
+                                                                                    >
+                                                                                        {/* Show percentage inside bar only for sufficiently large bars */}
+                                                                                        {percentageValue >= 20 && (
+                                                                                            <span className="text-center whitespace-nowrap">
+                                                                                                {percentageValue.toFixed(1)}%
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {/* Percentage Text Outside */}
+                                                                                <span className="w-14 md:w-16 text-right text-xs md:text-sm font-bold text-gray-800 flex-shrink-0">
+                                                                                    {percentageValue.toFixed(1)}%
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 <button
                                                     disabled={!latestPredictionId}
                                                     onClick={async () => {
