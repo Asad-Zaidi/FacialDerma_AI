@@ -46,6 +46,12 @@ const Auth = () => {
         }
     }, [formData.password, formData.confirmPassword]);
 
+    // Clear messages when switching between login and signup
+    useEffect(() => {
+        setMessage('');
+        setMessageType('error');
+    }, [isLogin]);
+
     // Debounced username availability check (signup only)
     useEffect(() => {
         if (isLogin) return; // only on signup
