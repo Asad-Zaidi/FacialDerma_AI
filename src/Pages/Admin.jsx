@@ -232,7 +232,7 @@ const Admin = () => {
         // Add any logout logic here if needed (e.g., clearing tokens)
         navigate('/login');
     };
-    
+
     // Change Password
     const handleChangePassword = async (e) => {
         e.preventDefault();
@@ -974,7 +974,7 @@ const Admin = () => {
                                             </div>
                                             <div className="flex flex-col gap-1">
                                                 <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Role:</span>
-                                                <span className={`text-gray-800 text-base px-3 py-1.5 rounded-full text-xs font-semibold uppercase inline-block ${selectedUser.role === 'patient' ? 'bg-cyan-100 text-cyan-800' :
+                                                <span className={`text-gray-800 px-3 py-1.5 rounded-full text-xs font-semibold uppercase inline-block ${selectedUser.role === 'patient' ? 'bg-cyan-100 text-cyan-800' :
                                                     selectedUser.role === 'dermatologist' ? 'bg-green-100 text-green-800' :
                                                         'bg-red-100 text-red-800'
                                                     }`}>
@@ -1084,39 +1084,6 @@ const Admin = () => {
                                             </div>
                                         </div>
                                     )}
-
-                                    {/* Patient Contact Information */}
-                                    {/* {selectedUser.role === 'patient' && (
-                                        <div className="mb-8">
-                                            <h3 className="m-0 mb-4 text-purple-600 text-xl pb-2.5 border-b-2 border-gray-100">Contact Information</h3>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Phone Number:</span>
-                                                    <span className="text-gray-800 text-base">
-                                                        {selectedUser.phone ? (
-                                                            <a href={`tel:${selectedUser.phone}`} className="text-purple-600 no-underline hover:text-purple-800 hover:underline transition-colors duration-300">{selectedUser.phone}</a>
-                                                        ) : (
-                                                            'Not provided'
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Emergency Contact:</span>
-                                                    <span className="text-gray-800 text-base">
-                                                        {selectedUser.emergencyContact ? (
-                                                            <a href={`tel:${selectedUser.emergencyContact}`} className="text-purple-600 no-underline hover:text-purple-800 hover:underline transition-colors duration-300">{selectedUser.emergencyContact}</a>
-                                                        ) : (
-                                                            'Not provided'
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col gap-1 col-span-full">
-                                                    <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Address:</span>
-                                                    <span className="text-gray-800 text-base">{selectedUser.address || 'Not provided'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )} */}
 
                                     {/* Dermatologist-specific Information */}
                                     {selectedUser.role === 'dermatologist' && (
