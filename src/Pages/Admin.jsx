@@ -27,7 +27,8 @@ import {
     FaUserShield,
     FaKey,
     FaBars,
-    FaTimes
+    FaTimes,
+    FaSignOutAlt
 } from 'react-icons/fa';
 import { PiWarningCircleLight } from 'react-icons/pi';
 import { MdClose } from 'react-icons/md';
@@ -315,7 +316,7 @@ const Admin = () => {
                 <div className="mb-4">
                     <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Username:</strong> {user.username}</p>
                     <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Created:</strong> {new Date(user.createdAt).toLocaleDateString('en-GB')}</p>
-                    {user.isVerified !== undefined && (
+                    {user.role === 'dermatologist' && (
                         <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Verified:</strong> {user.isVerified ? 'Yes' : 'No'}</p>
                     )}
                     <p className={`my-2 text-sm ${user.isSuspended ? 'text-red-600' : 'text-green-600'}`}>
@@ -448,7 +449,7 @@ const Admin = () => {
                             onClick={() => setShowLogoutModal(true)}
                             title="Logout"
                         >
-                            <FaTimes className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            <FaSignOutAlt className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
                             {!sidebarCollapsed && <span>Logout</span>}
                         </button>
                     </div>
