@@ -121,26 +121,29 @@ const ActivityLog = ({ activityLogs }) => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Date</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Activity Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">User Type</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Activity Information</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Details</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredLogs.map(log => (
                                 <tr key={log.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-gray-900">
                                         {new Date(log.timestamp).toLocaleString('en-GB')}
                                     </td>
-                                    <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <td className="px-6 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                                         {log.action}
                                     </td>
-                                    <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
-                                        Admin
+                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-gray-500">
+                                        {log.userType}
                                     </td>
-                                    <td className="px-6 py-2 text-sm text-gray-500">
-                                        {log.details && Object.keys(log.details).length > 0 ? JSON.stringify(log.details) : 'N/A'}
+                                    <td className="px-6 py-2 text-xs text-gray-500">
+                                        {log.userType === 'Admin' ? 
+                                            (log.details && Object.keys(log.details).length > 0 ? JSON.stringify(log.details) : 'N/A') :
+                                            (log.userName ? `${log.userName} (${log.userEmail})` : 'N/A')
+                                        }
                                     </td>
-                                    <td className="px-6 py-2 whitespace-nowrap text-sm text-green-600">
+                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-green-600">
                                         Successful
                                     </td>
                                 </tr>

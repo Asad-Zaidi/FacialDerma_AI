@@ -36,13 +36,14 @@ import { PiWarningCircleLight } from 'react-icons/pi';
 import { MdClose } from 'react-icons/md';
 import { BsShieldExclamation } from 'react-icons/bs';
 import { RxActivityLog } from "react-icons/rx";
+import { IoMedkit } from "react-icons/io5";
 import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
 import ActivityLog from '../components/ActivityLog';
 
 const Admin = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, logout } = useAuth(); // logout is used in handleLogout
 
     // Check if user is admin
     useEffect(() => {
@@ -112,7 +113,6 @@ const Admin = () => {
             hour12: true
         });
     };
-
 
     // Fetch Dashboard Stats
     const fetchDashboardStats = useCallback(async () => {
@@ -253,8 +253,9 @@ const Admin = () => {
     };
 
     // Handle Logout
-    const handleLogout = () => {
-        // Add any logout logic here if needed (e.g., clearing tokens)
+    // eslint-disable-next-line no-unused-vars
+    const handleLogout = async () => {
+        await logout();
         navigate('/login');
     };
 
@@ -524,6 +525,14 @@ const Admin = () => {
                             {!sidebarCollapsed && <span>Users</span>}
                         </button>
                         <button
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'treatmentdatabase' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            onClick={() => setActiveTab('treatmentdatabase')}
+                            title="Treatment DB"
+                        >
+                            <IoMedkit className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            {!sidebarCollapsed && <span>Treatment DB</span>}
+                        </button>
+                        <button
                             className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'activityLog' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
                             onClick={() => setActiveTab('activityLog')}
                             title="Activity Log"
@@ -567,7 +576,7 @@ const Admin = () => {
                     </div>
 
                     {/* Content */}
-                    <div className="relative mx-6 md:mx-8 mb-8 bg-green-50  rounded-xl p-6 md:p-8 shadow-lg min-h-[400px]">
+                    <div className="relative mx-6 md:mx-8 mb-8 bg-green-50  rounded-xl p-6 md:p-8 shadow-lg min-h-[80vh]">
                         {loading && (
                             <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center rounded-xl z-50">
                                 <FaSpinner className="text-5xl text-purple-600 animate-spin" />
