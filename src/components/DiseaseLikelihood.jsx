@@ -6,7 +6,7 @@ const DiseaseLikelihood = ({ prediction, className = "" }) => {
     }
 
     return (
-        <div className={`w-full mt-6 pt-6 border-t border-gray-200 ${className}`}>
+        <div className={`w-full mt-4 pt-4 border-t border-gray-200 ${className}`}>
             <h4 className="text-sm font-semibold text-gray-700 mb-4">Disease Likelihood Analysis</h4>
             <div className="space-y-3">
                 {Object.entries(prediction.all_probabilities)

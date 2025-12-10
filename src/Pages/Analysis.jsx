@@ -224,7 +224,7 @@ const Analysis = () => {
             setAnalysisStep('Analysis complete!');
 
             setTimeout(() => {
-                resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: "nearest" });
+                resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start', inline: "nearest" });
             }, 300);
 
             toast.success('Prediction successful and saved!');
@@ -668,10 +668,10 @@ const Analysis = () => {
                                                 {prediction?.all_probabilities && (
                                                     <DiseaseLikelihood
                                                         prediction={prediction}
-                                                        className="w-full mt-6 pt-6 border-t border-gray-200"
                                                     />
                                                 )}
-                                                <div className="flex flex-col gap-3 mt-4">
+
+                                                <div className="flex flex-col gap-3 mt-5">
                                                     <p className="text-md text-gray-600">Want Review from an Expert?</p>
                                                     <button
                                                         disabled={!latestPredictionId}
@@ -695,8 +695,8 @@ const Analysis = () => {
                                                 </div>
 
                                                 {/* Download/Share Buttons */}
-                                                <div className="flex flex-col gap-3 mt-4">
-                                                    <p className="text-md text-gray-600">Download or share your detailed:</p>
+                                                <div className="flex flex-col gap-3 mt-5">
+                                                    <p className="text-md text-gray-600">Download or share your Report:</p>
                                                     <div className="flex justify-center gap-2">
                                                         <button
                                                             onClick={handleDownloadReport}
