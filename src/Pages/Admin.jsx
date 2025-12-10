@@ -12,7 +12,8 @@ import {
     apiSuspendUser,
     apiUnsuspendUser,
     apiDeleteUser,
-    apiChangeAdminPassword
+    apiChangeAdminPassword,
+    apiGetActivityLogs
 } from '../api/api';
 import {
     FaUsers,
@@ -32,14 +33,17 @@ import {
     FaSignOutAlt
 } from 'react-icons/fa';
 import { PiWarningCircleLight } from 'react-icons/pi';
-import { MdClose } from 'react-icons/md';
+import { MdClose, MdEmail  } from 'react-icons/md';
 import { BsShieldExclamation } from 'react-icons/bs';
+import { RxActivityLog } from "react-icons/rx";
+import { IoMedkit } from "react-icons/io5";
 import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
+import ActivityLog from '../components/ActivityLog';
 
 const Admin = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, logout } = useAuth(); // logout is used in handleLogout
 
     // Check if user is admin
     useEffect(() => {
@@ -72,6 +76,43 @@ const Admin = () => {
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [verificationToReject, setVerificationToReject] = useState(null);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [activityLogs, setActivityLogs] = useState([]);
+
+    // Update time every second
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000); // Update every second
+
+        return () => clearInterval(timer);
+    }, []);
+
+    // Get greeting based on time
+    const getGreeting = () => {
+        const hour = currentTime.getHours();
+        if (hour < 12) return 'Good Morning';
+        if (hour < 17) return 'Good Afternoon';
+        return 'Good Evening';
+    };
+
+    // Format date and day
+    const formatDate = () => {
+        return currentTime.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+    const formatTime = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        });
+    };
 
     // Fetch Dashboard Stats
     const fetchDashboardStats = useCallback(async () => {
@@ -107,6 +148,19 @@ const Admin = () => {
             setUnverifiedDermatologists(response.data);
         } catch (error) {
             toast.error('Failed to fetch rejected verifications');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Fetch Activity Logs
+    const fetchActivityLogs = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await apiGetActivityLogs();
+            setActivityLogs(response.data);
+        } catch (error) {
+            toast.error('Failed to fetch activity logs');
         } finally {
             setLoading(false);
         }
@@ -199,11 +253,12 @@ const Admin = () => {
     };
 
     // Handle Logout
-    const handleLogout = () => {
-        // Add any logout logic here if needed (e.g., clearing tokens)
+    // eslint-disable-next-line no-unused-vars
+    const handleLogout = async () => {
+        await logout();
         navigate('/login');
     };
-    
+
     // Change Password
     const handleChangePassword = async (e) => {
         e.preventDefault();
@@ -229,8 +284,10 @@ const Admin = () => {
             fetchRejectedVerifications();
         } else if (activeTab === 'users') {
             fetchAllUsers();
+        } else if (activeTab === 'activityLog') {
+            fetchActivityLogs();
         }
-    }, [activeTab, filters, fetchDashboardStats, fetchPendingVerifications, fetchRejectedVerifications, fetchAllUsers]);
+    }, [activeTab, filters, fetchDashboardStats, fetchPendingVerifications, fetchRejectedVerifications, fetchAllUsers, fetchActivityLogs]);
 
     // Stat Card Component
     const StatCard = ({ icon: Icon, title, value, color }) => {
@@ -467,6 +524,38 @@ const Admin = () => {
                             <FaUsers className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
                             {!sidebarCollapsed && <span>Users</span>}
                         </button>
+                        <button
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'treatmentdatabase' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            onClick={() => setActiveTab('treatmentdatabase')}
+                            title="Treatment DB"
+                        >
+                            <IoMedkit className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            {!sidebarCollapsed && <span>Treatment DB</span>}
+                        </button>
+                        <button
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'emailTemplates' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            onClick={() => setActiveTab('emailTemplates')}
+                            title="Email Templates"
+                        >
+                            <MdEmail className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            {!sidebarCollapsed && <span>Email Templates</span>}
+                        </button>
+                        <button
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'apimonitoring' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            onClick={() => setActiveTab('apimonitoring')}
+                            title="API Monitoring"
+                        >
+                            <RxActivityLog className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            {!sidebarCollapsed && <span>API Monitoring</span>}
+                        </button>
+                        <button
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'activityLog' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            onClick={() => setActiveTab('activityLog')}
+                            title="Activity Log"
+                        >
+                            <RxActivityLog className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            {!sidebarCollapsed && <span>Activity Log</span>}
+                        </button>
                     </nav>
 
                     <div className="py-5 border-t border-white border-opacity-20">
@@ -492,12 +581,18 @@ const Admin = () => {
                 {/* Main Content Area */}
                 <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-[70px] w-[calc(100%-70px)]' : 'ml-64 w-[calc(100%-256px)]'}`}>
                     {/* Header */}
-                    <div className="p-6 md:p-8 bg-white border-b border-gray-200 mb-8">
-                        <h1 className="m-0 text-2xl md:text-3xl text-gray-800">Admin Dashboard</h1>
+                    <div className="p-4 md:p-4 bg-white border-b border-gray-200 mb-8 flex justify-between items-center">
+                        <h1 className="m-0 text-xl md:text-2xl text-gray-800">
+                            {getGreeting()}, Admin!
+                        </h1>
+                        <div className="text-right">
+                            <p className="text-sm text-gray-600">{formatDate()}</p>
+                            <p className="text-sm text-gray-600">{formatTime(currentTime)}</p>
+                        </div>
                     </div>
 
                     {/* Content */}
-                    <div className="relative mx-6 md:mx-8 mb-8 bg-white rounded-xl p-6 md:p-8 shadow-lg min-h-[400px]">
+                    <div className="relative mx-6 md:mx-8 mb-8 bg-green-50  rounded-xl p-6 md:p-8 shadow-lg min-h-[80vh]">
                         {loading && (
                             <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center rounded-xl z-50">
                                 <FaSpinner className="text-5xl text-purple-600 animate-spin" />
@@ -670,6 +765,11 @@ const Admin = () => {
                                     </>
                                 )}
                             </div>
+                        )}
+
+                        {/* Activity Log Tab */}
+                        {activeTab === 'activityLog' && (
+                            <ActivityLog activityLogs={activityLogs} />
                         )}
                     </div>
 
@@ -932,7 +1032,7 @@ const Admin = () => {
                                             </div>
                                             <div className="flex flex-col gap-1">
                                                 <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Role:</span>
-                                                <span className={`text-gray-800 text-base px-3 py-1.5 rounded-full text-xs font-semibold uppercase inline-block ${selectedUser.role === 'patient' ? 'bg-cyan-100 text-cyan-800' :
+                                                <span className={`text-gray-800 px-3 py-1.5 rounded-full text-xs font-semibold uppercase inline-block ${selectedUser.role === 'patient' ? 'bg-cyan-100 text-cyan-800' :
                                                     selectedUser.role === 'dermatologist' ? 'bg-green-100 text-green-800' :
                                                         'bg-red-100 text-red-800'
                                                     }`}>
@@ -1039,39 +1139,6 @@ const Admin = () => {
                                                         </span>
                                                     </div>
                                                 )}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Patient Contact Information */}
-                                    {selectedUser.role === 'patient' && (
-                                        <div className="mb-8">
-                                            <h3 className="m-0 mb-4 text-purple-600 text-xl pb-2.5 border-b-2 border-gray-100">Contact Information</h3>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Phone Number:</span>
-                                                    <span className="text-gray-800 text-base">
-                                                        {selectedUser.phone ? (
-                                                            <a href={`tel:${selectedUser.phone}`} className="text-purple-600 no-underline hover:text-purple-800 hover:underline transition-colors duration-300">{selectedUser.phone}</a>
-                                                        ) : (
-                                                            'Not provided'
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Emergency Contact:</span>
-                                                    <span className="text-gray-800 text-base">
-                                                        {selectedUser.emergencyContact ? (
-                                                            <a href={`tel:${selectedUser.emergencyContact}`} className="text-purple-600 no-underline hover:text-purple-800 hover:underline transition-colors duration-300">{selectedUser.emergencyContact}</a>
-                                                        ) : (
-                                                            'Not provided'
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col gap-1 col-span-full">
-                                                    <span className="font-semibold text-gray-600 text-xs uppercase tracking-wider">Address:</span>
-                                                    <span className="text-gray-800 text-base">{selectedUser.address || 'Not provided'}</span>
-                                                </div>
                                             </div>
                                         </div>
                                     )}

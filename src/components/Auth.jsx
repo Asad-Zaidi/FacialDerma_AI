@@ -33,7 +33,6 @@ const Auth = () => {
     const [messageType, setMessageType] = useState('error');
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [usernameCheck, setUsernameCheck] = useState({ checking: false, available: null, message: '' });
-    const [signupSuccess, setSignupSuccess] = useState(false);
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [pendingMessage, setPendingMessage] = useState('');
 
@@ -46,6 +45,12 @@ const Auth = () => {
             setPasswordsMatch(formData.password === formData.confirmPassword);
         }
     }, [formData.password, formData.confirmPassword]);
+
+    // Clear messages when switching between login and signup
+    useEffect(() => {
+        setMessage('');
+        setMessageType('error');
+    }, [isLogin]);
 
     // Debounced username availability check (signup only)
     useEffect(() => {
@@ -141,13 +146,18 @@ const Auth = () => {
             const status = error.response?.status;
             const errorData = error.response?.data;
             let errMsg = errorData?.error || errorData?.detail?.error || errorData?.message || 'Invalid credentials';
-            
+
+            // Ensure errMsg is a string
+            if (typeof errMsg === 'object') {
+                errMsg = errMsg.message || errMsg.error || JSON.stringify(errMsg) || 'An error occurred';
+            }
+
             console.log('Login error:', { status, errMsg, errorData });
-            
+
             // Handle 403 Forbidden errors (access denied)
             if (status === 403) {
                 const errMsgLower = errMsg.toLowerCase();
-                
+
                 // Email not verified
                 if (errMsgLower.includes('email') && errMsgLower.includes('verif')) {
                     errMsg = 'Email not verified. Please check your inbox and verify your email address before logging in.';
@@ -192,7 +202,7 @@ const Auth = () => {
                 setMessage(errMsg || 'Login failed. Please try again.');
                 setMessageType('error');
             }
-            
+
             setLoading(false);
             return;
         }
@@ -244,7 +254,6 @@ const Auth = () => {
             // Show email verification message
             setMessage('Registration successful! Please check your email to verify your account.');
             setMessageType('success');
-            setSignupSuccess(true);
             setLoading(false);
 
             // Redirect to login after user reads the message (6 seconds to give them time)
@@ -253,7 +262,13 @@ const Auth = () => {
             }, 6000);
 
         } catch (error) {
-            const errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'Signup failed';
+            let errMsg = error.response?.data?.detail?.error || error.response?.data?.error || error.response?.data?.message || 'Signup failed';
+
+            // Ensure errMsg is a string
+            if (typeof errMsg === 'object') {
+                errMsg = errMsg.message || errMsg.error || JSON.stringify(errMsg) || 'An error occurred';
+            }
+
             setMessage(errMsg);
             setMessageType('error');
             setLoading(false);
@@ -430,7 +445,7 @@ const Auth = () => {
                                         </span>
                                     </label>
 
-                                ))}   
+                                ))}
                             </div>
                         </div>
                     )}                    {/* Form */}
@@ -840,22 +855,22 @@ const Auth = () => {
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
                         {/* Decorative top bar */}
                         <div className="h-2 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500"></div>
-                        
+
                         <div className="p-8">
                             {/* Icon */}
                             <div className="flex justify-center mb-6">
                                 <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center animate-pulse">
-                                    <svg 
-                                        className="w-10 h-10 text-yellow-600" 
-                                        fill="none" 
-                                        stroke="currentColor" 
+                                    <svg
+                                        className="w-10 h-10 text-yellow-600"
+                                        fill="none"
+                                        stroke="currentColor"
                                         viewBox="0 0 24 24"
                                     >
-                                        <path 
-                                            strokeLinecap="round" 
-                                            strokeLinejoin="round" 
-                                            strokeWidth={2} 
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                                         />
                                     </svg>
                                 </div>

@@ -182,6 +182,7 @@ export const apiUnsuspendUser = (userId) => api.post(`/admin/users/${userId}/uns
 export const apiDeleteUser = (userId) => api.delete(`/admin/users/${userId}`);
 export const apiUpdateAdminProfile = (data) => api.put("/admin/profile", data);
 export const apiChangeAdminPassword = (data) => api.post("/admin/change-password", data);
+export const apiGetActivityLogs = (params = {}) => api.get("/admin/activity-logs", { params });
 
 // ===========================================================
 // 12. EXPORT DEFAULT
