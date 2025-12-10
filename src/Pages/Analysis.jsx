@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import Header from '../Nav_Bar/Header';
-import Footer from '../Nav_Bar/Footer';
 import NearestDermatologyMap from '../components/NearestDermatologyMap';
 import { AuthContext } from '../contexts/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
@@ -796,7 +795,6 @@ const Analysis = () => {
                     )}
                 </div>
 
-                <Footer />
                 <ToastContainer
                     position="bottom-right"
                     autoClose={3000}
