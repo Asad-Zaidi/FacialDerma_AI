@@ -38,6 +38,7 @@ import { BsShieldExclamation } from 'react-icons/bs';
 import { RxActivityLog } from "react-icons/rx";
 import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
+import ActivityLog from '../components/ActivityLog';
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -77,11 +78,11 @@ const Admin = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [activityLogs, setActivityLogs] = useState([]);
 
-    // Update time every minute
+    // Update time every second
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(new Date());
-        }, 60000); // Update every minute
+        }, 1000); // Update every second
 
         return () => clearInterval(timer);
     }, []);
@@ -103,6 +104,15 @@ const Admin = () => {
             day: 'numeric'
         });
     };
+    const formatTime = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        });
+    };
+
 
     // Fetch Dashboard Stats
     const fetchDashboardStats = useCallback(async () => {
@@ -546,12 +556,13 @@ const Admin = () => {
                 {/* Main Content Area */}
                 <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-[70px] w-[calc(100%-70px)]' : 'ml-64 w-[calc(100%-256px)]'}`}>
                     {/* Header */}
-                    <div className="p-5 md:p-5 bg-white border-b border-gray-200 mb-8 flex justify-between items-center">
+                    <div className="p-4 md:p-4 bg-white border-b border-gray-200 mb-8 flex justify-between items-center">
                         <h1 className="m-0 text-xl md:text-2xl text-gray-800">
                             {getGreeting()}, Admin!
                         </h1>
                         <div className="text-right">
                             <p className="text-sm text-gray-600">{formatDate()}</p>
+                            <p className="text-sm text-gray-600">{formatTime(currentTime)}</p>
                         </div>
                     </div>
 
@@ -733,35 +744,7 @@ const Admin = () => {
 
                         {/* Activity Log Tab */}
                         {activeTab === 'activityLog' && (
-                            <div>
-                                <h2 className="mb-6 text-gray-800 text-xl md:text-2xl">Activity Log</h2>
-                                {activityLogs.length === 0 ? (
-                                    <p className="text-center py-16 text-gray-400 text-xl">No activity logs found</p>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {activityLogs.map(log => (
-                                            <div key={log.id} className="bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex-1">
-                                                        <p className="text-gray-800 font-semibold">{log.action}</p>
-                                                        <p className="text-gray-600 text-sm">
-                                                            By: {log.adminName || 'Unknown'} ({log.adminEmail || 'N/A'})
-                                                        </p>
-                                                        {log.details && Object.keys(log.details).length > 0 && (
-                                                            <div className="mt-2 text-sm text-gray-500">
-                                                                <strong>Details:</strong> {JSON.stringify(log.details, null, 2)}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-right text-sm text-gray-500">
-                                                        {new Date(log.timestamp).toLocaleString('en-GB')}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <ActivityLog activityLogs={activityLogs} />
                         )}
                     </div>
 

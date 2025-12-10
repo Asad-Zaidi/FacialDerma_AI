@@ -20,10 +20,8 @@ const DiseaseLikelihood = ({ prediction, className = "" }) => {
                         let barColor = '';
                         if (percentageValue >= 80) {
                             barColor = 'bg-gradient-to-r from-green-500 to-green-600';
-                        } else if (percentageValue >= 60) {
-                            barColor = 'bg-gradient-to-r from-yellow-500 to-orange-500';
-                        } else if (percentageValue >= 20) {
-                            barColor = 'bg-gradient-to-r from-blue-500 to-blue-600';
+                        } else if (percentageValue >= 40) {
+                            barColor = 'bg-gradient-to-r from-orange-500 to-orange-500';
                         } else {
                             barColor = 'bg-gradient-to-r from-red-500 to-red-600';
                         }
@@ -38,8 +36,8 @@ const DiseaseLikelihood = ({ prediction, className = "" }) => {
                                 {/* Disease Name */}
                                 <div className="w-32 md:w-40 flex-shrink-0">
                                     <p className={`text-xs md:text-sm font-medium truncate ${isPredicted
-                                        ? 'text-gray-900 font-bold'
-                                        : 'text-gray-600'
+                                        ? 'text-gray-950 font-bold inline-block border-b-2 border-gray-950'
+                                        : 'text-gray-500'
                                         }`}>
                                         {disease}
                                     </p>
@@ -47,7 +45,7 @@ const DiseaseLikelihood = ({ prediction, className = "" }) => {
 
                                 {/* Bar Container */}
                                 <div className="flex-grow flex items-center gap-2">
-                                    <div className="flex-grow bg-gray-100 rounded-full h-5 md:h-6 overflow-hidden shadow-sm border border-gray-300 relative">
+                                    <div className="flex-grow bg-gray-100 rounded-full h-5 md:h-5 overflow-hidden shadow-sm border border-gray-300 relative">
                                         <div
                                             className={`h-full rounded-full transition-all duration-500 flex items-center justify-center px-2 font-bold text-white text-xs ${barColor}`}
                                             style={{

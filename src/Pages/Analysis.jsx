@@ -6,14 +6,14 @@ import { AuthContext } from '../contexts/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MoonLoader } from 'react-spinners';
-import { IoMdCheckmarkCircleOutline } from "react-icons/io";
-import { FaMapLocationDot } from 'react-icons/fa6';
+import { FaMapLocationDot, FaCheck } from 'react-icons/fa6';
 import { FiUpload, FiDownload, FiShare2, FiMapPin, FiChevronDown } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import { MdOutlineInfo, MdHistory } from "react-icons/md";
 import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
 import suggestionsData from '../Assets/treatmentSuggestions.json';
+import Treatment from '../components/Treatment';
 import { generatePdfReport, generatePdfReportBlob } from '../components/PdfReportGenerator';
 import {
     apiUpload,
@@ -224,7 +224,7 @@ const Analysis = () => {
             setAnalysisStep('Analysis complete!');
 
             setTimeout(() => {
-                resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: "nearest" });
             }, 300);
 
             toast.success('Prediction successful and saved!');
@@ -390,36 +390,36 @@ const Analysis = () => {
                                     </h2>
                                 </div>
                                 <p className="text-gray-600 font-bold text-xs md:text-sm leading-relaxed">
-                                    For accurate skin analysis, please follow the guidelines below to capture a high-quality facial photograph.
+                                    For accurate skin analysis, Please follow the guidelines below to capture a high-quality facial photograph.
                                 </p>
 
                                 <div className="space-y-2.5 pt-2 w-full bg-green-50 p-2.5 rounded-lg border border-green-200">
                                     <div className="flex items-start gap-2.5">
-                                        <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
+                                        <FaCheck className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Natural Lighting:</span> Use daylight or bright indoor lighting, avoid harsh shadows
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-2.5">
-                                        <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
+                                        <FaCheck className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">No Makeup:</span> Remove all cosmetics, moisturizers, and skincare products
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-2.5">
-                                        <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
+                                        <FaCheck className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Front-Facing:</span> Position your face directly toward the camera at eye level
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-2.5">
-                                        <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
+                                        <FaCheck className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Clear & Sharp:</span> Ensure the image is in focus and not blurry
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-2.5">
-                                        <IoMdCheckmarkCircleOutline className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
+                                        <FaCheck className="text-green-500 text-lg md:text-xl flex-shrink-0 mt-0.5" />
                                         <p className="text-xs md:text-sm text-gray-700">
                                             <span className="font-semibold">Neutral Expression:</span> Keep a relaxed, neutral facial expression
                                         </p>
@@ -427,13 +427,13 @@ const Analysis = () => {
                                 </div>
 
                                 <div className="space-y-2 w-full">
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex gap-2">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 flex gap-2">
                                         <MdOutlineInfo className="text-blue-600 text-lg flex-shrink-0 mt-0.5" />
                                         <p className="text-xs text-blue-800 leading-relaxed">
                                             <span className="font-semibold">Supported Formats:</span> JPG, PNG, JPEG • Maximum file size: 10MB
                                         </p>
                                     </div>
-                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2">
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 flex gap-2">
                                         <AiOutlineWarning className="text-amber-600 text-lg flex-shrink-0 mt-0.5" />
                                         <p className="text-xs text-amber-800 leading-relaxed">
                                             <span className="font-semibold">Privacy:</span> Your images are processed securely and not stored permanently
@@ -567,7 +567,7 @@ const Analysis = () => {
                     {showResult && (
                         <section
                             ref={resultRef}
-                            className="w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-gray-200 mb-3 rounded-2xl shadow-xl p-6 md:p-8 lg:p-10 animate-fade-in">
+                            className="w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-gray-200 mb-8 rounded-2xl shadow-xl p-6 md:px-8 lg:px-10 animate-fade-in">
                             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -577,7 +577,7 @@ const Analysis = () => {
                                         Analysis Complete
                                     </h3>
                                 </div>
-                                <div className="flex gap-2">
+                                {/* <div className="flex gap-2">
                                     <button
                                         onClick={handleDownloadReport}
                                         className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
@@ -594,12 +594,12 @@ const Analysis = () => {
                                         <FiShare2 className="text-sm" />
                                         <span className="hidden sm:inline">Share</span>
                                     </button>
-                                </div>
+                                </div> */}
                             </div>
 
                             <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
 
-                                <div className="w-full lg:w-5/12 flex flex-col justify-center items-start space-y-4 pb-4 lg:pb-0 border-b lg:border-b-0 lg:border-r border-gray-200 lg:pr-8">
+                                <div className="w-full lg:w-6/12 flex flex-col justify-center items-start space-y-4 pb-4 lg:pb-0 border-b lg:border-b-0 lg:border-r border-gray-200 lg:pr-8">
                                     {prediction && (
                                         <>
                                             <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-gray-100 p-5 rounded-xl w-full border border-gray-300 shadow-sm">
@@ -613,20 +613,38 @@ const Analysis = () => {
                                                     </span>
                                                 </div>
                                                 <p className="text-xs text-gray-500 mb-2">Report ID: {prediction.reportId}</p>
-                                                <p className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 mb-4">
-                                                    {prediction.predicted_label}
-                                                </p>
+                                                <div>
+                                                    <p className="mt-2 text-md font-semibold text-gray-600 inline-block border-b-2 border-gray-700">
+                                                        Detected Condition:
+                                                    </p>
+                                                    <div className="text-center">
+                                                        <p className="inline-block border-b-2 border-gray-700 text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-950 text-center mt-4 mb-2">
+                                                        {prediction.predicted_label}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                                 <div className="space-y-2">
                                                     <div className="flex justify-between items-center text-sm">
                                                         <span className="text-gray-600">Confidence Level</span>
-                                                        <span className="font-bold text-gray-800">
+                                                        <span className={`font-bold ${
+                                                            prediction.confidence_score >= 0.8
+                                                                ? 'text-green-600'
+                                                                : prediction.confidence_score >= 0.5
+                                                                ? 'text-amber-600'
+                                                                : 'text-red-600'
+                                                        }`}>
                                                             {(prediction.confidence_score * 100).toFixed(1)}%
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex-grow bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
                                                             <div
-                                                                className="bg-gradient-to-r from-gray-500 via-gray-700 to-gray-500 h-full rounded-full transition-all duration-1000 shadow-lg"
+                                                                className={`h-full rounded-full transition-all duration-1000 shadow-lg ${prediction.confidence_score >= 0.8
+                                                                        ? 'bg-gradient-to-r from-green-500 via-green-600 to-green-700'
+                                                                        : prediction.confidence_score >= 0.5
+                                                                            ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700'
+                                                                            : 'bg-gradient-to-r from-red-500 via-red-600 to-red-700'
+                                                                    }`}
                                                                 style={{ width: `${prediction.confidence_score * 100}%` }}
                                                             />
                                                         </div>
@@ -653,8 +671,8 @@ const Analysis = () => {
                                                         className="w-full mt-6 pt-6 border-t border-gray-200"
                                                     />
                                                 )}
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mt-4">
-                                                    <p className='text-md text-gray-600'>Want Review from an Expert?</p>
+                                                <div className="flex flex-col gap-3 mt-4">
+                                                    <p className="text-md text-gray-600">Want Review from an Expert?</p>
                                                     <button
                                                         disabled={!latestPredictionId}
                                                         onClick={async () => {
@@ -670,30 +688,33 @@ const Analysis = () => {
                                                                 setDermLoading(false);
                                                             }
                                                         }}
-                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 w-full sm:w-auto"
+                                                        className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 w-full sm:w-auto"
                                                     >
                                                         Get Review
                                                     </button>
                                                 </div>
-                                                
-                                                {/* Action Buttons */}
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={handleDownloadReport}
-                                                        className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
-                                                        title="Download PDF Report"
-                                                    >
-                                                        <FiDownload className="text-sm" />
-                                                        <span className="hidden sm:inline">Download PDF</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={handleShareResults}
-                                                        className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
-                                                        title="Share Results"
-                                                    >
-                                                        <FiShare2 className="text-sm" />
-                                                        <span className="hidden sm:inline">Share</span>
-                                                    </button>
+
+                                                {/* Download/Share Buttons */}
+                                                <div className="flex flex-col gap-3 mt-4">
+                                                    <p className="text-md text-gray-600">Download or share your detailed:</p>
+                                                    <div className="flex justify-center gap-2">
+                                                        <button
+                                                            onClick={handleDownloadReport}
+                                                            className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                                            title="Download PDF Report"
+                                                        >
+                                                            <FiDownload className="text-sm" />
+                                                            <span className="hidden sm:inline">Download PDF</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={handleShareResults}
+                                                            className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                                            title="Share Results"
+                                                        >
+                                                            <FiShare2 className="text-sm" />
+                                                            <span className="hidden sm:inline">Share</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -708,7 +729,7 @@ const Analysis = () => {
                                 </div>
 
                                 <div className="w-full lg:w-6/12 flex flex-col justify-start items-start space-y-4">
-                                    {prediction?.predicted_label && (
+                                    {/* {prediction?.predicted_label && (
                                         <>
                                             <div className="flex items-center gap-2 w-full">
                                                 <span className="w-1 h-8 bg-gradient-to-b from-gray-700 to-gray-500 rounded-full"></span>
@@ -739,11 +760,13 @@ const Analysis = () => {
                                                 </p>
                                             </div>
                                         </>
-                                    )}
+                                    )} */}
+                                    <Treatment prediction={prediction} />
+
                                 </div>
                             </div>
 
-                            <div className="mt-8 pt-8 border-t border-gray-200">
+                            <div className="mt-6 pt-4 border-t border-gray-200">
                                 <div className="flex flex-col md:flex-row justify-between items-center mb-6">
                                     <h3 className="text-xl md:text-2xl font-semibold text-gray-700 mb-3 md:mb-0 flex items-center gap-2">
                                         Find a Nearby Face Care Centre
@@ -753,8 +776,7 @@ const Analysis = () => {
                                         onClick={handleToggleMap}
                                         className="w-full md:w-auto flex items-center justify-center gap-2.5 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-gray-950 text-white font-semibold py-2.5 px-6 rounded-full transition-all duration-300 text-xs md:text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                                         aria-expanded={showMap}
-                                        aria-controls="map-container"
-                                    >
+                                        aria-controls="map-container">
                                         <FiMapPin className="text-base" />
                                         <span>{showMap ? 'Hide Nearby Map' : 'Show Nearby Map'}</span>
                                         <FiChevronDown
