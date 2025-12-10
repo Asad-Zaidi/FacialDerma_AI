@@ -26,7 +26,29 @@ export const setAuthToken = (token) => {
 };
 
 // ===========================================================
-// 3.5. INTERCEPTOR — HANDLE 401/403
+// 3.5. REQUEST INTERCEPTOR — DEBUG LOGGING
+// ===========================================================
+let userMeCallCount = 0;
+api.interceptors.request.use((config) => {
+    if (config.url.includes('/users/me')) {
+        userMeCallCount++;
+        const timestamp = new Date().toLocaleTimeString();
+        const stackTrace = new Error().stack
+            .split('\n')
+            .slice(2, 6)  // Get relevant stack frames
+            .join('\n');
+        console.log(
+            `%c[${timestamp}] GET /users/me - Call #${userMeCallCount}`,
+            'color: red; font-weight: bold; font-size: 12px;'
+        );
+        console.log('%cStack Trace:', 'color: orange; font-weight: bold;');
+        console.log(stackTrace);
+    }
+    return config;
+});
+
+// ===========================================================
+// 3.6. INTERCEPTOR — HANDLE 401/403
 // ===========================================================
 api.interceptors.response.use(
     (response) => response,
