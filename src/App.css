@@ -12,8 +12,8 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
-  /* overflow-x: hidden; */
-  overflow-x: visible;
+  overflow-x: hidden;
+  /* overflow-x: visible; */
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif !important;
 }
