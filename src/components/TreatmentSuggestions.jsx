@@ -76,7 +76,7 @@ const SectionTitle = ({ title }) => (
   </div>
 );
 
-const Treatment = ({ prediction }) => {
+const TreatmentSuggestions = ({ prediction }) => {
   if (!prediction?.predicted_label) return null;
 
   const treatmentData = getTreatmentData(prediction.predicted_label);
@@ -155,4 +155,4 @@ const Treatment = ({ prediction }) => {
   );
 };
 
-export default Treatment;
+export default TreatmentSuggestions;

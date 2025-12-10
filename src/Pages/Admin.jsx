@@ -40,6 +40,7 @@ import { IoMedkit } from "react-icons/io5";
 import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
 import ActivityLog from '../components/ActivityLog';
+import TreatmentManagement from '../components/TreatmentManagement';
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -483,7 +484,7 @@ const Admin = () => {
             />
             <div className="flex min-h-screen bg-gray-50">
                 {/* Collapsible Sidebar */}
-                <div className={`fixed left-0 top-0 h-screen bg-gradient-to-br from-purple-500 via-purple-600 to-purple-800 text-white shadow-2xl z-50 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-[70px]' : 'w-64'}`}>
+                <div className={`fixed left-0 top-0 h-screen bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 text-white shadow-2xl z-50 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-[70px]' : 'w-60'}`}>
                     <div className="flex justify-between items-center p-5 border-b border-white border-opacity-20">
                         {!sidebarCollapsed && (
                             <h2 className="m-0 text-2xl flex items-center gap-2.5">
@@ -770,6 +771,11 @@ const Admin = () => {
                         {/* Activity Log Tab */}
                         {activeTab === 'activityLog' && (
                             <ActivityLog activityLogs={activityLogs} />
+                        )}
+
+                        {/* Treatment Database Tab */}
+                        {activeTab === 'treatmentdatabase' && (
+                            <TreatmentManagement />
                         )}
                     </div>
 

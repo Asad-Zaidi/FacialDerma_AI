@@ -12,7 +12,7 @@ import { MdOutlineInfo, MdHistory } from "react-icons/md";
 import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
 import suggestionsData from '../Assets/treatmentSuggestions.json';
-import Treatment from '../components/Treatment';
+import Treatment from '../components/TreatmentSuggestions';
 import { generatePdfReport, generatePdfReportBlob } from '../components/PdfReportGenerator';
 import {
     apiUpload,
