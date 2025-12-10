@@ -115,17 +115,6 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, [checkUserStatus]);
 
-  // Periodically check user status every 30 seconds
-  useEffect(() => {
-    if (!accessToken || !user) return;
-
-    const interval = setInterval(() => {
-      checkUserStatus();
-    }, 30000); // Check every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [accessToken, user, checkUserStatus]);
-
   const login = (token, userData) => {
     localStorage.setItem('token', token);
     localStorage.setItem('accessToken', token);
