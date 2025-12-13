@@ -14,7 +14,6 @@ const DiseaseLikelihood = ({ prediction, className = "" }) => {
                     .map(([disease, probability], idx) => {
                         const percentageValue = probability * 100;
                         const isPredicted = disease === prediction.predicted_label;
-                        const isVerySmall = percentageValue < 1;
 
                         // Color logic based on percentage ranges
                         let barColor = '';
@@ -49,8 +48,8 @@ const DiseaseLikelihood = ({ prediction, className = "" }) => {
                                         <div
                                             className={`h-full rounded-full transition-all duration-500 flex items-center justify-center px-2 font-bold text-white text-xs ${barColor}`}
                                             style={{
-                                                width: `${Math.max(percentageValue, 3)}%`,
-                                                minWidth: isVerySmall ? '30px' : 'auto'
+                                                width: `${percentageValue}%`,
+                                                minWidth: percentageValue < 1 ? '6px' : 'auto'
                                             }}
                                         >
                                             {/* Show percentage inside bar only for sufficiently large bars */}
