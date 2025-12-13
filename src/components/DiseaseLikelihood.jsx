@@ -20,7 +20,7 @@ const DiseaseLikelihood = ({ prediction, className = "" }) => {
                         let barColor = '';
                         if (percentageValue >= 80) {
                             barColor = 'bg-gradient-to-r from-green-500 to-green-600';
-                        } else if (percentageValue >= 40) {
+                        } else if (percentageValue >= 50) {
                             barColor = 'bg-gradient-to-r from-orange-500 to-orange-500';
                         } else {
                             barColor = 'bg-gradient-to-r from-red-500 to-red-600';

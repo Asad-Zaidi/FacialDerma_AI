@@ -56,13 +56,13 @@
 // export default Treatment;
 
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BsShieldCheck } from "react-icons/bs";
-import suggestionsData from "../Assets/treatmentSuggestions.json";
+import { apiGetTreatmentSuggestions } from '../api/api';
 
-const getTreatmentData = (label) => {
-  if (!label) return null;
-  return suggestionsData.skin_conditions.find(
+const getTreatmentData = (label, conditions) => {
+  if (!label || !conditions) return null;
+  return conditions.find(
     (condition) => condition.name.toLowerCase() === label.toLowerCase()
   );
 };
@@ -77,9 +77,27 @@ const SectionTitle = ({ title }) => (
 );
 
 const TreatmentSuggestions = ({ prediction }) => {
-  if (!prediction?.predicted_label) return null;
+  const [allConditions, setAllConditions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const treatmentData = getTreatmentData(prediction.predicted_label);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await apiGetTreatmentSuggestions();
+        setAllConditions(response.data || []);
+      } catch (error) {
+        console.error('Error fetching treatment suggestions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (!prediction?.predicted_label) return null;
+  if (loading) return <div className="text-center py-4">Loading treatment suggestions...</div>;
+
+  const treatmentData = getTreatmentData(prediction.predicted_label, allConditions);
 
   return (
     <>
@@ -129,7 +147,6 @@ const TreatmentSuggestions = ({ prediction }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-700 hover:text-blue-700"
-                style={{ textDecoration: "none" }}
               >
                 {title}
               </a>

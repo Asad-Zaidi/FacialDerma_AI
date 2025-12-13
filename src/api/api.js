@@ -185,6 +185,15 @@ export const apiChangeAdminPassword = (data) => api.post("/admin/change-password
 export const apiGetActivityLogs = (params = {}) => api.get("/admin/activity-logs", { params });
 
 // ===========================================================
-// 12. EXPORT DEFAULT
+// 13. TREATMENT SUGGESTIONS APIs
+// ===========================================================
+export const apiGetTreatmentSuggestions = () => api.get("/treatment/suggestions");
+export const apiGetTreatmentSuggestion = (name) => api.get(`/treatment/suggestions/${name}`);
+export const apiCreateTreatmentSuggestion = (data) => api.post("/treatment/suggestions", data);
+export const apiUpdateTreatmentSuggestion = (name, data) => api.put(`/treatment/suggestions/${name}`, data);
+export const apiDeleteTreatmentSuggestion = (name) => api.delete(`/treatment/suggestions/${name}`);
+
+// ===========================================================
+// 14. EXPORT DEFAULT
 // ===========================================================
 export default api;

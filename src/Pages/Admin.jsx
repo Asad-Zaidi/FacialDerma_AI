@@ -33,7 +33,7 @@ import {
     FaSignOutAlt
 } from 'react-icons/fa';
 import { PiWarningCircleLight } from 'react-icons/pi';
-import { MdClose, MdEmail  } from 'react-icons/md';
+import { MdClose, MdEmail } from 'react-icons/md';
 import { BsShieldExclamation } from 'react-icons/bs';
 import { RxActivityLog } from "react-icons/rx";
 import { IoMedkit } from "react-icons/io5";
@@ -41,6 +41,7 @@ import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
 import ActivityLog from '../components/ActivityLog';
 import TreatmentManagement from '../components/TreatmentManagement';
+import ApiIcon from "../Assets/api.png";
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -542,11 +543,15 @@ const Admin = () => {
                             {!sidebarCollapsed && <span>Email Templates</span>}
                         </button>
                         <button
-                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'apimonitoring' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-3'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'apimonitoring' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
                             onClick={() => setActiveTab('apimonitoring')}
                             title="API Monitoring"
                         >
-                            <RxActivityLog className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            <img
+                                src={ApiIcon}
+                                alt="API Monitoring"
+                                className={`w-6 h-6 ${sidebarCollapsed ? '' : 'min-w-[20px]'}`}
+                            />
                             {!sidebarCollapsed && <span>API Monitoring</span>}
                         </button>
                         <button

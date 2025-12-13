@@ -11,7 +11,7 @@ import { IoClose } from "react-icons/io5";
 import { MdOutlineInfo, MdHistory } from "react-icons/md";
 import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineWarning } from "react-icons/ai";
-import suggestionsData from '../Assets/treatmentSuggestions.json';
+// import { apiGetTreatmentSuggestions } from '../api/api';
 import Treatment from '../components/TreatmentSuggestions';
 import { generatePdfReport, generatePdfReportBlob } from '../components/PdfReportGenerator';
 import {
@@ -20,7 +20,8 @@ import {
     apiListDermatologists,
     apiCreateReviewRequest,
     apiGetFullProfile,
-    apiGetReviewRequests
+    apiGetReviewRequests,
+    apiGetTreatmentSuggestions
 } from '../api/api';
 import DermatologistPicker from '../components/DermatologistPicker';
 import DiseaseLikelihood from '../components/DiseaseLikelihood';
@@ -80,7 +81,15 @@ const Analysis = () => {
     }, [image]);
 
     useEffect(() => {
-        setTreatmentSuggestions(suggestionsData);
+        const fetchTreatmentData = async () => {
+            try {
+                const response = await apiGetTreatmentSuggestions();
+                setTreatmentSuggestions({ skin_conditions: response.data || [] });
+            } catch (error) {
+                console.error('Failed to fetch treatment suggestions:', error);
+            }
+        };
+        fetchTreatmentData();
     }, []);
 
     const getTreatmentData = useCallback(
@@ -611,7 +620,22 @@ const Analysis = () => {
                                                         {prediction.timestamp}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mb-2">Report ID: {prediction.reportId}</p>
+
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-xs text-gray-500">Report ID: {prediction.reportId}</p>
+                                                    {/* Confidence Score Legend - Color-coded reference for prediction confidence levels */}
+                                                    <div className="bg-white border border-gray-200 rounded-md px-2 py-1 shadow-sm relative z-50">
+                                                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                                                            <span className="text-gray-700 font-medium mr-1">Legend:</span>
+                                                            <span className="text-green-600 font-medium">&gt;80%</span>
+                                                            <span className="text-gray-400">|</span>
+                                                            <span className="text-orange-600 font-medium">50-80%</span>
+                                                            <span className="text-gray-400">|</span>
+                                                            <span className="text-red-600 font-medium">&lt;50%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
                                                 <div>
                                                     <p className="mt-2 text-md font-semibold text-gray-600 inline-block border-b-2 border-gray-700">
                                                         Detected Condition:
@@ -652,7 +676,7 @@ const Analysis = () => {
                                                         <p className="text-xs text-green-600 flex items-center gap-1 mt-2">
                                                             <BsShieldCheck /> High confidence prediction
                                                         </p>
-                                                    ) : prediction.confidence_score >= 0.6 ? (
+                                                    ) : prediction.confidence_score >= 0.5 ? (
                                                         <p className="text-xs text-amber-600 flex items-center gap-1 mt-2">
                                                             <AiOutlineWarning /> Moderate confidence - consider professional consultation
                                                         </p>
