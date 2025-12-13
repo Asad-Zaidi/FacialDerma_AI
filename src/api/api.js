@@ -124,8 +124,8 @@ export const apiListDermatologists = (q = "", limit = 10) => {
 // ===========================================================
 // 7. REVIEW REQUESTS
 // ===========================================================
-export const apiCreateReviewRequest = ({ predictionId, dermatologistId }) =>
-    api.post("/review-requests", { predictionId, dermatologistId });
+export const apiCreateReviewRequest = ({ predictionId, dermatologistId, message }) =>
+    api.post("/review-requests", { predictionId, dermatologistId, message });
 
 export const apiGetReviewRequest = (requestId) =>
     api.get(`/review-requests/${requestId}`);

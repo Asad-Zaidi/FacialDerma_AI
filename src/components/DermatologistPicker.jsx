@@ -1,5 +1,5 @@
 // src/components/DermatologistPicker.jsx
-import React from 'react';
+import React, { useState } from 'react';
 
 const DermatologistPicker = ({
     isOpen,
@@ -11,6 +11,8 @@ const DermatologistPicker = ({
     onSearchClick = () => {},
     onSelectDermatologist = () => {},
 }) => {
+    const [message, setMessage] = useState('');
+
     if (!isOpen) return null;
 
     // Normalize incoming derms to a flat array to avoid runtime errors
@@ -36,7 +38,7 @@ const DermatologistPicker = ({
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl">
                 <div className="px-5 py-4 border-b flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Choose a Dermatologist</h3>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
+                    <button onClick={() => { setMessage(''); onClose(); }} className="text-gray-500 hover:text-gray-700">✕</button>
                 </div>
 
                 <div className="p-5 space-y-4">
@@ -55,6 +57,20 @@ const DermatologistPicker = ({
                         </button>
                     </div>
 
+                    <div>
+                        <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                            Optional Message (for the dermatologist)
+                        </label>
+                        <textarea
+                            id="message"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Write any additional information or questions here..."
+                            rows={3}
+                            className="w-full px-3 py-2 border rounded-lg resize-none"
+                        />
+                    </div>
+
                     <div className="border rounded-lg max-h-72 overflow-auto">
                         {loading ? (
                             <div className="p-4 text-sm text-gray-600">Loading dermatologists...</div>
@@ -70,7 +86,7 @@ const DermatologistPicker = ({
                                         </div>
                                         <button
                                             className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700"
-                                            onClick={() => onSelectDermatologist(d)}
+                                            onClick={() => onSelectDermatologist(d, message)}
                                         >
                                             Request Review
                                         </button>
@@ -82,7 +98,7 @@ const DermatologistPicker = ({
                 </div>
 
                 <div className="px-5 py-3 border-t flex justify-end">
-                    <button onClick={onClose} className="px-4 py-2 rounded-lg border">
+                    <button onClick={() => { setMessage(''); onClose(); }} className="px-4 py-2 rounded-lg border">
                         Close
                     </button>
                 </div>

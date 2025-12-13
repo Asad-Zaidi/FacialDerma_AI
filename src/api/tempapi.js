@@ -136,8 +136,8 @@ export const apiListDermatologists = async (q = "", limit = 10) => {
 };
 
 // Create a review request
-export const apiCreateReviewRequest = async ({ predictionId, dermatologistId }) => {
-    return api.post("/review-requests", { predictionId, dermatologistId });
+export const apiCreateReviewRequest = async ({ predictionId, dermatologistId, message }) => {
+    return api.post("/review-requests", { predictionId, dermatologistId, message });
 };
 
 // Get review request with prediction details

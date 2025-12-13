@@ -876,7 +876,7 @@ const Analysis = () => {
                         setDermLoading(false);
                     }
                 }}
-                onSelectDermatologist={async (d) => {
+                onSelectDermatologist={async (d, message) => {
                     if (!latestPredictionId) {
                         toast.error("Missing prediction ID. Try analyzing again.");
                         return;
@@ -885,6 +885,7 @@ const Analysis = () => {
                         await apiCreateReviewRequest({
                             predictionId: latestPredictionId,
                             dermatologistId: d.id || d._id,
+                            message: message || null,
                         });
                         toast.success("Review request sent!");
                         setShowDermPicker(false);
