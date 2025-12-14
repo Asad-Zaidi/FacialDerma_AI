@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
-import { MdEmail, MdLock, MdPerson, MdCheckCircle } from 'react-icons/md';
+import { FaEye, FaEyeSlash, FaArrowLeft, FaClinicMedical } from 'react-icons/fa';
+import { MdEmail, MdLock, MdPerson, MdCheckCircle, MdOutlineDateRange, MdSettings } from 'react-icons/md';
 import { HiSparkles } from 'react-icons/hi';
 import { GrLicense } from "react-icons/gr";
 import { useAuth } from '../contexts/AuthContext';
 import { apiLogin, apiSignUp } from "../api/api";
 import { apiCheckUsername } from "../api/api";
 import { validatePasswordRules } from '../lib/passwordValidation';
+import DropDown from './ui/DropDown';
 
 const Auth = () => {
     const location = useLocation();
@@ -16,6 +17,17 @@ const Auth = () => {
 
     const isLogin = location.pathname === '/Login';
 
+    // Specialization options for dermatologists
+    const specializationOptions = [
+        { value: 'Medical Dermatology', label: 'Medical Dermatology' },
+        { value: 'Surgical Dermatology', label: 'Surgical Dermatology' },
+        { value: 'Dermatopathology', label: 'Dermatopathology' },
+        { value: 'Pediatric Dermatology', label: 'Pediatric Dermatology' },
+        { value: 'Cosmetic Dermatology', label: 'Cosmetic Dermatology' },
+        { value: 'Immunodermatology', label: 'Immunodermatology' },
+        { value: 'Other', label: 'Other' },
+    ];
+
     // States
     const [formData, setFormData] = useState({
         username: '',
@@ -23,7 +35,11 @@ const Auth = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        license: ''
+        license: '',
+        specialization: '',
+        customSpecialization: '',
+        clinic: '',
+        experience: '',
     });
     const [role, setRole] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +51,10 @@ const Auth = () => {
     const [usernameCheck, setUsernameCheck] = useState({ checking: false, available: null, message: '' });
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [pendingMessage, setPendingMessage] = useState('');
+    const [signupStep, setSignupStep] = useState(1);
+    const [showCustomSpecialization, setShowCustomSpecialization] = useState(false);
+
+    const isDermSignup = !isLogin && role === 'dermatologist';
 
     useEffect(() => {
         if (formData.password.length === 0 && formData.confirmPassword.length === 0) {
@@ -50,7 +70,13 @@ const Auth = () => {
     useEffect(() => {
         setMessage('');
         setMessageType('error');
+        setSignupStep(1);
     }, [isLogin]);
+
+    // Reset steps when role changes
+    useEffect(() => {
+        setSignupStep(1);
+    }, [role]);
 
     // Debounced username availability check (signup only)
     useEffect(() => {
@@ -79,7 +105,55 @@ const Auth = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        
+        // Show custom specialization field if "Other" is selected
+        if (name === 'specialization') {
+            setShowCustomSpecialization(value === 'Other');
+            if (value !== 'Other') {
+                setFormData(prev => ({ ...prev, customSpecialization: '' }));
+            }
+        }
+    };
 
+    // Multi-step helpers for dermatologist signup
+    const canProceedStep1 = Boolean(formData.username.trim() && formData.name.trim() && formData.email.trim() && usernameCheck.available !== false);
+    const canProceedStep2 = Boolean(
+        formData.license.trim() && 
+        formData.specialization.trim() && 
+        formData.experience.trim() &&
+        (formData.specialization !== 'Other' || formData.customSpecialization.trim())
+    );
+
+    const handleDermStepForward = (e) => {
+        if (signupStep === 1 && !canProceedStep1) {
+            e.preventDefault();
+            setMessage('Please provide name, username, and email to continue.');
+            setMessageType('error');
+            return;
+        }
+        if (signupStep === 2 && !canProceedStep2) {
+            e.preventDefault();
+            setMessage('License number, specialization, and experience are required.');
+            setMessageType('error');
+            return;
+        }
+        setMessage('');
+        setMessageType('error');
+        setSignupStep(prev => Math.min(3, prev + 1));
+        e.preventDefault();
+    };
+
+    const handleDermStepBack = () => {
+        setMessage('');
+        setSignupStep(prev => Math.max(1, prev - 1));
+    };
+
+    const handleDermSubmit = (e) => {
+        if (signupStep < 3) {
+            handleDermStepForward(e);
+            return;
+        }
+        handleSignupSubmit(e);
     };
 
     // Login Handler
@@ -237,6 +311,11 @@ const Auth = () => {
 
         setLoading(true);
 
+        // Determine final specialization value
+        const finalSpecialization = formData.specialization === 'Other' 
+            ? formData.customSpecialization 
+            : formData.specialization;
+
         const payload = {
             role: role,
             name: formData.name || undefined,
@@ -244,6 +323,9 @@ const Auth = () => {
             email: formData.email,
             password: formData.password,
             ...(role === 'dermatologist' && formData.license && { license: formData.license }),
+            ...(role === 'dermatologist' && finalSpecialization && { specialization: finalSpecialization }),
+            ...(role === 'dermatologist' && formData.clinic && { clinic: formData.clinic }),
+            ...(role === 'dermatologist' && formData.experience && { experience: formData.experience }),
         };
 
         try {
@@ -449,265 +531,680 @@ const Auth = () => {
                             </div>
                         </div>
                     )}                    {/* Form */}
-                    <form onSubmit={handleSubmit} className={isLogin ? "space-y-6" : "space-y-4"}>
+                    <form onSubmit={isDermSignup ? handleDermSubmit : handleSubmit} className={isLogin ? "space-y-6" : "space-y-4"}>
 
-                        {!isLogin && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-slide-down">
-                                {/* Username field with isolated relative container */}
-                                <div>
-                                    <div className="relative">
-                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-                                        <input
-                                            type="text"
-                                            name="username"
-                                            value={formData.username}
-                                            onChange={handleChange}
-                                            required
-                                            className={`
-                                                w-full pl-10 pr-3 py-3
-                                                border border-gray-300 rounded-lg
-                                                focus:ring-2 focus:ring-slate-900 focus:border-transparent
-                                                outline-none transition-all text-sm bg-white peer
-                                                ${usernameCheck.available === false ? 'border-red-500' : usernameCheck.available === true ? 'border-green-500' : ''}
-                                            `}
-                                        />
-                                        <label
-                                            className={`
-                                                absolute left-10 bg-white px-1 pointer-events-none
-                                                text-gray-500 transition-all duration-200
-                                                ${formData.username
-                                                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                                                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                                                }
-                                            `}
-                                        >
-                                            Username
-                                        </label>
-                                    </div>
-                                    <div className="mt-1 text-xs min-h-[16px] leading-4">
-                                        {formData.username && (
-                                            <>
-                                                {usernameCheck.checking ? (
-                                                    <span className="text-gray-500">Checking availability...</span>
-                                                ) : usernameCheck.available === true ? (
-                                                    <span className="text-green-600">{usernameCheck.message}</span>
-                                                ) : usernameCheck.available === false ? (
-                                                    <span className="text-red-600">{usernameCheck.message}</span>
-                                                ) : usernameCheck.message ? (
-                                                    <span className="text-gray-500">{usernameCheck.message}</span>
-                                                ) : null}
-                                            </>
-                                        )}
-                                    </div>
+                        {/* Login View */}
+                        {isLogin && (
+                            <>
+                                <div className="relative animate-slide-down">
+                                    <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                    <input
+                                        type="text"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="
+                                            w-full pl-10 pr-3 py-3
+                                            border border-gray-300 rounded-lg
+                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                            outline-none transition-all text-sm bg-white peer
+                                        "
+                                    />
+                                    <label
+                                        className={`
+                                            absolute left-10 bg-white px-1 pointer-events-none
+                                            text-gray-500 transition-all duration-200
+                                            ${formData.email
+                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                            }
+                                        `}
+                                    >
+                                        Email or Username
+                                    </label>
                                 </div>
 
-                                {/* Full Name field with matching reserved status space */}
-                                <div>
+                                <div className="relative">
                                     <div className="relative">
-                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                        <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+
                                         <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
+                                            type={showPassword ? 'text' : 'password'}
+                                            name="password"
+                                            value={formData.password}
                                             onChange={handleChange}
+                                            required
                                             className="
-                                                w-full pl-10 pr-3 py-3
+                                                w-full pl-10 pr-10 py-3
                                                 border border-gray-300 rounded-lg
                                                 focus:ring-2 focus:ring-slate-900 focus:border-transparent
                                                 outline-none transition-all text-sm bg-white peer
                                             "
                                         />
+
+                                        <button
+                                            type="button"
+                                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                        >
+                                            {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                        </button>
+
                                         <label
                                             className={`
                                                 absolute left-10 bg-white px-1 pointer-events-none
                                                 text-gray-500 transition-all duration-200
-                                                ${formData.name
+                                                ${formData.password
                                                     ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
                                                     : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
                                                 }
                                             `}
                                         >
-                                            Full Name (Optional)
+                                            Password
                                         </label>
                                     </div>
-                                    <div className="mt-1 text-xs min-h-[16px] leading-4"></div>
+
+                                    <div className="mt-2 text-right">
+                                        <Link
+                                            to="/forgot-password"
+                                            className="text-xs text-slate-700 hover:text-slate-900 font-medium hover:underline transition-colors"
+                                        >
+                                            Forgot Password?
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
-                        <div className="relative animate-slide-down">
-                            <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-                            <input
-                                type="text"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className="
-            w-full pl-10 pr-3 py-3
-            border border-gray-300 rounded-lg
-            focus:ring-2 focus:ring-slate-900 focus:border-transparent
-            outline-none transition-all text-sm bg-white peer
-        "
-                            />
-                            <label
-                                className={`
-            absolute left-10 bg-white px-1 pointer-events-none
-            text-gray-500 transition-all duration-200
-            ${formData.email
-                                        ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                                        : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                                    }
-        `}
-                            >
-                                {isLogin ? "Email or Username" : "Email"}
-                            </label>
-                        </div>
-
-                        {/* License Number - Only for Dermatologist Signup */}
-                        {!isLogin && role === 'dermatologist' && (
-                            <div className="relative animate-slide-down">
-                                <GrLicense className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-                                <input
-                                    type="text"
-                                    name="license"
-                                    value={formData.license}
-                                    onChange={handleChange}
-                                    required={role === 'dermatologist'}
-                                    disabled={role !== 'dermatologist'}
-                                    className={`
-                                        w-full pl-10 pr-3 py-3
-                                        border border-gray-300 rounded-lg
-                                        focus:ring-2 focus:ring-slate-900 focus:border-transparent
-                                        outline-none transition-all text-sm bg-white peer
-                                        ${role !== 'dermatologist' ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}
-                                    `}
-                                />
-                                <label
-                                    className={`
-                                        absolute left-10 bg-white px-1 pointer-events-none
-                                        text-gray-500 transition-all duration-200
-                                        ${formData.license
-                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                                        }
-                                    `}
-                                >
-                                    License No. *
-                                </label>
-                            </div>
-                        )}
-
-                        <div className="relative">
-                            <div className="relative">
-                                <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                    className="
-                w-full pl-10 pr-10 py-3
-                border border-gray-300 rounded-lg
-                focus:ring-2 focus:ring-slate-900 focus:border-transparent
-                outline-none transition-all text-sm bg-white peer
-            "
-                                />
-
-                                <button
-                                    type="button"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
-                                >
-                                    {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
-                                </button>
-
-                                <label
-                                    className={`
-                absolute left-10 bg-white px-1 pointer-events-none
-                text-gray-500 transition-all duration-200
-                ${formData.password
-                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                                        }
-            `}
-                                >
-                                    Password
-                                </label>
-                            </div>
-
-                            {isLogin && (
-                                <div className="mt-2 text-right">
-                                    <Link
-                                        to="/forgot-password"
-                                        className="text-xs text-slate-700 hover:text-slate-900 font-medium hover:underline transition-colors"
-                                    >
-                                        Forgot Password?
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-
-
+                        {/* Signup View */}
                         {!isLogin && (
-                            <div className="animate-slide-down relative">
-                                <div className="relative">
-                                    <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
-
-                                    <input
-                                        type={showConfirmPassword ? 'text' : 'password'}
-                                        name="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        required
-                                        aria-describedby="confirm-password-error"
-                                        className={`
-                ${passwordsMatch === null
-                                                ? 'border-gray-300'
-                                                : passwordsMatch
-                                                    ? 'border-green-500'
-                                                    : 'border-red-500'
-                                            }
-                w-full pl-10 pr-10 py-3
-                border rounded-lg
-                focus:ring-2 focus:ring-slate-900 focus:border-transparent
-                outline-none transition-all text-sm bg-white peer
-            `}
-                                    />
-
-                                    <button
-                                        type="button"
-                                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
-                                    >
-                                        {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
-                                    </button>
-
-                                    <label
-                                        className={`
-                absolute left-10 bg-white px-1 pointer-events-none
-                text-gray-500 transition-all duration-200
-                ${formData.confirmPassword
-                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
-                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
-                                            }
-            `}
-                                    >
-                                        Confirm Password
-                                    </label>
-                                </div>
-
-                                {passwordsMatch === false && (
-                                    <p id="confirm-password-error" className="text-red-600 text-xs mt-1">
-                                        Passwords do not match
-                                    </p>
+                            <>
+                                {isDermSignup && (
+                                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">
+                                        <span>Step {signupStep} of 3</span>
+                                        <span className="text-gray-400">Dermatologist registration</span>
+                                    </div>
                                 )}
-                            </div>
 
+                                {/* Dermatologist multi-step */}
+                                {isDermSignup ? (
+                                    <>
+                                        {signupStep === 1 && (
+                                            <div className="space-y-3 animate-slide-down">
+                                                <div>
+                                                    <div className="relative">
+                                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                        <input
+                                                            type="text"
+                                                            name="name"
+                                                            value={formData.name}
+                                                            onChange={handleChange}
+                                                            required
+                                                            className="
+                                                                w-full pl-10 pr-3 py-3
+                                                                border border-gray-300 rounded-lg
+                                                                focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                                outline-none transition-all text-sm bg-white peer
+                                                            "
+                                                        />
+                                                        <label
+                                                            className={`
+                                                                absolute left-10 bg-white px-1 pointer-events-none
+                                                                text-gray-500 transition-all duration-200
+                                                                ${formData.name
+                                                                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                                }
+                                                            `}
+                                                        >
+                                                            Full Name
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div className="relative">
+                                                        <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                        <input
+                                                            type="text"
+                                                            name="username"
+                                                            value={formData.username}
+                                                            onChange={handleChange}
+                                                            required
+                                                            className={`
+                                                                w-full pl-10 pr-3 py-3
+                                                                border border-gray-300 rounded-lg
+                                                                focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                                outline-none transition-all text-sm bg-white peer
+                                                                ${usernameCheck.available === false ? 'border-red-500' : usernameCheck.available === true ? 'border-green-500' : ''}
+                                                            `}
+                                                        />
+                                                        <label
+                                                            className={`
+                                                                absolute left-10 bg-white px-1 pointer-events-none
+                                                                text-gray-500 transition-all duration-200
+                                                                ${formData.username
+                                                                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                                }
+                                                            `}
+                                                        >
+                                                            Username
+                                                        </label>
+                                                    </div>
+                                                    <div className="mt-1 text-xs min-h-[16px] leading-4">
+                                                        {formData.username && (
+                                                            <>
+                                                                {usernameCheck.checking ? (
+                                                                    <span className="text-gray-500">Checking availability...</span>
+                                                                ) : usernameCheck.available === true ? (
+                                                                    <span className="text-green-600">{usernameCheck.message}</span>
+                                                                ) : usernameCheck.available === false ? (
+                                                                    <span className="text-red-600">{usernameCheck.message}</span>
+                                                                ) : usernameCheck.message ? (
+                                                                    <span className="text-gray-500">{usernameCheck.message}</span>
+                                                                ) : null}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {signupStep === 1 && (
+                                            <div className="relative animate-slide-down">
+                                                <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                <input
+                                                    type="text"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="
+                                                        w-full pl-10 pr-3 py-3
+                                                        border border-gray-300 rounded-lg
+                                                        focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                        outline-none transition-all text-sm bg-white peer
+                                                    "
+                                                />
+                                                <label
+                                                    className={`
+                                                        absolute left-10 bg-white px-1 pointer-events-none
+                                                        text-gray-500 transition-all duration-200
+                                                        ${formData.email
+                                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                        }
+                                                    `}
+                                                >
+                                                    Email
+                                                </label>
+                                            </div>
+                                        )}
+
+                                        {signupStep === 2 && (
+                                            <div className="space-y-3 animate-slide-down">
+                                                <div className="relative">
+                                                    <GrLicense className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                    <input
+                                                        type="text"
+                                                        name="license"
+                                                        value={formData.license}
+                                                        onChange={handleChange}
+                                                        required
+                                                        className="
+                                                            w-full pl-10 pr-3 py-3
+                                                            border border-gray-300 rounded-lg
+                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            outline-none transition-all text-sm bg-white peer
+                                                        "
+                                                    />
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.license
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        License No. *
+                                                    </label>
+                                                </div>
+
+                                                <div className="relative">
+                                                    <MdSettings className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10 pointer-events-none" />
+                                                    <DropDown
+                                                        name="specialization"
+                                                        value={formData.specialization}
+                                                        onChange={handleChange}
+                                                        options={specializationOptions}
+                                                        placeholder="Select specialization"
+                                                        widthClass="w-full"
+                                                        borderClass="border-gray-300"
+                                                        selectedClass="bg-slate-300 text-gray-900"
+                                                        highlightClass="bg-slate-200 text-slate-900"
+                                                        ringClass="ring-slate-300"
+                                                        placeholderClass="text-gray-500"
+                                                        triggerPadding="py-3 pl-10 pr-3"
+                                                        triggerFontSize="text-sm"
+                                                    />
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.specialization
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        Specialization *
+                                                    </label>
+                                                </div>
+
+                                                {showCustomSpecialization && (
+                                                    <div className="relative animate-slide-down">
+                                                        <MdSettings className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                        <input
+                                                            type="text"
+                                                            name="customSpecialization"
+                                                            value={formData.customSpecialization}
+                                                            onChange={handleChange}
+                                                            required
+                                                            className="
+                                                                w-full pl-10 pr-3 py-3
+                                                                border border-gray-300 rounded-lg
+                                                                focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                                outline-none transition-all text-sm bg-white peer
+                                                            "
+                                                        />
+                                                        <label
+                                                            className={`
+                                                                absolute left-10 bg-white px-1 pointer-events-none
+                                                                text-gray-500 transition-all duration-200
+                                                                ${formData.customSpecialization
+                                                                    ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                    : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                                }
+                                                            `}
+                                                        >
+                                                            Custom Specialization *
+                                                        </label>
+                                                    </div>
+                                                )}
+
+                                                <div className="relative">
+                                                    <FaClinicMedical className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                    <input
+                                                        type="text"
+                                                        name="clinic"
+                                                        value={formData.clinic}
+                                                        onChange={handleChange}
+                                                        className="
+                                                            w-full pl-10 pr-3 py-3
+                                                            border border-gray-300 rounded-lg
+                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            outline-none transition-all text-sm bg-white peer
+                                                        "
+                                                    />
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.clinic
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        Clinic (optional)
+                                                    </label>
+                                                </div>
+
+                                                <div className="relative">
+                                                    <MdOutlineDateRange className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                    <input
+                                                        type="number"
+                                                        name="experience"
+                                                        value={formData.experience}
+                                                        onChange={handleChange}
+                                                        required
+                                                        min="0"
+                                                        className="
+                                                            w-full pl-10 pr-3 py-3
+                                                            border border-gray-300 rounded-lg
+                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            outline-none transition-all text-sm bg-white peer
+                                                        "
+                                                    />
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.experience
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        Years of experience *
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {signupStep === 3 && (
+                                            <div className="space-y-3 animate-slide-down">
+                                                <div className="relative">
+                                                    <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+
+                                                    <input
+                                                        type={showPassword ? 'text' : 'password'}
+                                                        name="password"
+                                                        value={formData.password}
+                                                        onChange={handleChange}
+                                                        required
+                                                        className="
+                                                            w-full pl-10 pr-10 py-3
+                                                            border border-gray-300 rounded-lg
+                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            outline-none transition-all text-sm bg-white peer
+                                                        "
+                                                    />
+
+                                                    <button
+                                                        type="button"
+                                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                                    >
+                                                        {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                                    </button>
+
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.password
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        Password
+                                                    </label>
+                                                </div>
+
+                                                <div className="relative">
+                                                    <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+
+                                                    <input
+                                                        type={showConfirmPassword ? 'text' : 'password'}
+                                                        name="confirmPassword"
+                                                        value={formData.confirmPassword}
+                                                        onChange={handleChange}
+                                                        required
+                                                        aria-describedby="confirm-password-error"
+                                                        className={`
+                                                            ${passwordsMatch === null
+                                                                ? 'border-gray-300'
+                                                                : passwordsMatch
+                                                                    ? 'border-green-500'
+                                                                    : 'border-red-500'
+                                                            }
+                                                            w-full pl-10 pr-10 py-3
+                                                            border rounded-lg
+                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            outline-none transition-all text-sm bg-white peer
+                                                        `}
+                                                    />
+
+                                                    <button
+                                                        type="button"
+                                                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                                    >
+                                                        {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                                    </button>
+
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.confirmPassword
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        Confirm Password
+                                                    </label>
+                                                </div>
+
+                                                {passwordsMatch === false && (
+                                                    <p id="confirm-password-error" className="text-red-600 text-xs mt-1">
+                                                        Passwords do not match
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    /* Patient signup single step */
+                                    <div className="space-y-3 animate-slide-down">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <div className="relative">
+                                                    <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                    <input
+                                                        type="text"
+                                                        name="username"
+                                                        value={formData.username}
+                                                        onChange={handleChange}
+                                                        required
+                                                        className={`
+                                                            w-full pl-10 pr-3 py-3
+                                                            border border-gray-300 rounded-lg
+                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            outline-none transition-all text-sm bg-white peer
+                                                            ${usernameCheck.available === false ? 'border-red-500' : usernameCheck.available === true ? 'border-green-500' : ''}
+                                                        `}
+                                                    />
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.username
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        Username
+                                                    </label>
+                                                </div>
+                                                <div className="mt-1 text-xs min-h-[16px] leading-4">
+                                                    {formData.username && (
+                                                        <>
+                                                            {usernameCheck.checking ? (
+                                                                <span className="text-gray-500">Checking availability...</span>
+                                                            ) : usernameCheck.available === true ? (
+                                                                <span className="text-green-600">{usernameCheck.message}</span>
+                                                            ) : usernameCheck.available === false ? (
+                                                                <span className="text-red-600">{usernameCheck.message}</span>
+                                                            ) : usernameCheck.message ? (
+                                                                <span className="text-gray-500">{usernameCheck.message}</span>
+                                                            ) : null}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="relative">
+                                                    <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                                    <input
+                                                        type="text"
+                                                        name="name"
+                                                        value={formData.name}
+                                                        onChange={handleChange}
+                                                        className="
+                                                            w-full pl-10 pr-3 py-3
+                                                            border border-gray-300 rounded-lg
+                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            outline-none transition-all text-sm bg-white peer
+                                                        "
+                                                    />
+                                                    <label
+                                                        className={`
+                                                            absolute left-10 bg-white px-1 pointer-events-none
+                                                            text-gray-500 transition-all duration-200
+                                                            ${formData.name
+                                                                ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                                : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                            }
+                                                        `}
+                                                    >
+                                                        Full Name (Optional)
+                                                    </label>
+                                                </div>
+                                                <div className="mt-1 text-xs min-h-[16px] leading-4"></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative">
+                                            <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+                                            <input
+                                                type="text"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                required
+                                                className="
+                                                    w-full pl-10 pr-3 py-3
+                                                    border border-gray-300 rounded-lg
+                                                    focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                    outline-none transition-all text-sm bg-white peer
+                                                "
+                                            />
+                                            <label
+                                                className={`
+                                                    absolute left-10 bg-white px-1 pointer-events-none
+                                                    text-gray-500 transition-all duration-200
+                                                    ${formData.email
+                                                        ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                        : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                    }
+                                                `}
+                                            >
+                                                Email
+                                            </label>
+                                        </div>
+
+                                        <div className="relative">
+                                            <div className="relative">
+                                                <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+
+                                                <input
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    name="password"
+                                                    value={formData.password}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="
+                                                        w-full pl-10 pr-10 py-3
+                                                        border border-gray-300 rounded-lg
+                                                        focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                        outline-none transition-all text-sm bg-white peer
+                                                    "
+                                                />
+
+                                                <button
+                                                    type="button"
+                                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                                >
+                                                    {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                                </button>
+
+                                                <label
+                                                    className={`
+                                                        absolute left-10 bg-white px-1 pointer-events-none
+                                                        text-gray-500 transition-all duration-200
+                                                        ${formData.password
+                                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                        }
+                                                    `}
+                                                >
+                                                    Password
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative">
+                                            <div className="relative">
+                                                <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base z-10" />
+
+                                                <input
+                                                    type={showConfirmPassword ? 'text' : 'password'}
+                                                    name="confirmPassword"
+                                                    value={formData.confirmPassword}
+                                                    onChange={handleChange}
+                                                    required
+                                                    aria-describedby="confirm-password-error"
+                                                    className={`
+                                                        ${passwordsMatch === null
+                                                            ? 'border-gray-300'
+                                                            : passwordsMatch
+                                                                ? 'border-green-500'
+                                                                : 'border-red-500'
+                                                        }
+                                                        w-full pl-10 pr-10 py-3
+                                                        border rounded-lg
+                                                        focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                        outline-none transition-all text-sm bg-white peer
+                                                    `}
+                                                />
+
+                                                <button
+                                                    type="button"
+                                                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                                >
+                                                    {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                                </button>
+
+                                                <label
+                                                    className={`
+                                                        absolute left-10 bg-white px-1 pointer-events-none
+                                                        text-gray-500 transition-all duration-200
+                                                        ${formData.confirmPassword
+                                                            ? "top-0 -translate-y-1/2 text-xs font-medium text-slate-900"
+                                                            : "top-1/2 -translate-y-1/2 text-sm peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-slate-900"
+                                                        }
+                                                    `}
+                                                >
+                                                    Confirm Password
+                                                </label>
+                                            </div>
+
+                                            {passwordsMatch === false && (
+                                                <p id="confirm-password-error" className="text-red-600 text-xs mt-1">
+                                                    Passwords do not match
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {/* Success Message */}
@@ -730,16 +1227,46 @@ const Auth = () => {
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            disabled={loading || (!isLogin && usernameCheck.available === false)}
-                            className="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm relative overflow-hidden group"
-                        >
-                            <span className="relative z-10 flex items-center justify-center gap-2">
-                                {isLogin ? 'Sign in' : 'Create account'}
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-                        </button>
+                        {/* Actions */}
+                        {isDermSignup ? (
+                            <div className="flex items-center gap-3">
+                                {signupStep > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={handleDermStepBack}
+                                        className="flex-1 border border-gray-300 text-gray-800 font-semibold py-2.5 rounded-lg transition-all hover:bg-gray-100 text-sm"
+                                    >
+                                        Back
+                                    </button>
+                                )}
+                                <button
+                                    type="submit"
+                                    disabled={
+                                        loading ||
+                                        (signupStep === 1 && !canProceedStep1) ||
+                                        (signupStep === 2 && !canProceedStep2) ||
+                                        (signupStep === 3 && usernameCheck.available === false)
+                                    }
+                                    className="flex-[2] bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm relative overflow-hidden group"
+                                >
+                                    <span className="relative z-10 flex items-center justify-center gap-2">
+                                        {signupStep < 3 ? 'Next' : 'Create account'}
+                                    </span>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                type="submit"
+                                disabled={loading || (!isLogin && usernameCheck.available === false)}
+                                className="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm relative overflow-hidden group"
+                            >
+                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                    {isLogin ? 'Sign in' : 'Create account'}
+                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                            </button>
+                        )}
                     </form>
 
                     {/* Footer Link */}
