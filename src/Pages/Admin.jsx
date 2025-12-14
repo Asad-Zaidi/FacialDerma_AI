@@ -341,7 +341,6 @@ const Admin = () => {
                     <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Specialization:</strong> {verification.specialization || 'N/A'}</p>
                     <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Clinic:</strong> {verification.clinic || 'N/A'}</p>
                     <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Experience:</strong> {verification.experience || 'N/A'} years</p>
-                    <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Bio:</strong> {verification.bio || 'N/A'}</p>
                     <p className="my-2 text-gray-700 text-sm"><strong className="text-gray-800 font-semibold">Submitted:</strong> {new Date(verification.submittedAt).toLocaleString('en-GB')}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2.5 mt-4">
