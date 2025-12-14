@@ -9,7 +9,8 @@ const ActivityLog = ({ activityLogs }) => {
         search: '',
         dateFrom: '',
         dateTo: '',
-        status: ''
+        status: '',
+        userType: ''
     });
 
     const filteredLogs = useMemo(() => {
@@ -23,8 +24,9 @@ const ActivityLog = ({ activityLogs }) => {
             const matchesDateTo = filters.dateTo === '' || logDate <= new Date(filters.dateTo + 'T23:59:59');
             
             const matchesStatus = filters.status === '' || filters.status === 'successful';
+            const matchesUserType = filters.userType === '' || log.userType === filters.userType;
 
-            return matchesSearch && matchesDateFrom && matchesDateTo && matchesStatus;
+            return matchesSearch && matchesDateFrom && matchesDateTo && matchesStatus && matchesUserType;
         });
     }, [activityLogs, filters]);
 
@@ -47,7 +49,7 @@ const ActivityLog = ({ activityLogs }) => {
 
             {showFilters && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
                             <div className="relative">
@@ -80,15 +82,17 @@ const ActivityLog = ({ activityLogs }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
                             <DropDown
-                                value={filters.status}
-                                onChange={(e) => handleFilterChange('status', e.target.value)}
+                                value={filters.userType}
+                                onChange={(e) => handleFilterChange('userType', e.target.value)}
                                 options={[
-                                    { value: "", label: "All Status" },
-                                    { value: "successful", label: "Successful" }
+                                    { value: "", label: "All Types" },
+                                    { value: "Admin", label: "Admin" },
+                                    { value: "Patient", label: "Patient" },
+                                    { value: "Dermatologist", label: "Dermatologist" }
                                 ]}
-                                placeholder="All Status"
+                                placeholder="All Types"
                                 widthClass="w-full"
                                 borderClass="border-gray-300"
                                 selectedClass="bg-purple-500 text-gray-950"
@@ -102,7 +106,7 @@ const ActivityLog = ({ activityLogs }) => {
                     </div>
                     <div className="mt-4 flex gap-2">
                         <button
-                            onClick={() => setFilters({ search: '', dateFrom: '', dateTo: '', status: '' })}
+                            onClick={() => setFilters({ search: '', dateFrom: '', dateTo: '', status: '', userType: '' })}
                             className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
                         >
                             Clear Filters

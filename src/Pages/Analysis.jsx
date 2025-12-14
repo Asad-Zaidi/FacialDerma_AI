@@ -218,6 +218,7 @@ const Analysis = () => {
                 predicted_label: data.predicted_label,
                 confidence_score: data.confidence_score,
                 all_probabilities: data.all_probabilities,
+                imageUrl: data.image_url, // Add the image URL from the response
                 timestamp: new Date().toLocaleString('en-US', {
                     year: 'numeric',
                     month: 'long',

@@ -134,47 +134,39 @@ const createPdf = (prediction, treatmentSuggestions, userData, dermComment, down
 
     addSectionHeader("ANALYSIS & DIAGNOSIS RESULTS");
 
+    // Create two-column layout
+    const leftColWidth = (pageWidth - margin * 2 - 10) / 2; // 10px gap between columns
+    const rightColWidth = leftColWidth;
+    const leftColX = margin;
+    const rightColX = margin + leftColWidth + 10;
+
+    // Store the starting Y position for both columns
+    const contentStartY = y;
+
+    // Left Column: Analysis Results
     doc.setFontSize(10);
-    doc.text("Primary AI-Detected Condition:", margin + 2, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Primary AI-Detected Condition:", leftColX + 2, y);
     y += 8;
 
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(30, 41, 59);
-
     const diagnosisText = prediction.predicted_label.toUpperCase();
-
-    // Diagnosis + Image
-    if (imageDataUrl) {
-        try {
-            let imgW = 55;
-            let imgH = 55;
-
-            const xImg = margin + 2;
-            const yImg = y;
-
-            doc.addImage(imageDataUrl, "JPEG", xImg, yImg, imgW, imgH);
-
-            doc.text(diagnosisText, xImg + imgW + 8, yImg + 10);
-
-            y += imgH + 10;
-        } catch (err) {
-            console.warn("Image error:", err);
-            doc.text(diagnosisText, margin + 2, y);
-            y += 18;
-        }
-    } else {
-        doc.text(diagnosisText, margin + 2, y);
-        y += 18;
-    }
+    doc.text(diagnosisText, leftColX + 2, y);
+    y += 18;
 
     doc.setTextColor(0, 0, 0);
 
     // ---------------------- CONFIDENCE METER ----------------------
-    addSectionHeader("CONFIDENCE SCORE");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("CONFIDENCE SCORE", leftColX + 2, y);
+    y += 8;
 
-    const meterWidth = pageWidth - margin * 2 - 30;
-    const meterX = margin + 2;
+    const meterWidth = leftColWidth - 4;
+    const meterX = leftColX + 2;
 
     doc.setFillColor(200, 200, 200);
     doc.rect(meterX, y, meterWidth, 6, "F");
@@ -182,10 +174,10 @@ const createPdf = (prediction, treatmentSuggestions, userData, dermComment, down
     let confidenceColor = [239, 68, 68];
     let message = "Low Confidence — clinical verification recommended.";
 
-    if (prediction.confidence_score >= 0.85) {
+    if (prediction.confidence_score >= 0.8) {
         confidenceColor = [20, 160, 20];
         message = "High Confidence — prediction is reliable.";
-    } else if (prediction.confidence_score >= 0.6) {
+    } else if (prediction.confidence_score >= 0.5) {
         confidenceColor = [251, 191, 36];
         message = "Moderate Confidence — consider clinical review.";
     }
@@ -203,8 +195,93 @@ const createPdf = (prediction, treatmentSuggestions, userData, dermComment, down
 
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(9);
-    doc.text(`* ${message}`, meterX, y);
-    y += 10;
+    const wrappedMessage = doc.splitTextToSize(`* ${message}`, meterWidth);
+    doc.text(wrappedMessage, meterX, y);
+    y += wrappedMessage.length * 5 + 5;
+
+    // Add confidence score legend
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Legend:", meterX, y);
+    y += 4;
+
+    // >80% - Green
+    doc.setTextColor(20, 160, 20);
+    doc.text(">80%", meterX + 2, y);
+    doc.setTextColor(120, 120, 120);
+    doc.text("High Confidence", meterX + 20, y);
+    y += 4;
+
+    // 50-80% - Yellow
+    doc.setTextColor(251, 191, 36);
+    doc.text("50-80%", meterX + 2, y);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Moderate Confidence", meterX + 20, y);
+    y += 4;
+
+    // <50% - Red
+    doc.setTextColor(239, 68, 68);
+    doc.text("<50%", meterX + 2, y);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Low Confidence", meterX + 20, y);
+    y += 6;
+
+    // Right Column: Uploaded Picture
+    let rightColY = contentStartY; // Start at the same Y as left column content
+
+    // Picture header
+    doc.setFillColor(...sectionBg);
+    doc.rect(rightColX, rightColY, rightColWidth, 8, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(70, 70, 70);
+    doc.text("UPLOADED PICTURE", rightColX + 2, rightColY + 5);
+    doc.setTextColor(0, 0, 0);
+    rightColY += 10;
+
+    // Add image if available
+    if (imageDataUrl) {
+        try {
+            // Fixed 2x2 inch box (144 points = 2 inches at 72 DPI)
+            const imageBoxWidth = 80;             
+            const imageBoxHeight = 70;
+
+            const xImg = rightColX + 8;
+            const yImg = rightColY;
+
+            // Add a border around the image box
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.5);
+            doc.rect(xImg, yImg, imageBoxWidth, imageBoxHeight);
+
+            // Add the image to fit within the 2x2 inch box
+            doc.addImage(imageDataUrl, "JPEG", xImg + 2, yImg + 2, imageBoxWidth - 4, imageBoxHeight - 4);
+
+            rightColY += imageBoxHeight + 4;
+
+            // Add small caption
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "italic");
+            doc.setTextColor(120, 120, 120);
+            doc.text("Analysis Image", xImg + imageBoxWidth / 2, rightColY, { align: "center" });
+
+        } catch (err) {
+            console.warn("Image error:", err);
+            // Fallback: show text if image fails
+            doc.setFontSize(9);
+            doc.setTextColor(150, 150, 150);
+            doc.text("Image not available", rightColX + 2, rightColY);
+        }
+    } else {
+        // No image available
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text("No image available", rightColX + 2, rightColY);
+        console.log("No imageDataUrl provided to PDF generator");
+    }
+
+    // Set y to the bottom of the tallest column
+    y = Math.max(y, rightColY + 6);
 
     // ---------------------- TREATMENT ----------------------
     addSectionHeader("TREATMENT RECOMMENDATIONS");
@@ -219,7 +296,7 @@ const createPdf = (prediction, treatmentSuggestions, userData, dermComment, down
         styles: { fontSize: 9 },
     });
 
-    y = doc.lastAutoTable.finalY + 10;
+    y = doc.lastAutoTable.finalY + 4;
 
     // ---------------------- PREVENTION ----------------------
     if (prevention.length) {
@@ -229,7 +306,7 @@ const createPdf = (prediction, treatmentSuggestions, userData, dermComment, down
             doc.text(`${i + 1}. ${item}`, margin + 2, y);
             y += 5;
         });
-        y += 8;
+        y += 2;
     }
 
     // ---------------------- RESOURCES ----------------------
