@@ -277,7 +277,7 @@ const NearestDermatologyMap = () => {
             <div className="mt-4 flex flex-col items-start space-y-2">
                 {/* Location */}
                 {locationStatus === 'initializing' && <p className="text-sm text-gray-600">🔄 Initializing location services...</p>}
-                {locationStatus === 'requesting' && <p className="text-sm text-blue-600">📍 Requesting your location...</p>}
+                {/* {locationStatus === 'requesting' && <p className="text-sm text-blue-600">📍 Requesting your location...</p>} */}
                 {locationStatus === 'searching' && <p className="text-sm text-blue-600">🔍 Finding your exact location...</p>}
                 {locationStatus === 'found' && <p className="text-sm text-green-600">✅ Your location found!</p>}
                 {locationStatus === 'not-supported' && <p className="text-sm text-red-500">❌ Geolocation not supported</p>}
@@ -295,7 +295,7 @@ const NearestDermatologyMap = () => {
 
                 {/* Search */}
                 {searchStatus === 'searching' && <p className="text-sm text-blue-600">Searching for nearby dermatology centers... ⏳</p>}
-                {searchStatus === 'success' && <p className="text-sm text-green-600">Found {dermatologyCenters.length} nearby dermatology centers. Markers shown on the map. ✅</p>}
+                {searchStatus === 'success' && <p className="text-sm m-2 text-green-600">Found {dermatologyCenters.length} nearby dermatology centers.</p>}
                 {(searchStatus === 'no-results' || searchStatus.startsWith('error')) && <p className="text-sm text-orange-600">No centers found nearby or an API issue occurred. ({searchStatus})</p>}
             </div>
 

@@ -533,7 +533,7 @@ const Admin = () => {
                             <IoMedkit className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
                             {!sidebarCollapsed && <span>Treatment DB</span>}
                         </button>
-                        <button
+                        {/* <button
                             className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'emailTemplates' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
                             onClick={() => setActiveTab('emailTemplates')}
                             title="Email Templates"
@@ -548,7 +548,7 @@ const Admin = () => {
                         >
                             <LuBrainCircuit className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
                             {!sidebarCollapsed && <span>ML Model</span>}
-                        </button>
+                        </button> */}
                         <button
                             className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'activityLog' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
                             onClick={() => setActiveTab('activityLog')}
