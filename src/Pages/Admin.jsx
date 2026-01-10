@@ -30,7 +30,8 @@ import {
     FaKey,
     FaBars,
     FaTimes,
-    FaSignOutAlt
+    FaSignOutAlt,
+    FaCommentDots
 } from 'react-icons/fa';
 import { PiWarningCircleLight } from 'react-icons/pi';
 import { MdClose } from 'react-icons/md';
@@ -43,6 +44,7 @@ import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
 import ActivityLog from '../components/ActivityLog';
 import TreatmentManagement from '../components/TreatmentManagement';
+import SupportTickets from '../components/SupportTickets';
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -558,6 +560,14 @@ const Admin = () => {
                             <RxActivityLog className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
                             {!sidebarCollapsed && <span>Activity Log</span>}
                         </button>
+                        <button
+                            className={`w-full px-5 py-4 border-none bg-transparent text-white text-base font-medium cursor-pointer transition-all duration-300 flex items-center text-left ${sidebarCollapsed ? 'justify-center gap-0' : 'gap-4'} hover:bg-white hover:bg-opacity-10 ${activeTab === 'supportTickets' ? 'bg-white bg-opacity-20 border-l-4 border-white' : ''}`}
+                            onClick={() => setActiveTab('supportTickets')}
+                            title="Support Tickets"
+                        >
+                            <FaCommentDots className={`text-xl ${sidebarCollapsed ? '' : 'min-w-[20px]'}`} />
+                            {!sidebarCollapsed && <span>Support Tickets</span>}
+                        </button>
                     </nav>
 
                     <div className="py-5 border-t border-white border-opacity-20">
@@ -777,6 +787,11 @@ const Admin = () => {
                         {/* Treatment Database Tab */}
                         {activeTab === 'treatmentdatabase' && (
                             <TreatmentManagement />
+                        )}
+
+                        {/* Support Tickets Tab */}
+                        {activeTab === 'supportTickets' && (
+                            <SupportTickets />
                         )}
 
                         

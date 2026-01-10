@@ -194,6 +194,14 @@ export const apiUpdateTreatmentSuggestion = (name, data) => api.put(`/treatment/
 export const apiDeleteTreatmentSuggestion = (name) => api.delete(`/treatment/suggestions/${name}`);
 
 // ===========================================================
-// 14. EXPORT DEFAULT
+// 14. SUPPORT TICKETS APIs
+// ===========================================================
+export const apiSubmitSupportTicket = (data) => api.post("/support/tickets", data);
+export const apiGetSupportTickets = (status = '') => api.get(`/support/tickets${status ? `?status=${status}` : ''}`);
+export const apiUpdateSupportTicket = (ticketId, data) => api.put(`/support/tickets/${ticketId}`, data);
+export const apiDeleteSupportTicket = (ticketId) => api.delete(`/support/tickets/${ticketId}`);
+
+// ===========================================================
+// 15. EXPORT DEFAULT
 // ===========================================================
 export default api;

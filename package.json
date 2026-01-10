@@ -15,6 +15,7 @@
     "caniuse-lite": "^1.0.30001755",
     "cors": "^2.8.5",
     "disposable-email-domains": "^1.0.62",
+    "firebase": "^12.7.0",
     "framer-motion": "^12.23.24",
     "hamburger-react": "^2.5.2",
     "js-cookie": "^3.0.5",

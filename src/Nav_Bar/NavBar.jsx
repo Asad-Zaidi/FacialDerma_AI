@@ -1,13 +1,19 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FaBars, FaTimes, FaBell, FaUser } from "react-icons/fa";
 import { IoMdHome, IoMdInformationCircle, IoMdAnalytics } from "react-icons/io";
-import { MdLogin } from "react-icons/md";
+import { MdLogin, MdOutlineSupportAgent } from "react-icons/md";
 import Notifications from "../components/Notifications";
 import ReviewPreviewModal from "../components/ReviewPreviewModal";
 import PatientReviewModal from "../components/PatientReviewModal";
 import Logo from "../Assets/logo.png";
 import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview, apiMarkNotificationRead } from "../api/api";
+import DropDown from "../components/ui/DropDown";
+
+const SUPPORT_OPTIONS = [
+    { value: "/faq", label: "FAQ" },
+    { value: "/contact-support", label: "Contact" }
+];
 
 const Navbar = () => {
     
@@ -26,6 +32,9 @@ const Navbar = () => {
         }
     };
 
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const initialAuth = getInitialAuthState();
     const [isLoggedIn] = useState(initialAuth.isLoggedIn);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -40,6 +49,15 @@ const Navbar = () => {
     const [currentRequestId, setCurrentRequestId] = useState(null);
     const [showPatientReview, setShowPatientReview] = useState(false);
     const [patientReviewData, setPatientReviewData] = useState(null);
+    const [supportSelection, setSupportSelection] = useState("");
+
+    useEffect(() => {
+        if (SUPPORT_OPTIONS.some(opt => opt.value === location.pathname)) {
+            setSupportSelection(location.pathname);
+        } else {
+            setSupportSelection("");
+        }
+    }, [location.pathname]);
 
     const toggleNotifications = async () => {
         const next = !showNotifications;
@@ -66,6 +84,14 @@ const Navbar = () => {
                 setNotificationCount(0);
             }
         }
+    };
+
+    const handleSupportChange = (input) => {
+        const val = typeof input === 'string' ? input : input?.target?.value;
+        if (!val) return;
+        setSupportSelection(val);
+        navigate(val);
+        setMenuOpen(false);
     };
 
     useEffect(() => {
@@ -109,7 +135,7 @@ const Navbar = () => {
                         <div className="flex items-center gap-2 group">
                             <NavLink
                                 to="/"
-                                className="flex items-center gap-2 transition-transform duration-300 group-hover:scale-105"
+                                className="flex items-center gap-2 transition-transform duration-300"
                                 onClick={closeMenu}
                             >
                                 {/* Logo Icon Background: Charcoal Gradient */}
@@ -130,205 +156,213 @@ const Navbar = () => {
                             </NavLink>
                         </div>
 
-                        {/* Desktop Navigation */}
-                        <ul className="hidden md:flex items-center gap-2 lg:gap-2">
-                            <li>
-                                <NavLink
-                                    to="/"
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md'
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                        }`
-                                    }
-                                >
-                                    {/* <IoMdHome className="text-lg" /> */}
-                                    <span>Home</span>
-                                </NavLink>
-                            </li>
-                            <li>
-                                <NavLink
-                                    to="/About"
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md'
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                        }`
-                                    }
-                                >
-                                    {/* <IoMdInformationCircle className="text-lg" /> */}
-                                    <span>About</span>
-                                </NavLink>
-                            </li>
-
-                            {isLoggedIn ? (
-                                <>
-
-                                    {userRole === "patient" && (
-                                        <li>
-                                            <NavLink
-                                                to="/Analysis"
-                                                className={({ isActive }) =>
-                                                    `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-200 ${isActive
-                                                        ? 'bg-gray-900 text-white shadow-md'
-                                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                                    }`
-                                                }
-                                            >
-                                                {/* <IoMdAnalytics className="text-lg" /> */}
-                                                <span>Analysis</span>
-                                            </NavLink>
-                                        </li>
-                                    )}
-
-
-                                    {/* Notifications Button */}
-                                    <li className="relative">
-                                        <button
-                                            onClick={toggleNotifications}
-                                            className="relative flex items-center justify-center w-10 h-10 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
-                                        >
-                                            <FaBell className="text-lg" />
-                                            {notificationCount > 0 && (
-                                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                                                    {notificationCount}
-                                                </span>
-                                            )}
-                                        </button>
-                                        {showNotifications && (
-                                            <Notifications
-                                                notifications={notifications}
-                                                onClose={() => setShowNotifications(false)}
-                                                onClearAll={() => {
-                                                    const allIds = notifications.map(n => n.id || n._id);
-                                                    const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
-                                                    const updatedDeletedIds = [...new Set([...deletedIds, ...allIds])];
-                                                    localStorage.setItem('deletedNotifications', JSON.stringify(updatedDeletedIds));
-                                                    setNotifications([]);
-                                                    setNotificationCount(0);
-                                                }}
-                                                onDeleteNotification={(notificationId) => {
-                                                    const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
-                                                    deletedIds.push(notificationId);
-                                                    localStorage.setItem('deletedNotifications', JSON.stringify(deletedIds));
-
-                                                    setNotifications(prev => {
-                                                        const updated = prev.filter(n => (n.id || n._id) !== notificationId);
-                                                        const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
-                                                        setNotificationCount(unreadCount);
-                                                        return updated;
-                                                    });
-                                                }}
-                                                onItemClick={async (n) => {
-                                                    
-                                                    if (n?.id || n?._id) {
-                                                        const notifId = n.id || n._id;
-                                                        try {
-                                                            await apiMarkNotificationRead(notifId);
-                                                            
-                                                            setNotifications(prev => {
-                                                                const updated = prev.map(notif =>
-                                                                    (notif.id || notif._id) === notifId
-                                                                        ? { ...notif, isRead: true, read: true }
-                                                                        : notif
-                                                                );
-                                                                const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
-                                                                setNotificationCount(unreadCount);
-                                                                return updated;
-                                                            });
-                                                        } catch (err) {
-                                                            console.error('Failed to mark notification as read:', err);
-                                                        }
-                                                    }
-
-                                                    const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
-                                                    if (!requestId) return;
-
-                                                    
-                                                    if (userRole === 'dermatologist' && n?.type === 'review_requested') {
-                                                        setCurrentRequestId(requestId);
-                                                        setPreviewError("");
-                                                        setPreviewPrediction(null);
-                                                        setPreviewLoading(true);
-                                                        setShowReviewPreview(true);
-                                                        try {
-                                                            const res = await apiGetReviewRequest(requestId);
-                                                            setPreviewPrediction(res.data);
-                                                        } catch (err) {
-                                                            const msg = err?.response?.data?.error || 'Failed to load prediction details';
-                                                            setPreviewError(msg);
-                                                        } finally {
-                                                            setPreviewLoading(false);
-                                                        }
-                                                    }
-                                                    
-                                                    else if (userRole === 'patient' && n?.type === 'review_submitted') {
-                                                        setPreviewError("");
-                                                        setPatientReviewData(null);
-                                                        setPreviewLoading(true);
-                                                        setShowPatientReview(true);
-                                                        try {
-                                                            const res = await apiGetReviewRequest(requestId);
-                                                            setPatientReviewData(res.data);
-                                                        } catch (err) {
-                                                            const msg = err?.response?.data?.error || 'Failed to load review details';
-                                                            setPreviewError(msg);
-                                                        } finally {
-                                                            setPreviewLoading(false);
-                                                        }
-                                                    }
-                                                    
-                                                    else if (userRole === 'patient' && n?.type === 'review_rejected') {
-                                                        setPreviewError("");
-                                                        setPatientReviewData(null);
-                                                        setPreviewLoading(true);
-                                                        setShowPatientReview(true);
-                                                        try {
-                                                            const res = await apiGetReviewRequest(requestId);
-                                                            setPatientReviewData(res.data);
-                                                        } catch (err) {
-                                                            const msg = err?.response?.data?.error || 'Failed to load rejection details';
-                                                            setPreviewError(msg);
-                                                        } finally {
-                                                            setPreviewLoading(false);
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                        )}
-                                    </li>
-
+                        {/* Desktop Navigation - Centered */}
+                        <div className="hidden md:flex flex-1 justify-center">
+                            <ul className="flex items-center gap-2 lg:gap-2">
+                                <li>
+                                    <NavLink
+                                        to="/"
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                                ? 'bg-gray-900 text-white shadow-md'
+                                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                            }`
+                                        }
+                                    >
+                                        {/* <IoMdHome className="text-lg" /> */}
+                                        <span>Home</span>
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink
+                                        to="/About"
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                                ? 'bg-gray-900 text-white shadow-md'
+                                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                            }`
+                                        }
+                                    >
+                                        {/* <IoMdInformationCircle className="text-lg" /> */}
+                                        <span>About</span>
+                                    </NavLink>
+                                </li>
+                                {isLoggedIn && userRole === "patient" && (
                                     <li>
                                         <NavLink
-                                            to={userRole === 'dermatologist' ? "/DProfile" : "/Profile"}
+                                            to="/Analysis"
                                             className={({ isActive }) =>
-                                                `flex items-center gap-1 px-1 py-1 rounded-full font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                                    ? 'bg-gray-600 text-white shadow-md'
-                                                    : 'text-gray-900 hover:bg-gray-400 hover:text-gray-900'
+                                                `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-200 ${isActive
+                                                    ? 'bg-gray-900 text-white shadow-md'
+                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                                 }`
                                             }
                                         >
-                                            <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <FaUser className="text-lg text-gray-600" />
-                                            </div>
+                                            {/* <IoMdAnalytics className="text-lg" /> */}
+                                            <span>Analysis</span>
                                         </NavLink>
                                     </li>
-
-                                    
-                                </>
-                            ) : (
-                                <li>
-                                    <NavLink
-                                        to="/Login"
-
-                                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg font-semibold text-sm lg:text-base bg-blue-900 text-white hover:shadow-lg hover:scale-105 transition-all duration-300"
-                                    >
-                                        <MdLogin className="text-lg" />
-                                        <span>Login</span>
-                                    </NavLink>
+                                )}
+                                <li className="w-26">
+                                    <DropDown
+                                        name="support"
+                                        value={supportSelection}
+                                        onChange={handleSupportChange}
+                                        options={SUPPORT_OPTIONS}
+                                        placeholder="Support"
+                                        widthClass="w-full"
+                                        borderClass="border-none"
+                                        selectedClass="bg-gray-300 text-gray-700"
+                                        highlightClass="bg-gray-200 text-gray-900"
+                                        ringClass="ring-gray-300"
+                                        triggerPadding="py-2.5 px-3"
+                                        triggerFontSize="text-sm font-medium"
+                                    />
                                 </li>
+                            </ul>
+                        </div>
+
+                        {/* Right Side - Notifications & Profile/Login */}
+                        <div className="hidden md:flex items-center gap-2">
+                            {isLoggedIn && (
+                                <div className="relative">
+                                    <button
+                                        onClick={toggleNotifications}
+                                        className="relative flex items-center justify-center w-10 h-10 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
+                                    >
+                                        <FaBell className="text-lg" />
+                                        {notificationCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                                                {notificationCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                    {showNotifications && (
+                                        <Notifications
+                                            notifications={notifications}
+                                            onClose={() => setShowNotifications(false)}
+                                            onClearAll={() => {
+                                                const allIds = notifications.map(n => n.id || n._id);
+                                                const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                                                const updatedDeletedIds = [...new Set([...deletedIds, ...allIds])];
+                                                localStorage.setItem('deletedNotifications', JSON.stringify(updatedDeletedIds));
+                                                setNotifications([]);
+                                                setNotificationCount(0);
+                                            }}
+                                            onDeleteNotification={(notificationId) => {
+                                                const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
+                                                deletedIds.push(notificationId);
+                                                localStorage.setItem('deletedNotifications', JSON.stringify(deletedIds));
+
+                                                setNotifications(prev => {
+                                                    const updated = prev.filter(n => (n.id || n._id) !== notificationId);
+                                                    const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
+                                                    setNotificationCount(unreadCount);
+                                                    return updated;
+                                                });
+                                            }}
+                                            onItemClick={async (n) => {
+                                                
+                                                if (n?.id || n?._id) {
+                                                    const notifId = n.id || n._id;
+                                                    try {
+                                                        await apiMarkNotificationRead(notifId);
+                                                        
+                                                        setNotifications(prev => {
+                                                            const updated = prev.map(notif =>
+                                                                (notif.id || notif._id) === notifId
+                                                                    ? { ...notif, isRead: true, read: true }
+                                                                    : notif
+                                                            );
+                                                            const unreadCount = updated.filter(n => !n.isRead && !n.read).length;
+                                                            setNotificationCount(unreadCount);
+                                                            return updated;
+                                                        });
+                                                    } catch (err) {
+                                                        console.error('Failed to mark notification as read:', err);
+                                                    }
+                                                }
+
+                                                const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
+                                                if (!requestId) return;
+
+                                                
+                                                if (userRole === 'dermatologist' && n?.type === 'review_requested') {
+                                                    setCurrentRequestId(requestId);
+                                                    setPreviewError("");
+                                                    setPreviewPrediction(null);
+                                                    setPreviewLoading(true);
+                                                    setShowReviewPreview(true);
+                                                    try {
+                                                        const res = await apiGetReviewRequest(requestId);
+                                                        setPreviewPrediction(res.data);
+                                                    } catch (err) {
+                                                        const msg = err?.response?.data?.error || 'Failed to load prediction details';
+                                                        setPreviewError(msg);
+                                                    } finally {
+                                                        setPreviewLoading(false);
+                                                    }
+                                                }
+                                                
+                                                else if (userRole === 'patient' && n?.type === 'review_submitted') {
+                                                    setPreviewError("");
+                                                    setPatientReviewData(null);
+                                                    setPreviewLoading(true);
+                                                    setShowPatientReview(true);
+                                                    try {
+                                                        const res = await apiGetReviewRequest(requestId);
+                                                        setPatientReviewData(res.data);
+                                                    } catch (err) {
+                                                        const msg = err?.response?.data?.error || 'Failed to load review details';
+                                                        setPreviewError(msg);
+                                                    } finally {
+                                                        setPreviewLoading(false);
+                                                    }
+                                                }
+                                                
+                                                else if (userRole === 'patient' && n?.type === 'review_rejected') {
+                                                    setPreviewError("");
+                                                    setPatientReviewData(null);
+                                                    setPreviewLoading(true);
+                                                    setShowPatientReview(true);
+                                                    try {
+                                                        const res = await apiGetReviewRequest(requestId);
+                                                        setPatientReviewData(res.data);
+                                                    } catch (err) {
+                                                        const msg = err?.response?.data?.error || 'Failed to load rejection details';
+                                                        setPreviewError(msg);
+                                                    } finally {
+                                                        setPreviewLoading(false);
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                </div>
                             )}
-                        </ul>
+                            {isLoggedIn ? (
+                                <NavLink
+                                    to={userRole === 'dermatologist' ? "/DProfile" : "/Profile"}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                            ? 'bg-gray-900 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                        }`
+                                    }
+                                >
+                                    
+                                    <span>Profile</span>
+                                </NavLink>
+                            ) : (
+                                <NavLink
+                                    to="/Login"
+                                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg font-semibold text-sm lg:text-base bg-blue-900 text-white hover:shadow-lg hover:scale-105 transition-all duration-300"
+                                >
+                                    <MdLogin className="text-lg" />
+                                    <span>Login</span>
+                                </NavLink>
+                            )}
+                        </div>
 
                         {/* Mobile Menu Button */}
                         <button
@@ -413,6 +447,21 @@ const Navbar = () => {
                                 >
                                     <IoMdInformationCircle className="text-xl" />
                                     <span>About</span>
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink
+                                    to="/contact-support"
+                                    onClick={closeMenu}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ${isActive
+                                            ? 'bg-gray-900 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                        }`
+                                    }
+                                >
+                                    <MdOutlineSupportAgent className="text-xl" />
+                                    <span>Support</span>
                                 </NavLink>
                             </li>
 

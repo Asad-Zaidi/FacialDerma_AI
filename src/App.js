@@ -8,6 +8,8 @@ import Analysis from "./Pages/Analysis";
 import Auth from "./components/Auth";
 import ForgotPassword from "./components/ForgotPassword";
 import EmailVerification from "./components/EmailVerification";
+import ContactSupport from "./Pages/ContactSupport";
+import FAQ from "./Pages/FAQ";
 import Dermatologist from "./Pages/DermatologistHome";
 import Admin from "./Pages/Admin";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -27,6 +29,8 @@ const AppRouter = () => {
                     <Route path="/Login" element={<Auth />} />
                     <Route path="/Signup" element={<Auth />} />
                     <Route path="/verify-email" element={<EmailVerification />} />
+                    <Route path="/contact-support" element={<ContactSupport />} />
+                    <Route path="/faq" element={<FAQ />} />
                     {/* <Route path="/Profile" element={<UserProfile />}/> */}
                     <Route path="/forgot-password" element={<ForgotPassword />} />
 

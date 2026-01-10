@@ -785,7 +785,7 @@ const Auth = () => {
                                                         value={formData.specialization}
                                                         onChange={handleChange}
                                                         options={specializationOptions}
-                                                        placeholder="Select specialization"
+                                                        placeholder="Specialization"
                                                         widthClass="w-full"
                                                         borderClass="border-gray-300"
                                                         selectedClass="bg-slate-300 text-gray-900"
