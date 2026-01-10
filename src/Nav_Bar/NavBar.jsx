@@ -16,7 +16,7 @@ const SUPPORT_OPTIONS = [
 ];
 
 const Navbar = () => {
-    
+
     const getInitialAuthState = () => {
         try {
             const userData = JSON.parse(localStorage.getItem("user"));
@@ -41,7 +41,7 @@ const Navbar = () => {
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [notificationCount, setNotificationCount] = useState(0);
-    const [userRole] = useState(initialAuth.userRole); 
+    const [userRole] = useState(initialAuth.userRole);
     const [showReviewPreview, setShowReviewPreview] = useState(false);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState("");
@@ -66,11 +66,11 @@ const Navbar = () => {
 
         if (next) {
             try {
-                const res = await apiGetNotifications(false); 
+                const res = await apiGetNotifications(false);
                 console.log('Fetched notifications:', res.data);
                 const notifs = res.data?.notifications || [];
 
-                
+
                 const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                 const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
 
@@ -95,14 +95,14 @@ const Navbar = () => {
     };
 
     useEffect(() => {
-        
+
         if (isLoggedIn) {
             apiGetNotifications(false)
                 .then(res => {
                     console.log('Initial notifications fetch:', res.data);
                     const notifs = res.data?.notifications || [];
 
-                    
+
                     const deletedIds = JSON.parse(localStorage.getItem('deletedNotifications') || '[]');
                     const filteredNotifs = notifs.filter(n => !deletedIds.includes(n.id || n._id));
 
@@ -173,20 +173,6 @@ const Navbar = () => {
                                         <span>Home</span>
                                     </NavLink>
                                 </li>
-                                <li>
-                                    <NavLink
-                                        to="/About"
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                                ? 'bg-gray-900 text-white shadow-md'
-                                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                            }`
-                                        }
-                                    >
-                                        {/* <IoMdInformationCircle className="text-lg" /> */}
-                                        <span>About</span>
-                                    </NavLink>
-                                </li>
                                 {isLoggedIn && userRole === "patient" && (
                                     <li>
                                         <NavLink
@@ -203,6 +189,21 @@ const Navbar = () => {
                                         </NavLink>
                                     </li>
                                 )}
+                                <li>
+                                    <NavLink
+                                        to="/About"
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
+                                                ? 'bg-gray-900 text-white shadow-md'
+                                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                            }`
+                                        }
+                                    >
+                                        {/* <IoMdInformationCircle className="text-lg" /> */}
+                                        <span>About</span>
+                                    </NavLink>
+                                </li>
+
                                 <li className="w-26">
                                     <DropDown
                                         name="support"
@@ -262,12 +263,12 @@ const Navbar = () => {
                                                 });
                                             }}
                                             onItemClick={async (n) => {
-                                                
+
                                                 if (n?.id || n?._id) {
                                                     const notifId = n.id || n._id;
                                                     try {
                                                         await apiMarkNotificationRead(notifId);
-                                                        
+
                                                         setNotifications(prev => {
                                                             const updated = prev.map(notif =>
                                                                 (notif.id || notif._id) === notifId
@@ -286,7 +287,7 @@ const Navbar = () => {
                                                 const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                 if (!requestId) return;
 
-                                                
+
                                                 if (userRole === 'dermatologist' && n?.type === 'review_requested') {
                                                     setCurrentRequestId(requestId);
                                                     setPreviewError("");
@@ -303,7 +304,7 @@ const Navbar = () => {
                                                         setPreviewLoading(false);
                                                     }
                                                 }
-                                                
+
                                                 else if (userRole === 'patient' && n?.type === 'review_submitted') {
                                                     setPreviewError("");
                                                     setPatientReviewData(null);
@@ -319,7 +320,7 @@ const Navbar = () => {
                                                         setPreviewLoading(false);
                                                     }
                                                 }
-                                                
+
                                                 else if (userRole === 'patient' && n?.type === 'review_rejected') {
                                                     setPreviewError("");
                                                     setPatientReviewData(null);
@@ -350,7 +351,7 @@ const Navbar = () => {
                                         }`
                                     }
                                 >
-                                    
+
                                     <span>Profile</span>
                                 </NavLink>
                             ) : (
@@ -396,7 +397,7 @@ const Navbar = () => {
                                 {/* Logo Icon Background: Charcoal Gradient */}
                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                                     <img
-                                        src={Logo}  
+                                        src={Logo}
                                         alt="FacialDerma Logo"
                                         className="w-full h-full object-contain"
                                     />
@@ -527,12 +528,12 @@ const Navbar = () => {
                                                         });
                                                     }}
                                                     onItemClick={async (n) => {
-                                                        
+
                                                         if (n?.id || n?._id) {
                                                             const notifId = n.id || n._id;
                                                             try {
                                                                 await apiMarkNotificationRead(notifId);
-                                                                
+
                                                                 setNotifications(prev => {
                                                                     const updated = prev.map(notif =>
                                                                         (notif.id || notif._id) === notifId
@@ -551,7 +552,7 @@ const Navbar = () => {
                                                         const requestId = n?.ref?.requestId || n?.ref?.requestID || n?.ref?.id;
                                                         if (!requestId) return;
 
-                                                        
+
                                                         if (userRole === 'dermatologist' && n?.type === 'review_requested') {
                                                             setCurrentRequestId(requestId);
                                                             setPreviewError("");
@@ -568,7 +569,7 @@ const Navbar = () => {
                                                                 setPreviewLoading(false);
                                                             }
                                                         }
-                                                        
+
                                                         else if (userRole === 'patient' && n?.type === 'review_submitted') {
                                                             setPreviewError("");
                                                             setPatientReviewData(null);
@@ -584,7 +585,7 @@ const Navbar = () => {
                                                                 setPreviewLoading(false);
                                                             }
                                                         }
-                                                        
+
                                                         else if (userRole === 'patient' && n?.type === 'review_rejected') {
                                                             setPreviewError("");
                                                             setPatientReviewData(null);
@@ -624,7 +625,7 @@ const Navbar = () => {
                                         </NavLink>
                                     </li>
 
-                                    
+
                                 </>
                             ) : (
                                 <li>
@@ -662,7 +663,7 @@ const Navbar = () => {
                 onSubmitComment={async (comment) => {
                     if (!currentRequestId) throw new Error('No request ID');
                     await apiSubmitReview(currentRequestId, comment);
-                    
+
                     const res = await apiGetNotifications(false);
                     const notifs = res.data?.notifications || [];
                     const unreadCount = typeof res.data?.unreadCount === 'number'
@@ -674,7 +675,7 @@ const Navbar = () => {
                 onRejectRequest={async (comment) => {
                     if (!currentRequestId) throw new Error('No request ID');
                     await apiRejectReview(currentRequestId, comment);
-                    
+
                     const res = await apiGetNotifications(false);
                     const notifs = res.data?.notifications || [];
                     const unreadCount = typeof res.data?.unreadCount === 'number'
