@@ -117,10 +117,13 @@ const Auth = () => {
 
     // Multi-step helpers for dermatologist signup
     const canProceedStep1 = Boolean(formData.username.trim() && formData.name.trim() && formData.email.trim() && usernameCheck.available !== false);
+    const experienceValue = Number(formData.experience);
+    const hasPositiveExperience = Number.isFinite(experienceValue) && experienceValue > 0;
+    const experienceInvalid = formData.experience !== '' && !hasPositiveExperience;
     const canProceedStep2 = Boolean(
         formData.license.trim() && 
         formData.specialization.trim() && 
-        formData.experience.trim() &&
+        hasPositiveExperience &&
         (formData.specialization !== 'Other' || formData.customSpecialization.trim())
     );
 
@@ -133,7 +136,7 @@ const Auth = () => {
         }
         if (signupStep === 2 && !canProceedStep2) {
             e.preventDefault();
-            setMessage('License number, specialization, and experience are required.');
+            setMessage('License number, specialization, and experience (greater than 0) are required.');
             setMessageType('error');
             return;
         }
@@ -873,13 +876,16 @@ const Auth = () => {
                                                         value={formData.experience}
                                                         onChange={handleChange}
                                                         required
-                                                        min="0"
-                                                        className="
+                                                        min="1"
+                                                        className={`
                                                             w-full pl-10 pr-3 py-3
-                                                            border border-gray-300 rounded-lg
-                                                            focus:ring-2 focus:ring-slate-900 focus:border-transparent
+                                                            border rounded-lg
+                                                            focus:ring-2 focus:border-transparent
                                                             outline-none transition-all text-sm bg-white peer
-                                                        "
+                                                            ${experienceInvalid
+                                                                ? 'border-red-500 focus:ring-red-500'
+                                                                : 'border-gray-300 focus:ring-slate-900'}
+                                                        `}
                                                     />
                                                     <label
                                                         className={`
@@ -893,6 +899,9 @@ const Auth = () => {
                                                     >
                                                         Years of experience *
                                                     </label>
+                                                    {experienceInvalid && (
+                                                        <p className="text-red-600 text-xs mt-1">Experience must be greater than 0</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}

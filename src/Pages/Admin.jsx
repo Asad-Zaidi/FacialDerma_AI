@@ -33,11 +33,12 @@ import {
     FaSignOutAlt
 } from 'react-icons/fa';
 import { PiWarningCircleLight } from 'react-icons/pi';
-import { MdClose, MdEmail } from 'react-icons/md';
+import { MdClose } from 'react-icons/md';
+//mdemail
 import { BsShieldExclamation } from 'react-icons/bs';
 import { RxActivityLog } from "react-icons/rx";
 import { IoMedkit } from "react-icons/io5";
-import { LuBrainCircuit } from "react-icons/lu";
+// import { LuBrainCircuit } from "react-icons/lu";
 import ConfirmSignOut from '../components/ConfirmSignout';
 import DropDown from "../components/ui/DropDown";
 import ActivityLog from '../components/ActivityLog';
