@@ -168,6 +168,12 @@ export const apiGetNearbyDermatology = (lat, lng, radius = 10000) =>
 export const apiVerifyEmail = (token) =>
     api.get("/auth/verify-email", { params: { token } });
 
+export const apiVerifyEmailOTP = (data) =>
+    api.post("/auth/verify-email-otp", data);
+
+export const apiResendVerificationEmail = (data) =>
+    api.post("/auth/verification/resend", data);
+
 // ===========================================================
 // 11. ADMIN APIs
 // ===========================================================

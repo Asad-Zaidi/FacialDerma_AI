@@ -9,6 +9,7 @@ import { apiLogin, apiSignUp } from "../api/api";
 import { apiCheckUsername } from "../api/api";
 import { validatePasswordRules } from '../lib/passwordValidation';
 import DropDown from './ui/DropDown';
+import EmailVerificationOTPModal from './EmailVerificationOTPModal';
 
 const Auth = () => {
     const location = useLocation();
@@ -53,6 +54,8 @@ const Auth = () => {
     const [pendingMessage, setPendingMessage] = useState('');
     const [signupStep, setSignupStep] = useState(1);
     const [showCustomSpecialization, setShowCustomSpecialization] = useState(false);
+    const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false);
+    const [unverifiedEmail, setUnverifiedEmail] = useState('');
 
     const isDermSignup = !isLogin && role === 'dermatologist';
 
@@ -72,6 +75,16 @@ const Auth = () => {
         setMessageType('error');
         setSignupStep(1);
     }, [isLogin]);
+
+    // Auto-clear messages after 5 seconds
+    useEffect(() => {
+        if (message) {
+            const timer = setTimeout(() => {
+                setMessage('');
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [message]);
 
     // Reset steps when role changes
     useEffect(() => {
@@ -237,9 +250,10 @@ const Auth = () => {
 
                 // Email not verified
                 if (errMsgLower.includes('email') && errMsgLower.includes('verif')) {
-                    errMsg = 'Email not verified. Please check your inbox and verify your email address before logging in.';
-                    setMessage(errMsg);
-                    setMessageType('error');
+                    setUnverifiedEmail(formData.email);
+                    setShowEmailVerificationModal(true);
+                    setLoading(false);
+                    return;
                 }
                 // Pending admin approval
                 else if (errMsgLower.includes('pending') && errMsgLower.includes('approval')) {
@@ -1433,6 +1447,22 @@ const Auth = () => {
                     </div>
                 </div>
             )}
+
+            {/* Email Verification OTP Modal */}
+            <EmailVerificationOTPModal
+                show={showEmailVerificationModal}
+                onClose={() => {
+                    setShowEmailVerificationModal(false);
+                    setUnverifiedEmail('');
+                }}
+                email={unverifiedEmail}
+                onVerificationSuccess={() => {
+                    setMessage('Email verified successfully! You can now log in.');
+                    setMessageType('success');
+                    setShowEmailVerificationModal(false);
+                    setUnverifiedEmail('');
+                }}
+            />
         </div>
     );
 };
