@@ -42,9 +42,9 @@ You can access the live preview of the application here: [FacialDerma AI Live Pr
 ## Technologies Used
 
 - **Frontend**: React.js
-- **Backend**: NodeJS and MogoDB
-- **Styling**: CSS Modules
-- **AI Model**: TensorFlow/Keras
+- **Backend**: Python FastAPI and MogoDB
+- **Styling**: Tailwind CSS
+- **AI Model**: TensorFlow/Keras/Pytorch
 
 ## License
 
@@ -52,5 +52,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For any inquiries or feedback, please contact us at [support@facialderma-ai.com]().
+For any inquiries or feedback, please contact us at [SP22-BSE-123@cuilahore.edu.pk]().
 ```
