@@ -1,5 +1,5 @@
 // src/components/DermatologistPicker.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const DermatologistPicker = ({
     isOpen,
@@ -12,6 +12,14 @@ const DermatologistPicker = ({
     onSelectDermatologist = () => {},
 }) => {
     const [message, setMessage] = useState('');
+    const [loadingDermId, setLoadingDermId] = useState(null);
+
+    // Reset loading state when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            setLoadingDermId(null);
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -85,10 +93,25 @@ const DermatologistPicker = ({
                                             <div className="text-xs text-gray-500">{d.email}</div>
                                         </div>
                                         <button
-                                            className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700"
-                                            onClick={() => onSelectDermatologist(d, message)}
+                                            className={`px-3 py-1.5 rounded-md text-white font-medium transition-all ${
+                                                loadingDermId === (d.id || d._id)
+                                                    ? 'bg-blue-500 cursor-not-allowed opacity-75'
+                                                    : 'bg-green-600 hover:bg-green-700'
+                                            }`}
+                                            onClick={() => {
+                                                setLoadingDermId(d.id || d._id);
+                                                onSelectDermatologist(d, message);
+                                            }}
+                                            disabled={loadingDermId === (d.id || d._id)}
                                         >
-                                            Request Review
+                                            {loadingDermId === (d.id || d._id) ? (
+                                                <span className="flex items-center gap-2">
+                                                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                                    Requesting...
+                                                </span>
+                                            ) : (
+                                                'Request Review'
+                                            )}
                                         </button>
                                     </li>
                                 ))}

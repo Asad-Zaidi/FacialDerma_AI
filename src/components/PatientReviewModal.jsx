@@ -63,7 +63,8 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
             predicted_label: reviewData.prediction.result?.predicted_label || 'N/A',
             confidence_score: reviewData.prediction.result?.confidence_score || 0,
             timestamp: formatDateTime(reviewData.prediction.createdAt),
-            reportId: reviewData.prediction.reportId || reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
+            reportId: reviewData.prediction.reportId || reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A',
+            imageUrl: reviewData.prediction?.imageUrl || null
         };
 
         const userData = {
@@ -80,7 +81,7 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
 
         const dermComment = reviewData.comment || null;
 
-        await generatePdfReport(predictionData, { skin_conditions: allConditions }, userData, dermComment, true, reviewData.prediction?.imageUrl);
+        await generatePdfReport(predictionData, { skin_conditions: allConditions }, userData, dermComment);
     };
 
     const handleSharePdf = async () => {
@@ -91,7 +92,8 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
             predicted_label: reviewData.prediction.result?.predicted_label || 'N/A',
             confidence_score: reviewData.prediction.result?.confidence_score || 0,
             timestamp: formatDateTime(reviewData.prediction.createdAt),
-            reportId: reviewData.prediction.reportId || reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A'
+            reportId: reviewData.prediction.reportId || reviewData.prediction.id || reviewData.prediction._id || reviewData.id || 'N/A',
+            imageUrl: reviewData.prediction?.imageUrl || null
         };
 
         const userData = {
@@ -108,7 +110,7 @@ const PatientReviewModal = ({ open, onClose, loading, error, reviewData, current
 
         const dermComment = reviewData.comment || null;
 
-        const pdfBlob = await generatePdfReportBlob(predictionData, { skin_conditions: allConditions }, userData, dermComment, reviewData.prediction?.imageUrl);
+        const pdfBlob = await generatePdfReportBlob(predictionData, { skin_conditions: allConditions }, userData, dermComment);
         if (!pdfBlob) return;
 
         const file = new File([pdfBlob], `Dermatology_Report_${predictionData.reportId}_${userData.name.replace(/\s/g, '')}.pdf`, { type: 'application/pdf' });
