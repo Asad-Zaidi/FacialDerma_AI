@@ -432,6 +432,20 @@ const Auth = () => {
 
     const handleSubmit = isLogin ? handleLoginSubmit : handleSignupSubmit;
 
+    // Patient signup validation
+    const validatePatientSignup = () => {
+        const errors = [];
+        
+        if (!formData.username.trim()) errors.push('Username is required');
+        if (usernameCheck.available === false) errors.push('Username is already taken');
+        if (!formData.email.trim()) errors.push('Email is required');
+        if (!formData.password.trim()) errors.push('Password is required');
+        if (!formData.confirmPassword.trim()) errors.push('Confirm password is required');
+        if (formData.password !== formData.confirmPassword) errors.push('Passwords do not match');
+        
+        return errors;
+    };
+
     const handleFormSubmit = (e) => {
         if (e) {
             e.preventDefault();
@@ -441,6 +455,17 @@ const Auth = () => {
                 e.nativeEvent.stopImmediatePropagation();
             }
         }
+
+        // Validate patient signup before submission
+        if (!isLogin && !isDermSignup) {
+            const validationErrors = validatePatientSignup();
+            if (validationErrors.length > 0) {
+                setMessage(validationErrors[0]);
+                setMessageType('error');
+                return;
+            }
+        }
+
         const handler = isDermSignup ? handleDermSubmit : handleSubmit;
         return handler(e);
     };
@@ -616,7 +641,9 @@ const Auth = () => {
                                 ))}
                             </div>
                         </div>
-                    )}                    {/* Form */}
+                    )}
+
+                    {/* Form */}
                     <div
                         role="form"
                         className={isLogin ? "space-y-6" : "space-y-4"}
@@ -731,6 +758,15 @@ const Auth = () => {
                                     <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">
                                         <span>Step {signupStep} of 3</span>
                                         <span className="text-gray-400">Dermatologist registration</span>
+                                    </div>
+                                )}
+
+                                {/* Error messages for derm signup */}
+                                {isDermSignup && message && messageType === 'error' && (
+                                    <div className="relative overflow-hidden text-xs font-medium animate-slide-down bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg mb-4">
+                                        <div className="flex items-start gap-2">
+                                            <span className="flex-1">{message}</span>
+                                        </div>
                                     </div>
                                 )}
 
@@ -1320,7 +1356,7 @@ const Auth = () => {
                         )}
 
                         {/* Success Message */}
-                        {/* {message && messageType === 'success' && (
+                        {message && messageType === 'success' && (
                             <div className="relative overflow-hidden text-xs font-medium animate-slide-down bg-green-50 border border-green-200 text-green-700 p-3 rounded-lg mt-0 mb-4">
                                 <div className="flex items-start gap-2">
                                     <span className="text-lg flex-shrink-0">✓</span>
@@ -1330,17 +1366,16 @@ const Auth = () => {
                                     </div>
                                 </div>
                             </div>
-                        )} */}
+                        )}
 
                         {/* Error Message (inline) */}
-                        {/* {message && messageType === 'error' && (
+                        {message && messageType === 'error' && (
                             <div className="relative overflow-hidden text-xs font-medium animate-slide-down bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg mt-0 mb-4">
                                 <div className="flex items-start gap-2">
-                                    <span className="text-lg flex-shrink-0">✕</span>
                                     <span className="flex-1">{message}</span>
                                 </div>
                             </div>
-                        )} */}
+                        )}
 
                         {/* Actions */}
                         {isDermSignup ? (
