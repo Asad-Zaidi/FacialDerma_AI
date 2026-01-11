@@ -95,6 +95,15 @@ export const AuthProvider = ({ children }) => {
   }, [logout]);
 
   useEffect(() => {
+    // If we're on auth pages, skip user status check to avoid 401-triggered reloads
+    const path = (window.location.pathname || '').toLowerCase();
+    const isAuthPage = path.includes('/login') || path.includes('/signup');
+    if (isAuthPage) {
+      setLoading(false);
+      setAuthToken(null);
+      return;
+    }
+
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('accessToken');
 

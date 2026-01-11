@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
     FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaStethoscope, FaBriefcase, FaIdCard,
-    FaHospital, FaMoneyBillWave, FaEdit, FaSave, FaTimes, FaCamera, FaKey, FaSignOutAlt
+    FaHospital, FaMoneyBillWave, FaEdit, FaSave, FaTimes, FaCamera, FaKey
 } from 'react-icons/fa';
 import Header from '../Nav_Bar/Header';
 import Footer from '../Nav_Bar/Footer';
@@ -10,13 +10,10 @@ import { apiGetFullProfile, apiUpdateProfile } from '../api/api';
 import MaleAvatar from '../Assets/male-avatar.png';
 import FemaleAvatar from '../Assets/female-avatar.png';
 import UpdateProfilePopup from '../components/UpdateProfilePopup';
-import ConfirmSignout from '../components/ConfirmSignout';
 import ChangePassword from '../components/ChangePassword';
-import { useAuth } from '../contexts/AuthContext';
 
 const DermatologistProfile = () => {
-    const { logout } = useAuth();
-    const navigate = useNavigate();
+    const location = useLocation();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,7 +23,6 @@ const DermatologistProfile = () => {
     const [editData, setEditData] = useState({});
     const [showUpdatePopup, setShowUpdatePopup] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     useEffect(() => { fetchProfile(); }, []);
 
@@ -38,8 +34,15 @@ const DermatologistProfile = () => {
                 setShowUpdatePopup(true);
                 sessionStorage.setItem('profilePopupShown', 'true');
             }
+            // Auto-open basic info edit mode if navigated from update popup
+            if (location.state?.autoEditBasic) {
+                setIsEditingBasic(true);
+                setEditData({ ...profile });
+                // Clear the state to prevent re-triggering on page refresh
+                window.history.replaceState({}, document.title);
+            }
         }
-    }, [profile]);
+    }, [profile, location.state]);
 
     const fetchProfile = async () => {
         try {
@@ -131,11 +134,6 @@ const DermatologistProfile = () => {
         if (section === 'contact') setIsEditingContact(false);
     };
 
-    const handleLogout = () => {
-        logout();
-        navigate('/home', { replace: true });
-    };
-
     const DefaultAvatar = ({ gender, className }) => {
         const getDefaultAvatar = () => {
             if (gender === "Female") {
@@ -218,7 +216,7 @@ const DermatologistProfile = () => {
                                 <p className="text-gray-600 text-sm sm:text-base">@{profile?.username}</p>
                                 <p className="text-gray-700 mt-1 text-sm sm:text-base">Specialization: {profile?.specialization || 'Dermatologist'}</p>
 
-                                {/* Change Password and Logout Buttons */}
+                                {/* Change Password Button */}
                                 <div className="mt-4 flex justify-start gap-3">
                                     <button
                                         onClick={() => setShowPasswordModal(true)}
@@ -226,13 +224,6 @@ const DermatologistProfile = () => {
                                     >
                                         <FaKey className="text-sm" />
                                         Change Password
-                                    </button>
-                                    <button
-                                        onClick={() => setShowLogoutModal(true)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-all duration-200"
-                                    >
-                                        <FaSignOutAlt className="text-sm" />
-                                        Logout
                                     </button>
                                 </div>
                             </div>
@@ -457,14 +448,6 @@ const DermatologistProfile = () => {
                     isOpen={showPasswordModal}
                     onClose={() => setShowPasswordModal(false)}
                 />
-
-                {/* Logout Confirmation Modal */}
-                {showLogoutModal && (
-                    <ConfirmSignout
-                        onConfirm={handleLogout}
-                        onCancel={() => setShowLogoutModal(false)}
-                    />
-                )}
             </div>
             <Footer />
         </>

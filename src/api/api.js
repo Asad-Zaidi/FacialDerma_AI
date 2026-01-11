@@ -68,7 +68,11 @@ api.interceptors.response.use(
         // Only logout on 401 (unauthorized/invalid token)
         // Don't logout on 403 - it could be suspension or other access denial
         // The SuspensionCheck component will handle displaying suspension status
-        if (status === 401 && !isAuthEndpoint) {
+        // Avoid hard reload if already on auth pages to prevent modal flashing
+        const currentPath = (window.location.pathname || '').toLowerCase();
+        const isAuthPage = currentPath.includes('/login') || currentPath.includes('/signup');
+
+        if (status === 401 && !isAuthEndpoint && !isAuthPage) {
 
             // Clear user session
             localStorage.removeItem("accessToken");

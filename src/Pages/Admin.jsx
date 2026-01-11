@@ -258,10 +258,9 @@ const Admin = () => {
     };
 
     // Handle Logout
-    // eslint-disable-next-line no-unused-vars
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
+    const handleLogout = () => {
+        logout();
+        navigate('/');
     };
 
     // Change Password

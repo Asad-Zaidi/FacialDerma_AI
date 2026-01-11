@@ -1,18 +1,40 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { FaBars, FaTimes, FaBell, FaUser } from "react-icons/fa";
+import { useEffect, useState, useRef } from "react";
+import { FaBars, FaTimes, FaBell, FaUser, FaChevronDown, FaSignOutAlt } from "react-icons/fa";
 import { IoMdHome, IoMdInformationCircle, IoMdAnalytics } from "react-icons/io";
-import { MdLogin, MdOutlineSupportAgent } from "react-icons/md";
+import { MdLogin, MdOutlineSupportAgent, MdContactMail, MdHelpOutline } from "react-icons/md";
+import { useAuth } from '../contexts/AuthContext';
 import Notifications from "../components/Notifications";
 import ReviewPreviewModal from "../components/ReviewPreviewModal";
 import PatientReviewModal from "../components/PatientReviewModal";
 import Logo from "../Assets/logo.png";
-import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview, apiMarkNotificationRead } from "../api/api";
+import { apiGetNotifications, apiGetReviewRequest, apiSubmitReview, apiRejectReview, apiMarkNotificationRead, apiGetFullProfile } from "../api/api";
 import DropDown from "../components/ui/DropDown";
 
-const SUPPORT_OPTIONS = [
+const SUPPORT_OPTIONS_DESKTOP = [
     { value: "/faq", label: "FAQ" },
-    { value: "/contact-support", label: "Contact" }
+    { value: "/contact-support", label: "Contact" },
+];
+
+const SUPPORT_OPTIONS_MOBILE = [
+    {
+        value: "/faq",
+        label: (
+            <span className="flex items-center gap-2">
+                <MdHelpOutline className="text-lg" />
+                <span>FAQ</span>
+            </span>
+        ),
+    },
+    {
+        value: "/contact-support",
+        label: (
+            <span className="flex items-center gap-2">
+                <MdContactMail className="text-lg" />
+                <span>Contact</span>
+            </span>
+        ),
+    },
 ];
 
 const Navbar = () => {
@@ -34,6 +56,7 @@ const Navbar = () => {
 
     const location = useLocation();
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
     const initialAuth = getInitialAuthState();
     const [isLoggedIn] = useState(initialAuth.isLoggedIn);
@@ -42,6 +65,8 @@ const Navbar = () => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notificationCount, setNotificationCount] = useState(0);
     const [userRole] = useState(initialAuth.userRole);
+    const [userName, setUserName] = useState(initialAuth.isLoggedIn ? JSON.parse(localStorage.getItem("user"))?.name || "User" : "");
+    const [profileImage, setProfileImage] = useState(initialAuth.isLoggedIn ? JSON.parse(localStorage.getItem("user"))?.profileImage : null);
     const [showReviewPreview, setShowReviewPreview] = useState(false);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState("");
@@ -50,14 +75,38 @@ const Navbar = () => {
     const [showPatientReview, setShowPatientReview] = useState(false);
     const [patientReviewData, setPatientReviewData] = useState(null);
     const [supportSelection, setSupportSelection] = useState("");
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const userDropdownRef = useRef(null);
 
     useEffect(() => {
-        if (SUPPORT_OPTIONS.some(opt => opt.value === location.pathname)) {
+        if (SUPPORT_OPTIONS_DESKTOP.some(opt => opt.value === location.pathname)) {
             setSupportSelection(location.pathname);
         } else {
             setSupportSelection("");
         }
     }, [location.pathname]);
+
+    // Fetch user profile from database
+    useEffect(() => {
+        if (isLoggedIn) {
+            apiGetFullProfile()
+                .then(response => {
+                    const userData = response.data;
+                    setUserName(userData.name || "User");
+                    setProfileImage(userData.profileImage || null);
+                    // Update localStorage to keep it in sync
+                    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+                    localStorage.setItem("user", JSON.stringify({ ...storedUser, ...userData }));
+                })
+                .catch(err => {
+                    console.error('Error fetching user profile:', err);
+                    // Fall back to localStorage if API fails
+                    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+                    setUserName(userData.name || "User");
+                    setProfileImage(userData.profileImage || null);
+                });
+        }
+    }, [isLoggedIn]);
 
     const toggleNotifications = async () => {
         const next = !showNotifications;
@@ -117,11 +166,47 @@ const Navbar = () => {
         }
     }, [isLoggedIn]);
 
+    // Close user dropdown on outside click or Escape key
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (userDropdownOpen && userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+                setUserDropdownOpen(false);
+            }
+        };
+        const handleEscape = (e) => {
+            if (userDropdownOpen && e.key === 'Escape') {
+                setUserDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [userDropdownOpen]);
+
     const toggleMenu = () => {
         setMenuOpen(prev => !prev);
     };
 
     const closeMenu = () => {
+        setMenuOpen(false);
+    };
+
+    const handleLogout = () => {
+        logout();
+        setUserDropdownOpen(false);
+        setMenuOpen(false);
+        setUserName("");
+        setProfileImage(null);
+        navigate('/');
+    };
+
+    const handleProfileClick = () => {
+        const profilePath = userRole === 'dermatologist' ? "/DProfile" : "/Profile";
+        navigate(profilePath);
+        setUserDropdownOpen(false);
         setMenuOpen(false);
     };
 
@@ -156,8 +241,8 @@ const Navbar = () => {
                             </NavLink>
                         </div>
 
-                        {/* Desktop Navigation - Centered */}
-                        <div className="hidden md:flex flex-1 justify-center">
+                        {/* Desktop Navigation - Centered (>=769px) */}
+                        <div className="hidden min-[769px]:flex flex-1 justify-center">
                             <ul className="flex items-center gap-2 lg:gap-2">
                                 <li>
                                     <NavLink
@@ -209,7 +294,7 @@ const Navbar = () => {
                                         name="support"
                                         value={supportSelection}
                                         onChange={handleSupportChange}
-                                        options={SUPPORT_OPTIONS}
+                                        options={SUPPORT_OPTIONS_DESKTOP}
                                         placeholder="Support"
                                         widthClass="w-full"
                                         borderClass="border-none"
@@ -223,8 +308,8 @@ const Navbar = () => {
                             </ul>
                         </div>
 
-                        {/* Right Side - Notifications & Profile/Login */}
-                        <div className="hidden md:flex items-center gap-2">
+                        {/* Right Side - Notifications & Profile/Login (>=769px) */}
+                        <div className="hidden min-[769px]:flex items-center gap-2">
                             {isLoggedIn && (
                                 <div className="relative">
                                     <button
@@ -342,18 +427,45 @@ const Navbar = () => {
                                 </div>
                             )}
                             {isLoggedIn ? (
-                                <NavLink
-                                    to={userRole === 'dermatologist' ? "/DProfile" : "/Profile"}
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-sm lg:text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md'
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                        }`
-                                    }
-                                >
-
-                                    <span>Profile</span>
-                                </NavLink>
+                                <div className="relative" ref={userDropdownRef}>
+                                    <button
+                                        onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm lg:text-base text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
+                                    >
+                                        <div className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center overflow-hidden">
+                                            {profileImage ? (
+                                                <img 
+                                                    src={profileImage} 
+                                                    alt={userName}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <FaUser className="text-white text-sm" />
+                                            )}
+                                        </div>
+                                        <span className="max-w-auto truncate">{userName}</span>
+                                        <FaChevronDown className={`text-xs transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {userDropdownOpen && (
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                            <button
+                                                onClick={handleProfileClick}
+                                                className="w-full flex items-center gap-3 px-4 py-2 text-base font-medium text-gray-800 hover:bg-gray-100 transition-colors"
+                                            >
+                                                <FaUser className="text-gray-600" />
+                                                <span>Profile</span>
+                                            </button>
+                                            <div className="border-t border-gray-200 my-1"></div>
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full flex items-center gap-3 px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50 transition-colors"
+                                            >
+                                                <FaSignOutAlt className="text-red-600" />
+                                                <span>Logout</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
                                 <NavLink
                                     to="/Login"
@@ -365,10 +477,10 @@ const Navbar = () => {
                             )}
                         </div>
 
-                        {/* Mobile Menu Button */}
+                        {/* Mobile Menu Button (<=768px) */}
                         <button
                             onClick={toggleMenu}
-                            className="md:hidden relative w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-300"
+                            className="min-[769px]:hidden relative w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-300"
                             aria-label="Toggle menu"
                         >
                             {menuOpen ? (
@@ -380,9 +492,9 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* Mobile Navigation Menu */}
+                {/* Mobile Navigation Menu (<=768px) */}
                 <div
-                    className={`md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                    className={`min-[769px]:hidden fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                         }`}
                     onClick={closeMenu}
                 >
@@ -450,20 +562,26 @@ const Navbar = () => {
                                     <span>About</span>
                                 </NavLink>
                             </li>
-                            <li>
-                                <NavLink
-                                    to="/contact-support"
-                                    onClick={closeMenu}
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ${isActive
-                                            ? 'bg-gray-900 text-white shadow-md'
-                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                        }`
-                                    }
-                                >
-                                    <MdOutlineSupportAgent className="text-xl" />
-                                    <span>Support</span>
-                                </NavLink>
+                            <li className="w-full">
+                                <DropDown
+                                    name="support"
+                                    value={supportSelection}
+                                    onChange={handleSupportChange}
+                                    options={SUPPORT_OPTIONS_MOBILE}
+                                    placeholder={(
+                                        <span className="flex items-center gap-2">
+                                            <MdOutlineSupportAgent className="text-xl" />
+                                            <span>Support</span>
+                                        </span>
+                                    )}
+                                    widthClass="w-full"
+                                    borderClass="border-none"
+                                    selectedClass="bg-gray-300 text-gray-700"
+                                    highlightClass="bg-gray-200 text-gray-900"
+                                    ringClass="ring-gray-300"
+                                    triggerPadding="py-3 px-4"
+                                    triggerFontSize="text-base font-medium"
+                                />
                             </li>
 
                             {isLoggedIn ? (
@@ -607,22 +725,43 @@ const Navbar = () => {
                                         )}
                                     </li>
 
-                                    <li>
-                                        <NavLink
-                                            to="/Profile"
-                                            onClick={closeMenu}
-                                            className={({ isActive }) =>
-                                                `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ${isActive
-                                                    ? 'bg-gray-900 text-white shadow-md'
-                                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                                }`
-                                            }
-                                        >
-                                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <FaUser className="text-lg text-gray-700" />
+                                    <li className="border-t border-gray-200 mt-2 pt-2">
+                                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                            Account
+                                        </div>
+                                        <div className="flex items-center gap-3 px-4 py-2 mb-2">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center overflow-hidden">
+                                                {profileImage ? (
+                                                    <img 
+                                                        src={profileImage} 
+                                                        alt={userName}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <FaUser className="text-white text-lg" />
+                                                )}
                                             </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-gray-900 truncate">{userName}</p>
+                                                <p className="text-xs text-gray-500 capitalize">{userRole}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={handleProfileClick}
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
+                                        >
+                                            <FaUser className="text-lg" />
                                             <span>Profile</span>
-                                        </NavLink>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base text-red-600 hover:bg-red-50 transition-all duration-300"
+                                        >
+                                            <FaSignOutAlt className="text-lg" />
+                                            <span>Logout</span>
+                                        </button>
                                     </li>
 
 

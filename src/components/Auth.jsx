@@ -57,6 +57,24 @@ const Auth = () => {
     const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false);
     const [unverifiedEmail, setUnverifiedEmail] = useState('');
 
+    // Hard-block any native form submissions anywhere on this page (capture phase)
+    useEffect(() => {
+        const preventNativeSubmit = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.nativeEvent) {
+                e.nativeEvent.preventDefault();
+                if (e.nativeEvent.stopImmediatePropagation) {
+                    e.nativeEvent.stopImmediatePropagation();
+                }
+            }
+        };
+
+        window.addEventListener('submit', preventNativeSubmit, true);
+
+        return () => window.removeEventListener('submit', preventNativeSubmit, true);
+    }, []);
+
     const isDermSignup = !isLogin && role === 'dermatologist';
 
     useEffect(() => {
@@ -76,15 +94,15 @@ const Auth = () => {
         setSignupStep(1);
     }, [isLogin]);
 
-    // Auto-clear messages after 5 seconds
+    // Auto-clear messages after 5 seconds (only for success messages)
     useEffect(() => {
-        if (message) {
+        if (message && messageType === 'success') {
             const timer = setTimeout(() => {
                 setMessage('');
             }, 5000);
             return () => clearTimeout(timer);
         }
-    }, [message]);
+    }, [message, messageType]);
 
     // Reset steps when role changes
     useEffect(() => {
@@ -141,14 +159,21 @@ const Auth = () => {
     );
 
     const handleDermStepForward = (e) => {
-        if (signupStep === 1 && !canProceedStep1) {
+        if (e) {
             e.preventDefault();
+            e.stopPropagation();
+            if (e.nativeEvent) {
+                e.nativeEvent.preventDefault();
+                e.nativeEvent.stopImmediatePropagation();
+            }
+        }
+
+        if (signupStep === 1 && !canProceedStep1) {
             setMessage('Please provide name, username, and email to continue.');
             setMessageType('error');
             return;
         }
         if (signupStep === 2 && !canProceedStep2) {
-            e.preventDefault();
             setMessage('License number, specialization, and experience (greater than 0) are required.');
             setMessageType('error');
             return;
@@ -156,7 +181,6 @@ const Auth = () => {
         setMessage('');
         setMessageType('error');
         setSignupStep(prev => Math.min(3, prev + 1));
-        e.preventDefault();
     };
 
     const handleDermStepBack = () => {
@@ -165,19 +189,35 @@ const Auth = () => {
     };
 
     const handleDermSubmit = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.nativeEvent) {
+                e.nativeEvent.preventDefault();
+                e.nativeEvent.stopImmediatePropagation();
+            }
+        }
+
         if (signupStep < 3) {
             handleDermStepForward(e);
-            return;
+            return false;
         }
-        handleSignupSubmit(e);
+        return handleSignupSubmit(e);
     };
 
     // Login Handler
     // ---------------------------
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
+        e.stopPropagation();
+        
+        // Prevent any default form behavior
+        if (e && e.nativeEvent) {
+            e.nativeEvent.preventDefault();
+            e.nativeEvent.stopImmediatePropagation();
+        }
+        
         setMessage('');
-
         setLoading(true);
 
         const payload = {
@@ -185,64 +225,71 @@ const Auth = () => {
             password: formData.password,
         };
 
+        console.log('🔐 Login attempt with:', { emailOrUsername: payload.emailOrUsername });
+        console.log('%c💡 TIP: Enable "Preserve log" in your browser console to keep logs after navigation', 'color: #00a8ff; font-weight: bold;');
+
         try {
-            const response = await apiLogin(payload); // <-- using apiLogin
+            const response = await apiLogin(payload);
             const data = response.data;
+
+            console.log('✅ Login response received:', { 
+                hasToken: !!data?.token, 
+                hasUser: !!data?.user, 
+                role: data?.user?.role 
+            });
 
             // Thorough validation of response structure
             if (!data || typeof data !== 'object') {
-                setMessage('Invalid response from server');
-                setMessageType('error');
-                setLoading(false);
-                return;
+                throw new Error('Invalid response from server');
             }
 
             if (!data.token || typeof data.token !== 'string' || data.token.trim() === '') {
-                setMessage('Invalid token received');
-                setMessageType('error');
-                setLoading(false);
-                return;
+                throw new Error('Invalid token received');
             }
 
             if (!data.user || typeof data.user !== 'object') {
-                setMessage('Invalid user data received');
-                setMessageType('error');
-                setLoading(false);
-                return;
+                throw new Error('Invalid user data received');
             }
 
             if (!data.user.email || !data.user.username || !data.user.role) {
-                setMessage('Incomplete user data received');
-                setMessageType('error');
-                setLoading(false);
-                return;
+                throw new Error('Incomplete user data received');
             }
 
             // Only proceed if all validations pass
-            // Pass all user data from backend including suspension status
+            console.log('✅ Login successful, redirecting now...');
+
+            // Store credentials
             login(data.token, data.user);
 
-            setTimeout(() => {
-                setLoading(false);
-                if (data.user.role === 'patient') {
-                    navigate('/Profile');
-                } else if (data.user.role === 'dermatologist') {
-                    navigate('/Dermatologist');
-                } else if (data.user.role === 'admin') {
-                    navigate('/Admin');
-                }
-            }, 1500);
+            // Navigate immediately based on role
+            if (data.user.role === 'patient') {
+                navigate('/Profile');
+            } else if (data.user.role === 'dermatologist') {
+                navigate('/Dermatologist');
+            } else if (data.user.role === 'admin') {
+                navigate('/Admin');
+            }
+
+            setLoading(false);
+            return;
         } catch (error) {
+            console.error('❌ Login error caught:', error);
+            
             const status = error.response?.status;
             const errorData = error.response?.data;
-            let errMsg = errorData?.error || errorData?.detail?.error || errorData?.message || 'Invalid credentials';
+            let errMsg = errorData?.error || errorData?.detail?.error || errorData?.message || error.message || 'Invalid credentials';
 
             // Ensure errMsg is a string
             if (typeof errMsg === 'object') {
                 errMsg = errMsg.message || errMsg.error || JSON.stringify(errMsg) || 'An error occurred';
             }
 
-            console.log('Login error:', { status, errMsg, errorData });
+            console.error('❌ Login error details:', { 
+                status, 
+                errMsg, 
+                errorData,
+                fullError: error 
+            });
 
             // Handle 403 Forbidden errors (access denied)
             if (status === 403) {
@@ -252,14 +299,12 @@ const Auth = () => {
                 if (errMsgLower.includes('email') && errMsgLower.includes('verif')) {
                     setUnverifiedEmail(formData.email);
                     setShowEmailVerificationModal(true);
-                    setLoading(false);
                     return;
                 }
                 // Pending admin approval
                 else if (errMsgLower.includes('pending') && errMsgLower.includes('approval')) {
                     setPendingMessage('Your account is pending admin approval. You will receive an email once your credentials are verified by our team. This usually takes 24-48 hours.');
                     setShowPendingModal(true);
-                    setLoading(false);
                     return;
                 }
                 // Account rejected
@@ -285,17 +330,21 @@ const Auth = () => {
             }
             // Handle 401 Unauthorized (invalid credentials)
             else if (status === 401) {
-                setMessage(errMsg || 'Invalid email/username or password.');
+                const errorMsg = errMsg || 'Invalid email/username or password.';
+                console.log('⚠️ Setting error message:', errorMsg);
+                setMessage(errorMsg);
                 setMessageType('error');
             }
             // Other errors
             else {
-                setMessage(errMsg || 'Login failed. Please try again.');
+                const errorMsg = errMsg || 'Login failed. Please try again.';
+                console.log('⚠️ Setting error message:', errorMsg);
+                setMessage(errorMsg);
                 setMessageType('error');
             }
-
+        } finally {
+            console.log('🔄 Finally block - setting loading to false');
             setLoading(false);
-            return;
         }
     };
 
@@ -303,7 +352,14 @@ const Auth = () => {
     // Signup Handler
     // ---------------------------
     const handleSignupSubmit = async (e) => {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.nativeEvent) {
+                e.nativeEvent.preventDefault();
+                e.nativeEvent.stopImmediatePropagation();
+            }
+        }
         setMessage('');
 
         if (!role) {
@@ -375,6 +431,19 @@ const Auth = () => {
     };
 
     const handleSubmit = isLogin ? handleLoginSubmit : handleSignupSubmit;
+
+    const handleFormSubmit = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.nativeEvent) {
+                e.nativeEvent.preventDefault();
+                e.nativeEvent.stopImmediatePropagation();
+            }
+        }
+        const handler = isDermSignup ? handleDermSubmit : handleSubmit;
+        return handler(e);
+    };
 
     return (
         <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
@@ -548,7 +617,21 @@ const Auth = () => {
                             </div>
                         </div>
                     )}                    {/* Form */}
-                    <form onSubmit={isDermSignup ? handleDermSubmit : handleSubmit} className={isLogin ? "space-y-6" : "space-y-4"}>
+                    <div
+                        role="form"
+                        className={isLogin ? "space-y-6" : "space-y-4"}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (e.nativeEvent) {
+                                    e.nativeEvent.preventDefault();
+                                    e.nativeEvent.stopImmediatePropagation();
+                                }
+                                handleFormSubmit(e);
+                            }
+                        }}
+                    >
 
                         {/* Login View */}
                         {isLogin && (
@@ -631,6 +714,12 @@ const Auth = () => {
                                             Forgot Password?
                                         </Link>
                                     </div>
+
+                                    {isLogin && message && messageType === 'error' && (
+                                        <p className="mt-2 text-xs text-red-700 font-medium animate-slide-down">
+                                            {message}
+                                        </p>
+                                    )}
                                 </div>
                             </>
                         )}
@@ -1231,7 +1320,7 @@ const Auth = () => {
                         )}
 
                         {/* Success Message */}
-                        {message && messageType === 'success' && (
+                        {/* {message && messageType === 'success' && (
                             <div className="relative overflow-hidden text-xs font-medium animate-slide-down bg-green-50 border border-green-200 text-green-700 p-3 rounded-lg mt-0 mb-4">
                                 <div className="flex items-start gap-2">
                                     <span className="text-lg flex-shrink-0">✓</span>
@@ -1241,14 +1330,17 @@ const Auth = () => {
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
-                        {/* Error Message */}
-                        {message && messageType === 'error' && (
-                            <div className="relative overflow-hidden text-xs font-medium animate-slide-down text-red-700 mt-0 mb-4">
-                                <span className="flex-1">{message}</span>
+                        {/* Error Message (inline) */}
+                        {/* {message && messageType === 'error' && (
+                            <div className="relative overflow-hidden text-xs font-medium animate-slide-down bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg mt-0 mb-4">
+                                <div className="flex items-start gap-2">
+                                    <span className="text-lg flex-shrink-0">✕</span>
+                                    <span className="flex-1">{message}</span>
+                                </div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Actions */}
                         {isDermSignup ? (
@@ -1263,7 +1355,8 @@ const Auth = () => {
                                     </button>
                                 )}
                                 <button
-                                    type="submit"
+                                    type="button"
+                                    onClick={handleFormSubmit}
                                     disabled={
                                         loading ||
                                         (signupStep === 1 && !canProceedStep1) ||
@@ -1280,7 +1373,8 @@ const Auth = () => {
                             </div>
                         ) : (
                             <button
-                                type="submit"
+                                type="button"
+                                onClick={handleFormSubmit}
                                 disabled={loading || (!isLogin && usernameCheck.available === false)}
                                 className="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm relative overflow-hidden group"
                             >
@@ -1290,7 +1384,7 @@ const Auth = () => {
                                 <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                             </button>
                         )}
-                    </form>
+                    </div>
 
                     {/* Footer Link */}
                     <div className="mt-5 text-center text-xs text-gray-600">
@@ -1335,7 +1429,7 @@ const Auth = () => {
             </div>
 
             {/* Custom Animations */}
-            <style jsx>{`
+            <style>{`
                 @keyframes slide-in {
                     from {
                         opacity: 0;

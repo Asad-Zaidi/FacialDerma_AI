@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
     FaPhoneAlt,
     FaEnvelope,
@@ -17,7 +17,6 @@ import {
     FaExclamationTriangle,
     FaSortUp,
     FaKey,
-    FaSignOutAlt,
 } from "react-icons/fa";
 import { MdSave, MdCancel } from "react-icons/md";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -31,10 +30,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import UpdateProfilePopup from '../components/UpdateProfilePopup';
 import PatientReviewModal from '../components/PatientReviewModal';
 import ImageCropModal from '../components/ImageCropModal';
-import ConfirmSignout from '../components/ConfirmSignout';
 import ChangePassword from '../components/ChangePassword';
 import DropDown from "../components/ui/DropDown";
-import { useAuth } from '../contexts/AuthContext';
 
 const CardSection = ({ title, icon, children, editHandler, gradient = false }) => (
     <div className={`${gradient ? 'bg-gradient-to-br from-white via-gray-50 to-white' : 'bg-white'} border border-gray-200 rounded-xl shadow-lg p-4`}>
@@ -68,8 +65,7 @@ const InfoItem = ({ icon, label, value, iconColor = "text-gray-400" }) => (
 );
 
 const UserProfile = () => {
-    const { logout } = useAuth();
-    const navigate = useNavigate();
+    const location = useLocation();
     const [patient, setPatient] = useState(null);
     const [loading, setLoading] = useState(true);
     const [predictionsLoading, setPredictionsLoading] = useState(true);
@@ -89,7 +85,6 @@ const UserProfile = () => {
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
     const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showCropModal, setShowCropModal] = useState(false);
     const [imageSrc, setImageSrc] = useState(null);
     const [removingImage, setRemovingImage] = useState(false);
@@ -112,8 +107,15 @@ const UserProfile = () => {
                 setShowUpdatePopup(true);
                 sessionStorage.setItem('profilePopupShown', 'true');
             }
+            // Auto-open basic info edit mode if navigated from update popup
+            if (location.state?.autoEditBasic) {
+                setEditMode('Basic Information');
+                setEditData({ ...patient });
+                // Clear the state to prevent re-triggering on page refresh
+                window.history.replaceState({}, document.title);
+            }
         }
-    }, [patient]);
+    }, [patient, location.state]);
 
     const fetchPredictions = async () => {
         try {
@@ -372,13 +374,6 @@ const UserProfile = () => {
         }));
     };
 
-    const handleLogout = () => {
-        sessionStorage.removeItem('profilePopupShown');
-        logout();
-        localStorage.removeItem('token');
-        navigate('/', { replace: true });
-    };
-
     const formatDateTime = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -585,7 +580,7 @@ const UserProfile = () => {
                                 <span>{patient.address || "No address provided"}</span>
                             </div>
 
-                            {/* Change Password and Logout Buttons */}
+                            {/* Change Password Button */}
                             <div className="mt-4 flex justify-center gap-3">
                                 <button
                                     onClick={() => setShowPasswordModal(true)}
@@ -593,13 +588,6 @@ const UserProfile = () => {
                                 >
                                     <FaKey className="text-sm" />
                                     Change Password
-                                </button>
-                                <button
-                                    onClick={() => setShowLogoutModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-all duration-200"
-                                >
-                                    <FaSignOutAlt className="text-sm" />
-                                    Logout
                                 </button>
                             </div>
                         </div>
@@ -955,14 +943,6 @@ const UserProfile = () => {
                 isOpen={showPasswordModal}
                 onClose={() => setShowPasswordModal(false)}
             />
-
-            {/* Logout Confirmation Modal */}
-            {showLogoutModal && (
-                <ConfirmSignout
-                    onConfirm={handleLogout}
-                    onCancel={() => setShowLogoutModal(false)}
-                />
-            )}
         </div>
     );
 };

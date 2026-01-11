@@ -7,9 +7,9 @@ const UpdateProfilePopup = ({ onClose, userRole }) => {
 
     const handleUpdateProfile = () => {
         if (userRole === 'dermatologist') {
-            navigate('/dermatologist-profile');
+            navigate('/DProfile', { state: { autoEditBasic: true } });
         } else {
-            navigate('/Profile');
+            navigate('/Profile', { state: { autoEditBasic: true } });
         }
         onClose();
     };
